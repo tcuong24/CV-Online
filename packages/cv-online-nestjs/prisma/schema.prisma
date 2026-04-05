@@ -1,0 +1,495 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// 1. USER MANAGEMENT
+// =============================================================================
+
+model User {
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  passwordHash          String    @map("password_hash")
+  fullName              String?   @map("full_name")
+  avatarUrl             String?   @map("avatar_url")
+  phone                 String?
+  subscriptionType      String    @default("free") @map("subscription_type")
+  subscriptionExpiresAt DateTime? @map("subscription_expires_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  lastLoginAt           DateTime? @map("last_login_at")
+
+  cvs        CV[]
+  cvExports  CVExport[]
+  cvVersions CVVersion[]
+
+  @@index([email])
+  @@index([subscriptionType, subscriptionExpiresAt])
+  @@map("users")
+}
+
+// =============================================================================
+// 2. TEMPLATE SYSTEM
+// =============================================================================
+
+model Template {
+  id              String    @id @default(uuid())
+  name            String
+  description     String?
+  thumbnailUrl    String    @map("thumbnail_url")
+  previewPdfUrl   String?   @map("preview_pdf_url")
+  category        String
+  isPremium       Boolean   @default(false) @map("is_premium")
+  isPublished     Boolean   @default(true) @map("is_published")
+  popularityScore Int       @default(0) @map("popularity_score")
+  usageCount      Int       @default(0) @map("usage_count")
+  layoutType      String    @map("layout_type")
+  designConfig    Json      @map("design_config")
+  sectionsConfig  Json      @map("sections_config")
+  version         String    @default("1.0.0")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  createdBy       String?   @map("created_by")
+
+  cvs              CV[]
+  sampleData       TemplateSampleData?
+  cvRenderedCaches CVRenderedCache[]
+  analyticsEvents  AnalyticsEvent[]
+
+  @@index([category])
+  @@index([isPremium])
+  @@index([isPublished])
+  @@index([popularityScore(sort: Desc)])
+  @@map("templates")
+}
+
+model TemplateSampleData {
+  id         String   @id @default(uuid())
+  templateId String   @unique @map("template_id")
+  sampleData Json     @map("sample_data")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@map("template_sample_data")
+}
+
+// =============================================================================
+// 3. CV CORE
+// =============================================================================
+
+model CV {
+  id                 String   @id @default(uuid())
+  userId             String   @map("user_id")
+  templateId         String?  @map("template_id")
+  title              String
+  slug               String?  @unique
+  isPublic           Boolean  @default(false) @map("is_public")
+  publicUrlToken     String?  @unique @map("public_url_token")
+  status             String   @default("draft")
+  customStyles       Json?    @map("custom_styles")
+  sectionsVisibility Json?    @map("sections_visibility")
+  sectionsOrder      Json?    @map("sections_order")
+  viewCount          Int      @default(0) @map("view_count")
+  downloadCount      Int      @default(0) @map("download_count")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  publishedAt        DateTime? @map("published_at")
+
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template         Template?            @relation(fields: [templateId], references: [id])
+  personalInfo     CVPersonalInfo?
+  experiences      CVExperience[]
+  education        CVEducation[]
+  skills           CVSkill[]
+  projects         CVProject[]
+  certifications   CVCertification[]
+  languages        CVLanguage[]
+  awards           CVAward[]
+  references       CVReference[]
+  interests        CVInterest[]
+  activities       CVActivity[]
+  customSections   CVCustomSection[]
+  renderedCaches   CVRenderedCache[]
+  exports          CVExport[]
+  versions         CVVersion[]
+  shares           CVShare[]
+  analyticsEvents  AnalyticsEvent[]
+
+  @@index([userId])
+  @@index([templateId])
+  @@index([slug])
+  @@index([isPublic, status])
+  @@index([publicUrlToken])
+  @@map("cvs")
+}
+
+// =============================================================================
+// 4. CV SECTIONS
+// =============================================================================
+
+model CVPersonalInfo {
+  id          String    @id @default(uuid())
+  cvId        String    @unique @map("cv_id")
+  fullName    String    @map("full_name")
+  jobTitle    String?   @map("job_title")
+  email       String?
+  phone       String?
+  location    String?
+  dateOfBirth DateTime? @map("date_of_birth")
+  nationality String?
+  photoUrl    String?   @map("photo_url")
+  website     String?
+  linkedinUrl String?   @map("linkedin_url")
+  githubUrl   String?   @map("github_url")
+  portfolioUrl String?  @map("portfolio_url")
+  twitterUrl  String?   @map("twitter_url")
+  facebookUrl String?   @map("facebook_url")
+  summary     String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@map("cv_personal_info")
+}
+
+model CVExperience {
+  id             String    @id @default(uuid())
+  cvId           String    @map("cv_id")
+  companyName    String    @map("company_name")
+  position       String
+  location       String?
+  companyWebsite String?   @map("company_website")
+  startDate      DateTime  @map("start_date")
+  endDate        DateTime? @map("end_date")
+  isCurrent      Boolean   @default(false) @map("is_current")
+  description    String?
+  achievements   String[]
+  technologies   String[]
+  displayOrder   Int       @default(0) @map("display_order")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([cvId, displayOrder])
+  @@map("cv_experiences")
+}
+
+model CVEducation {
+  id              String    @id @default(uuid())
+  cvId            String    @map("cv_id")
+  institutionName String    @map("institution_name")
+  degree          String
+  fieldOfStudy    String?   @map("field_of_study")
+  location        String?
+  startDate       DateTime? @map("start_date")
+  endDate         DateTime? @map("end_date")
+  isCurrent       Boolean   @default(false) @map("is_current")
+  gpa             String?
+  description     String?
+  achievements    String[]
+  displayOrder    Int       @default(0) @map("display_order")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([cvId, displayOrder])
+  @@map("cv_education")
+}
+
+model CVSkill {
+  id                     String   @id @default(uuid())
+  cvId                   String   @map("cv_id")
+  category               String?
+  skillName              String   @map("skill_name")
+  proficiencyLevel       String?  @map("proficiency_level")
+  proficiencyPercentage  Int?     @map("proficiency_percentage")
+  yearsOfExperience      Decimal? @map("years_of_experience") @db.Decimal(3, 1)
+  displayOrder           Int      @default(0) @map("display_order")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([cvId, category])
+  @@index([cvId, displayOrder])
+  @@map("cv_skills")
+}
+
+model CVProject {
+  id           String    @id @default(uuid())
+  cvId         String    @map("cv_id")
+  projectName  String    @map("project_name")
+  role         String?
+  startDate    DateTime? @map("start_date")
+  endDate      DateTime? @map("end_date")
+  isOngoing    Boolean   @default(false) @map("is_ongoing")
+  description  String?
+  achievements String[]
+  technologies String[]
+  projectUrl   String?   @map("project_url")
+  githubUrl    String?   @map("github_url")
+  displayOrder Int       @default(0) @map("display_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([cvId, displayOrder])
+  @@map("cv_projects")
+}
+
+model CVCertification {
+  id                   String    @id @default(uuid())
+  cvId                 String    @map("cv_id")
+  name                 String
+  issuingOrganization  String    @map("issuing_organization")
+  issueDate            DateTime? @map("issue_date")
+  expiryDate           DateTime? @map("expiry_date")
+  credentialId         String?   @map("credential_id")
+  credentialUrl        String?   @map("credential_url")
+  description          String?
+  displayOrder         Int       @default(0) @map("display_order")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([cvId, displayOrder])
+  @@map("cv_certifications")
+}
+
+model CVLanguage {
+  id               String   @id @default(uuid())
+  cvId             String   @map("cv_id")
+  languageName     String   @map("language_name")
+  proficiencyLevel String?  @map("proficiency_level")
+  canRead          Boolean  @default(true) @map("can_read")
+  canWrite         Boolean  @default(true) @map("can_write")
+  canSpeak         Boolean  @default(true) @map("can_speak")
+  displayOrder     Int      @default(0) @map("display_order")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([cvId, displayOrder])
+  @@map("cv_languages")
+}
+
+model CVAward {
+  id           String    @id @default(uuid())
+  cvId         String    @map("cv_id")
+  title        String
+  issuer       String
+  dateReceived DateTime? @map("date_received")
+  description  String?
+  displayOrder Int       @default(0) @map("display_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([cvId, displayOrder])
+  @@map("cv_awards")
+}
+
+model CVReference {
+  id           String   @id @default(uuid())
+  cvId         String   @map("cv_id")
+  fullName     String   @map("full_name")
+  jobTitle     String?  @map("job_title")
+  company      String?
+  relationship String?
+  email        String?
+  phone        String?
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([cvId, displayOrder])
+  @@map("cv_references")
+}
+
+model CVCustomSection {
+  id           String   @id @default(uuid())
+  cvId         String   @map("cv_id")
+  sectionTitle String   @map("section_title")
+  sectionType  String?  @map("section_type")
+  content      Json
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([cvId, displayOrder])
+  @@map("cv_custom_sections")
+}
+
+model CVInterest {
+  id           String   @id @default(uuid())
+  cvId         String   @map("cv_id")
+  name         String
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([cvId, displayOrder])
+  @@map("cv_interests")
+}
+
+model CVActivity {
+  id           String    @id @default(uuid())
+  cvId         String    @map("cv_id")
+  name         String
+  role         String?
+  startDate    DateTime? @map("start_date")
+  endDate      DateTime? @map("end_date")
+  description  String?
+  displayOrder Int       @default(0) @map("display_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([cvId, displayOrder])
+  @@map("cv_activities")
+}
+
+// =============================================================================
+// 5. RENDERING & CACHING
+// =============================================================================
+
+model CVRenderedCache {
+  id              String    @id @default(uuid())
+  cvId            String    @map("cv_id")
+  cacheKey        String    @unique @map("cache_key")
+  htmlContent     String    @map("html_content")
+  cssContent      String?   @map("css_content")
+  templateId      String?   @map("template_id")
+  templateVersion String?   @map("template_version")
+  fileSize        Int?      @map("file_size")
+  renderTimeMs    Int?      @map("render_time_ms")
+  expiresAt       DateTime? @map("expires_at")
+  hitCount        Int       @default(0) @map("hit_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  lastAccessedAt  DateTime  @default(now()) @map("last_accessed_at")
+
+  cv       CV        @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  template Template? @relation(fields: [templateId], references: [id])
+
+  @@index([cvId])
+  @@index([cacheKey])
+  @@index([expiresAt])
+  @@map("cv_rendered_cache")
+}
+
+model CVExport {
+  id            String    @id @default(uuid())
+  cvId          String    @map("cv_id")
+  userId        String    @map("user_id")
+  exportType    String    @map("export_type")
+  fileUrl       String?   @map("file_url")
+  fileSize      Int?      @map("file_size")
+  exportOptions Json?     @map("export_options")
+  status        String    @default("processing")
+  errorMessage  String?   @map("error_message")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  completedAt   DateTime? @map("completed_at")
+
+  cv   CV   @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([cvId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("cv_exports")
+}
+
+// =============================================================================
+// 6. SUPPORTING TABLES
+// =============================================================================
+
+model CVVersion {
+  id            String   @id @default(uuid())
+  cvId          String   @map("cv_id")
+  versionNumber Int      @map("version_number")
+  snapshotData  Json     @map("snapshot_data")
+  createdBy     String   @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  cv   CV   @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [createdBy], references: [id])
+
+  @@unique([cvId, versionNumber])
+  @@index([cvId, versionNumber(sort: Desc)])
+  @@map("cv_versions")
+}
+
+model CVShare {
+  id             String    @id @default(uuid())
+  cvId           String    @map("cv_id")
+  shareToken     String    @unique @map("share_token")
+  shareType      String?   @map("share_type")
+  recipientEmail String?   @map("recipient_email")
+  expiresAt      DateTime? @map("expires_at")
+  viewCount      Int       @default(0) @map("view_count")
+  lastViewedAt   DateTime? @map("last_viewed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@index([shareToken])
+  @@index([expiresAt])
+  @@map("cv_shares")
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(uuid())
+  eventType  String   @map("event_type")
+  userId     String?  @map("user_id")
+  cvId       String?  @map("cv_id")
+  templateId String?  @map("template_id")
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  cv       CV?       @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  template Template? @relation(fields: [templateId], references: [id])
+
+  @@index([eventType])
+  @@index([userId])
+  @@index([cvId])
+  @@index([createdAt(sort: Desc)])
+  @@map("analytics_events")
+}
