@@ -1,0 +1,31 @@
+{
+  "name": "cv-online-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CV Online Monorepo - NestJS Backend & Next.js Frontend",
+  "scripts": {
+    "dev": "pnpm --parallel --filter cv-online-nestjs --filter nextjs-frontend dev",
+    "dev:backend": "pnpm --filter cv-online-nestjs dev",
+    "dev:frontend": "pnpm --filter nextjs-frontend dev",
+    "dev:all": "pnpm --parallel --filter cv-online-nestjs --filter nextjs-frontend dev",
+    "build": "pnpm --filter cv-online-nestjs --filter nextjs-frontend build",
+    "build:backend": "pnpm --filter cv-online-nestjs build",
+    "build:frontend": "pnpm --filter nextjs-frontend build",
+    "start:backend": "pnpm --filter cv-online-nestjs start:prod",
+    "start:frontend": "pnpm --filter nextjs-frontend start",
+    "lint": "pnpm --filter cv-online-nestjs --filter nextjs-frontend lint",
+    "test": "pnpm --filter cv-online-nestjs --filter nextjs-frontend test",
+    "clean": "pnpm --filter cv-online-nestjs --filter nextjs-frontend exec rm -rf dist node_modules",
+    "install:all": "pnpm install",
+    "prisma:generate": "pnpm --filter cv-online-nestjs prisma:generate",
+    "prisma:migrate": "pnpm --filter cv-online-nestjs prisma:migrate",
+    "prisma:studio": "pnpm --filter cv-online-nestjs prisma:studio"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

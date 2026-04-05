@@ -1,0 +1,57 @@
+.next/dev/types/validator.ts(89,39): error TS2306: File 'D:/CV-Online/packages/cv-online-nextjs/app/editor/create/[id]/page.tsx' is not a module.
+.next/types/validator.ts(89,39): error TS2306: File 'D:/CV-Online/packages/cv-online-nextjs/app/editor/create/[id]/page.tsx' is not a module.
+app/cv/[id]/page.tsx(1,29): error TS2307: Cannot find module '@/templates/classic/ClassicTemplate' or its corresponding type declarations.
+app/cv/[id]/page.tsx(2,20): error TS2307: Cannot find module '@/lib/prisma' or its corresponding type declarations.
+app/cv/[id]/page.tsx(24,34): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/editor/[id]/page.tsx(1,22): error TS2307: Cannot find module '@/components/editor/TipTapEditor' or its corresponding type declarations.
+app/editor/edit/[id]/page.tsx(5,34): error TS2307: Cannot find module '@/components/editor/provider/CvEditorProvider' or its corresponding type declarations.
+app/editor/edit/[id]/page.tsx(6,31): error TS2307: Cannot find module '@/components/editor/sidebar/EditorSidebar' or its corresponding type declarations.
+app/preview/page.tsx(10,10): error TS2305: Module '"@/types/cv"' has no exported member 'EditableCV'.
+components/editor/CVBuider.tsx(320,14): error TS2322: Type 'string | boolean' is not assignable to type 'Key | null | undefined'.
+  Type 'false' is not assignable to type 'Key | null | undefined'.
+components/editor/CVBuider.tsx(321,63): error TS2345: Argument of type 'string | boolean' is not assignable to parameter of type 'string'.
+  Type 'boolean' is not assignable to type 'string'.
+components/editor/CVBuider.tsx(327,95): error TS2345: Argument of type 'string | boolean' is not assignable to parameter of type 'string'.
+  Type 'boolean' is not assignable to type 'string'.
+components/editor/CVBuider.tsx(335,60): error TS2322: Type 'string | true' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'true' is not assignable to type 'string | number | readonly string[] | undefined'.
+components/editor/CVBuider.tsx(335,106): error TS2345: Argument of type 'string | boolean' is not assignable to parameter of type 'string'.
+  Type 'boolean' is not assignable to type 'string'.
+components/editor/CVBuider.tsx(336,54): error TS2322: Type 'string | true' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'true' is not assignable to type 'string | number | readonly string[] | undefined'.
+components/editor/CVBuider.tsx(336,100): error TS2345: Argument of type 'string | boolean' is not assignable to parameter of type 'string'.
+  Type 'boolean' is not assignable to type 'string'.
+components/editor/CVBuider.tsx(496,82): error TS2322: Type 'string' is not assignable to type 'TextAlign | undefined'.
+components/editor/CVBuider.tsx(516,29): error TS7006: Parameter 't' implicitly has an 'any' type.
+components/editor/CVBuider.tsx(629,94): error TS2322: Type 'string' is not assignable to type 'TextAlign | undefined'.
+components/editor/CVBuider.tsx(630,95): error TS2322: Type 'string' is not assignable to type 'TextAlign | undefined'.
+components/editor/CVBuider.tsx(704,80): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ personal: boolean; }'.
+  No index signature with a parameter of type 'string' was found on type '{ personal: boolean; }'.
+components/editor/CVBuider.tsx(705,62): error TS2322: Type 'string' is not assignable to type 'null'.
+components/editor/CVBuider.tsx(705,101): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+components/editor/CVBuider.tsx(706,62): error TS2322: Type 'string' is not assignable to type 'null'.
+components/editor/CVBuider.tsx(706,101): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+components/editor/CVBuider.tsx(710,90): error TS2345: Argument of type 'null' is not assignable to parameter of type 'string'.
+components/editor/CVBuider.tsx(748,30): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ personal: { label: string; icon: Element; color: string; iconColor: string; }; experience: { label: string; icon: Element; color: string; iconColor: string; }; education: { label: string; icon: Element; color: string; iconColor: string; }; skills: { ...; }; projects: { ...; }; awards: { ...; }; languages: { ...; }...'.
+  No index signature with a parameter of type 'string' was found on type '{ personal: { label: string; icon: Element; color: string; iconColor: string; }; experience: { label: string; icon: Element; color: string; iconColor: string; }; education: { label: string; icon: Element; color: string; iconColor: string; }; skills: { ...; }; projects: { ...; }; awards: { ...; }; languages: { ...; }...'.
+components/editor/CVBuider.tsx(749,32): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ personal: boolean; }'.
+  No index signature with a parameter of type 'string' was found on type '{ personal: boolean; }'.
+components/preview/CVPreview.tsx(4,10): error TS2305: Module '"@/types/cv"' has no exported member 'EditableCV'.
+components/preview/CVPreview.tsx(5,30): error TS2307: Cannot find module '@/templates/editable' or its corresponding type declarations.
+components/preview/CvPreviewContainer.tsx(2,30): error TS2307: Cannot find module '@/templates/editable' or its corresponding type declarations.
+components/preview/CvPreviewContainer.tsx(3,10): error TS2305: Module '"@/types/cv"' has no exported member 'EditableCV'.
+components/renderer/CvLayout.tsx(4,36): error TS2307: Cannot find module '@/components/editor/provider/CvEditorProvider' or its corresponding type declarations.
+components/renderer/CvLayout.tsx(20,18): error TS7006: Parameter 'sectionId' implicitly has an 'any' type.
+components/renderer/CvPreview.tsx(4,36): error TS2307: Cannot find module '@/components/editor/provider/CvEditorProvider' or its corresponding type declarations.
+components/renderer/CvPreview.tsx(8,31): error TS2307: Cannot find module '@/components/editor/InlineToolbar' or its corresponding type declarations.
+components/renderer/SectionRenderer.tsx(4,36): error TS2307: Cannot find module '@/components/editor/provider/CvEditorProvider' or its corresponding type declarations.
+templates/editable/sections/Certifications.tsx(4,10): error TS2305: Module '"../../types"' has no exported member 'CVCertification'.
+templates/editable/sections/CustomSection.tsx(4,10): error TS2305: Module '"../../types"' has no exported member 'CVCustomSection'.
+templates/editable/sections/CustomSection.tsx(134,43): error TS7006: Parameter 'paragraph' implicitly has an 'any' type.
+templates/editable/sections/CustomSection.tsx(134,54): error TS7006: Parameter 'index' implicitly has an 'any' type.
+templates/editable/sections/Education.tsx(4,10): error TS2305: Module '"../../types"' has no exported member 'CVEducation'.
+templates/editable/sections/Experience.tsx(4,10): error TS2305: Module '"../../types"' has no exported member 'CVExperience'.
+templates/editable/sections/Languages.tsx(4,10): error TS2305: Module '"../../types"' has no exported member 'CVLanguage'.
+templates/editable/sections/Projects.tsx(4,10): error TS2305: Module '"../../types"' has no exported member 'CVProject'.
+templates/editable/sections/Skills.tsx(4,10): error TS2305: Module '"../../types"' has no exported member 'CVSkill'.
+templates/index.ts(2,30): error TS2307: Cannot find module './editable' or its corresponding type declarations.
