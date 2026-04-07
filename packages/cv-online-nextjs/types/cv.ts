@@ -40,7 +40,16 @@ export interface CvReference {
   phone?: string;
   displayOrder: number;
 }
-
+export interface TemplateInfo {
+  id: string;
+  name: string;
+  description?: string | null;
+  thumbnailUrl: string;
+  layoutType: 'single-column' | 'sidebar-left' | 'sidebar-right' | 'two-column';
+  designConfig: DbDesignConfig;
+  sectionsConfig: DbSectionsConfig;
+  isPremium?: boolean;
+}
 export interface CvCustomSection {
   id: string;
   sectionTitle: string;

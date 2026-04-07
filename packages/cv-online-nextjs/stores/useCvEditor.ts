@@ -31,7 +31,7 @@ import {
   SkillEntry,
   StyleConfig,
 } from '@/types/cvEditor';
-import type { CVWithRelations } from '@/types/cv';
+import type { CVWithRelations, TemplateInfo } from '@/types/cv';
 import { DEFAULT_DATA, DEFAULT_ORDER, DEFAULT_STYLE } from '@/constants/cvEditor';
 import {
   parseDesignConfig,
@@ -92,7 +92,7 @@ interface CvEditorState {
    * with what setCV does.
    */
   applyTemplate: (tpl: Record<string, unknown>) => void;
-
+  switchTemplate: (template: TemplateInfo) => void;
   /**
    * Hydrate the store from a full CVWithRelations object (from DB or local).
    * - style = parseDesignConfig(snapshotDesignConfig) merged with customStyles
@@ -216,6 +216,17 @@ export const useCvEditorStore = create<CvEditorState>()(
           );
           // Ngắt lịch hẹn để clear history vì đây là set config mới
           setTimeout(() => useCvEditorStore.temporal.getState().clear(), 0);
+        },
+        switchTemplate: (template: TemplateInfo) => {
+          const { order, sideKeys } = parseSectionsConfig(template.sectionsConfig);
+          set(state => ({
+            ...state,
+            layoutType: template.layoutType,
+            order,
+            sideKeys,
+            style: parseDesignConfig(template.designConfig),
+            isDirty: true,
+          }));
         },
 
         setCV: (cv) => {

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { MdDragIndicator } from 'react-icons/md';
 import { LH_MAP } from '@/constants/cvEditor';
-import { CvData, SectionLayoutConfig, SkillEntry, StyleConfig } from '@/types/cvEditor';
+import { CvData, SectionLayoutConfig, SkillEntry, StyleConfig, ExperienceEntry, EducationEntry, ProjectEntry, AwardEntry, LanguageEntry } from '@/types/cvEditor';
 import { resolveFontFamily, resolveTheme } from '@/lib/mappers/templateMapper';
 import { useCvEditorStore } from '@/stores/useCvEditor';
 import { EditableText } from '../shared/EditableText';
@@ -698,6 +698,137 @@ export function MainSectionBlocks({
 
   return null;
 }
+// ─── Per-item components (dùng cho item-level pagination) ─────────────────────
+
+
+
+export function ExperienceItem({ entry: e, ctx }: { entry: ExperienceEntry; ctx: RenderCtx }) {
+  const { fs, lh, accentColor } = ctx;
+  const expStyle  = ctx.sectionLayout.experiences?.style ?? 'timeline';
+  const monoStyle = { fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace" };
+  const descStyle = { fontSize: fs * 0.88, color: '#57534e', lineHeight: lh };
+  if (expStyle === 'timeline') {
+    return (
+      <div className="group/item relative flex" style={{ marginBottom: 13 }}>
+        <div style={{ paddingLeft: 12, borderLeft: `2px solid ${accentColor}30`, flex: 1 }}>
+          <div style={{ ...monoStyle, display: 'flex', gap: 4, marginBottom: 2 }}>
+            <EditableText value={e.from} onChange={v => ctx.updateEntry('experience', e.id, { from: v })} placeholder="Bắt đầu" />–
+            <EditableText value={e.to}   onChange={v => ctx.updateEntry('experience', e.id, { to: v })}   placeholder="Kết thúc" />
+          </div>
+          <div style={{ fontWeight: 700, color: '#1c1917' }}><EditableText value={e.title} onChange={v => ctx.updateEntry('experience', e.id, { title: v })} placeholder="Chức danh" /></div>
+          <div style={{ fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3, display: 'flex', gap: 4 }}>
+            <EditableText value={e.company}  onChange={v => ctx.updateEntry('experience', e.id, { company: v })}  placeholder="Công ty" />·
+            <EditableText value={e.location} onChange={v => ctx.updateEntry('experience', e.id, { location: v })} placeholder="Địa điểm" />
+          </div>
+          <div style={descStyle}><EditableText value={e.desc} onChange={v => ctx.updateEntry('experience', e.id, { desc: v })} placeholder="Mô tả công việc" multiline /></div>
+        </div>
+        <button onClick={() => ctx.removeEntry('experience', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+      </div>
+    );
+  }
+  return (
+    <div style={{ marginBottom: 13 }} className="group/item relative flex">
+      <div className="flex-1">
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 2 }}>
+          <span style={{ fontWeight: 700, color: '#1c1917' }}><EditableText value={e.title} onChange={v => ctx.updateEntry('experience', e.id, { title: v })} placeholder="Chức danh" /></span>
+          <span style={{ ...monoStyle, display: 'flex', gap: 4 }}>
+            <EditableText value={e.from} onChange={v => ctx.updateEntry('experience', e.id, { from: v })} placeholder="Bắt đầu" />–
+            <EditableText value={e.to}   onChange={v => ctx.updateEntry('experience', e.id, { to: v })}   placeholder="Kết thúc" />
+          </span>
+        </div>
+        <div style={{ fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3, display: 'flex', gap: 4 }}>
+          <EditableText value={e.company}  onChange={v => ctx.updateEntry('experience', e.id, { company: v })}  placeholder="Công ty" />·
+          <EditableText value={e.location} onChange={v => ctx.updateEntry('experience', e.id, { location: v })} placeholder="Địa điểm" />
+        </div>
+        <div style={descStyle}><EditableText value={e.desc} onChange={v => ctx.updateEntry('experience', e.id, { desc: v })} placeholder="Mô tả công việc" multiline /></div>
+      </div>
+      <button onClick={() => ctx.removeEntry('experience', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+    </div>
+  );
+}
+
+export function EducationItem({ entry: e, ctx }: { entry: EducationEntry; ctx: RenderCtx }) {
+  const { fs, lh } = ctx;
+  const titleStyle = { fontSize: fs * 1.05, fontWeight: 700, color: '#1c1917' };
+  const subStyle   = { fontSize: fs * 0.9, color: '#57534e', fontStyle: 'italic' as const, marginBottom: 3 };
+  const descStyle  = { fontSize: fs * 0.9, color: '#57534e', lineHeight: lh };
+  const dateStyle  = { fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace", whiteSpace: 'nowrap' as const };
+  return (
+    <div style={{ marginBottom: 14 }} className="group/item relative flex">
+      <div className="flex-1">
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 2 }}>
+          <span style={titleStyle}><EditableText value={e.degree} onChange={v => ctx.updateEntry('education', e.id, { degree: v })} placeholder="Chuyên ngành" /></span>
+          <span style={dateStyle} className="flex gap-1">
+            <EditableText value={e.from} onChange={v => ctx.updateEntry('education', e.id, { from: v })} placeholder="Bắt đầu" />–
+            <EditableText value={e.to}   onChange={v => ctx.updateEntry('education', e.id, { to: v })}   placeholder="Kết thúc" />
+          </span>
+        </div>
+        <div style={subStyle}><EditableText value={e.school} onChange={v => ctx.updateEntry('education', e.id, { school: v })} placeholder="Trường" /></div>
+        <div style={descStyle}><EditableText value={e.desc}   onChange={v => ctx.updateEntry('education', e.id, { desc: v })}  placeholder="Mô tả" multiline /></div>
+      </div>
+      <button onClick={() => ctx.removeEntry('education', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+    </div>
+  );
+}
+
+export function ProjectItem({ entry: e, ctx }: { entry: ProjectEntry; ctx: RenderCtx }) {
+  const { fs, lh, accentColor } = ctx;
+  const titleStyle = { fontSize: fs * 1.05, fontWeight: 700, color: '#1c1917' };
+  const subStyle   = { fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3 };
+  const descStyle  = { fontSize: fs * 0.9, color: '#57534e', lineHeight: lh };
+  const dateStyle  = { fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace", whiteSpace: 'nowrap' as const };
+  return (
+    <div style={{ marginBottom: 14 }} className="group/item relative flex">
+      <div className="flex-1">
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 2 }}>
+          <span style={titleStyle}><EditableText value={e.name} onChange={v => ctx.updateEntry('projects', e.id, { name: v })} placeholder="Tên dự án" /></span>
+          <span style={dateStyle}><EditableText value={e.link}  onChange={v => ctx.updateEntry('projects', e.id, { link: v })} placeholder="Link dự án" /></span>
+        </div>
+        <div style={subStyle}><EditableText value={e.tech} onChange={v => ctx.updateEntry('projects', e.id, { tech: v })} placeholder="Công nghệ sử dụng" /></div>
+        <div style={descStyle}><EditableText value={e.desc} onChange={v => ctx.updateEntry('projects', e.id, { desc: v })} placeholder="Mô tả dự án" multiline /></div>
+      </div>
+      <button onClick={() => ctx.removeEntry('projects', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+    </div>
+  );
+}
+
+export function AwardItem({ entry: e, ctx }: { entry: AwardEntry; ctx: RenderCtx }) {
+  const { fs } = ctx;
+  const titleStyle = { fontSize: fs * 1.05, fontWeight: 700, color: '#1c1917' };
+  const subStyle   = { fontSize: fs * 0.9, color: '#57534e', fontStyle: 'italic' as const };
+  const dateStyle  = { fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace", whiteSpace: 'nowrap' as const };
+  return (
+    <div style={{ marginBottom: 14 }} className="group/item relative flex">
+      <div className="flex-1">
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          <span style={titleStyle}><EditableText value={e.title} onChange={v => ctx.updateEntry('awards', e.id, { title: v })} placeholder="Tên giải thưởng" /></span>
+          <span style={dateStyle}><EditableText  value={e.year}  onChange={v => ctx.updateEntry('awards', e.id, { year: v })}  placeholder="Năm" /></span>
+        </div>
+        <div style={subStyle}><EditableText value={e.org} onChange={v => ctx.updateEntry('awards', e.id, { org: v })} placeholder="Tổ chức cấp" /></div>
+      </div>
+      <button onClick={() => ctx.removeEntry('awards', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+    </div>
+  );
+}
+
+export function LanguageItem({ entry: l, ctx }: { entry: LanguageEntry; ctx: RenderCtx }) {
+  const { fs, accentColor } = ctx;
+  return (
+    <div className="group/item relative flex items-center" style={{ marginBottom: 7 }}>
+      <span style={{ fontSize: fs * 0.95, fontWeight: 500, flex: 1 }}>
+        <EditableText value={l.lang} onChange={v => ctx.updateEntry('languages', l.id, { lang: v })} placeholder="Ngoại ngữ" />
+      </span>
+      <div style={{ display: 'flex', gap: 4 }}>
+        {[1,2,3,4,5].map(i => (
+          <div key={i} onClick={() => ctx.updateEntry('languages', l.id, { level: i })}
+            style={{ width: 18, height: 4, borderRadius: 2, background: l.level >= i ? accentColor : '#e7e5e4', cursor: 'pointer' }}
+          />
+        ))}
+      </div>
+      <button onClick={() => ctx.removeEntry('languages', l.id)} className="ml-1 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+    </div>
+  );
+}
 
 // ─── Pagination helper ────────────────────────────────────────────────────────
 
@@ -730,6 +861,79 @@ export function paginateSections(
   });
 
   if (currentPage.length > 0) pages.push(currentPage);
+  return pages;
+}
+// ─── Item-level pagination types & engine ─────────────────────────────────────
+
+export type RenderUnit =
+  | { kind: 'section-header'; sectionKey: string; title: string }
+  | { kind: 'item';           sectionKey: string; node: React.ReactNode };
+
+/**
+ * Item-level paginator — cho phép split section theo từng item.
+ *
+ * Rules:
+ *  - section-header không đứng một mình ở cuối trang (orphan header)
+ *  - khi item bị đẩy sang trang mới → lặp lại header của section đó
+ *  - nếu 1 item cao hơn cả trang → vẫn đặt vào (không thể split nhỏ hơn)
+ *
+ * @param units      - danh sách flat render units (header + items xen kẽ)
+ * @param heights    - chiều cao đo được của từng unit (index tương ứng)
+ * @param firstAvail - available height trang đầu (trừ CV header)
+ * @param restAvail  - available height các trang sau
+ */
+export function paginateUnits(
+  units: RenderUnit[],
+  heights: number[],
+  firstAvail: number,
+  restAvail: number,
+): RenderUnit[][] {
+  const pages: RenderUnit[][] = [[]];
+  let remaining = firstAvail;
+
+  // track header hiện tại và height của nó để lặp lại khi cần
+  let currentHeaderUnit: Extract<RenderUnit, { kind: 'section-header' }> | null = null;
+  let currentHeaderH = 0;
+
+  const pushNewPage = () => {
+    pages.push([]);
+    remaining = restAvail;
+  };
+
+  units.forEach((unit, i) => {
+    const h = heights[i] ?? 0;
+
+    if (unit.kind === 'section-header') {
+      // Nhớ header hiện tại để lặp lại nếu cần
+      currentHeaderUnit = unit;
+      currentHeaderH = h;
+
+      // Orphan guard: header + ít nhất 1 item tiếp theo phải cùng trang
+      const nextH = heights[i + 1] ?? 0;
+      if (h + nextH > remaining && pages[pages.length - 1].length > 0) {
+        pushNewPage();
+      }
+
+      pages[pages.length - 1].push(unit);
+      remaining -= h;
+      return;
+    }
+
+    // kind === 'item'
+    if (h > remaining && pages[pages.length - 1].length > 0) {
+      pushNewPage();
+
+      // Lặp lại header của section trên trang mới
+      if (currentHeaderUnit) {
+        pages[pages.length - 1].push(currentHeaderUnit);
+        remaining -= currentHeaderH;
+      }
+    }
+
+    pages[pages.length - 1].push(unit);
+    remaining -= h;
+  });
+
   return pages;
 }
 

@@ -8,25 +8,27 @@ import { CvData } from '@/types/cvEditor';
 import { CVTemplate } from '@/components/template/CVTemplate';
 import { useCvEditorStore } from '@/stores/useCvEditor';
 import { Slider } from '@/components/ui/slider';
+import { TemplatePickerPanel } from '@/components/sidebar/TemplatePickerPanel';
 
 export default function CVBuilder() {
   // ── Store state ──────────────────────────────────────────────────────────────
-  const data      = useCvEditorStore((s) => s.data);
-  const order     = useCvEditorStore((s) => s.order);
-  const style     = useCvEditorStore((s) => s.style);
-  const sideKeys  = useCvEditorStore((s) => s.sideKeys);
+  const data = useCvEditorStore((s) => s.data);
+  const order = useCvEditorStore((s) => s.order);
+  const style = useCvEditorStore((s) => s.style);
+  const sideKeys = useCvEditorStore((s) => s.sideKeys);
   const layoutType = useCvEditorStore((s) => s.layoutType);
-  const syncToDb    = useCvEditorStore((s) => s.syncToDb);
-  const isSaving    = useCvEditorStore((s) => s.isSaving);
-  const isDirty     = useCvEditorStore((s) => s.isDirty);
+  const syncToDb = useCvEditorStore((s) => s.syncToDb);
+  const isSaving = useCvEditorStore((s) => s.isSaving);
+  const isDirty = useCvEditorStore((s) => s.isDirty);
   const lastSavedAt = useCvEditorStore((s) => s.lastSavedAt);
+  const visibility = useCvEditorStore((s) => s.visibility);
   // ── Store actions ─────────────────────────────────────────────────────────────
   const patchStyle = useCvEditorStore((s) => s.patchStyle);
 
   // Zoom + sidebar state — local UI only
   const [zoom, setZoom] = useState(100);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-
+  const [activeTab, setActiveTab] = useState<'sections' | 'templates'>('sections');
   return (
     <>
       <style>{globalCss}</style>
@@ -41,10 +43,20 @@ export default function CVBuilder() {
             transition: 'width 0.25s ease',
           }}
         >
-          <div style={{ width: 360, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div className="sidebar-body">
-              <SectionOrderPanel />
-            </div>
+          <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0' }}>
+            <button onClick={() => setActiveTab('sections')}
+              style={{ flex: 1, padding: '10px', fontWeight: activeTab === 'sections' ? 700 : 400 }}>
+              Bố cục
+            </button>
+            <button onClick={() => setActiveTab('templates')}
+              style={{ flex: 1, padding: '10px', fontWeight: activeTab === 'templates' ? 700 : 400 }}>
+              Template
+            </button>
+          </div>
+          <div className="sidebar-body">
+            {activeTab === 'sections'
+              ? <SectionOrderPanel />
+              : <TemplatePickerPanel />}
           </div>
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -71,10 +83,10 @@ export default function CVBuilder() {
             >
               <CVTemplate
                 data={data as CvData}
-                order={order}
+                order={order.filter(k => visibility[k] !== false)}
                 style={style}
                 layoutType={layoutType}
-                sideKeys={sideKeys.length > 0 ? sideKeys : undefined}
+                sideKeys={sideKeys.length > 0 ? sideKeys.filter(k => visibility[k] !== false) : undefined}
               />
             </div>
 

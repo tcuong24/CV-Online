@@ -11,9 +11,15 @@ import {
   ExperienceSection,
   SkillsBlock,
   MainSectionBlocks,
-  paginateSections,
+  paginateUnits,
+  RenderUnit,
   getScaledDragStyle,
   PAGE_HEIGHT_PX,
+  ExperienceItem,
+  EducationItem,
+  ProjectItem,
+  AwardItem,
+  LanguageItem,
 } from './CVTemplate';
 
 // ─── Layout: single-column ────────────────────────────────────────────────────
@@ -38,7 +44,7 @@ export function SingleColumnPage({
   ctx,
   scale,
 }: {
-  sections: SingleColSection[];
+  sections: RenderUnit[];
   startIndex: number;
   isFirst: boolean;
   data: CvData;
@@ -104,32 +110,68 @@ export function SingleColumnPage({
             </div>
           </div>
         )}
-        {sections.map(({ key, title, content }, localIdx) => (
-          <Draggable key={key} draggableId={`section-${key}`} index={startIndex + localIdx}>
-            {(dp, snap) => (
-              <div
-                ref={dp.innerRef}
-                {...dp.draggableProps}
-                style={getScaledDragStyle(
-                  { ...dp.draggableProps.style, marginBottom: 24 },
-                  snap.isDragging,
-                  scale,
-                  706, // 794 - 44*2 padding
-                )}
-              >
-                <SectionShell
-                  dragHandleProps={dp.dragHandleProps}
-                  isDragging={snap.isDragging}
-                  accentColor={accentColor}
-                  title={title}
-                  fs={fs}
+        {/* Group units by section for DnD — section-header triggers a new Draggable group */}
+        {(() => {
+          const ADD_LABELS: Record<string, string> = {
+            experiences: 'Thêm kinh nghiệm',
+            education:   'Thêm học vấn',
+            projects:    'Thêm dự án',
+            awards:      'Thêm giải thưởng',
+            languages:   'Thêm ngôn ngữ',
+          };
+          const ADD_DEFAULTS: Record<string, () => void> = {
+            experiences: () => ctx.addEntry('experience', { title: '', company: '', from: '', to: '', location: '', desc: '' }),
+            education:   () => ctx.addEntry('education',  { degree: '', school: '', from: '', to: '', desc: '' }),
+            projects:    () => ctx.addEntry('projects',   { name: '', link: '', tech: '', desc: '' }),
+            awards:      () => ctx.addEntry('awards',     { title: '', year: '', org: '' }),
+            languages:   () => ctx.addEntry('languages',  { lang: 'Ngoại ngữ mới', level: 1 }),
+          };
+
+          const groups: { sectionKey: string; title: string; items: React.ReactNode[] }[] = [];
+          sections.forEach(u => {
+            if (u.kind === 'section-header') {
+              groups.push({ sectionKey: u.sectionKey, title: u.title, items: [] });
+            } else if (groups.length > 0) {
+              groups[groups.length - 1].items.push(u.node);
+            }
+          });
+          return groups.map(({ sectionKey, title, items }, localIdx) => (
+            <Draggable key={sectionKey} draggableId={`section-${sectionKey}`} index={startIndex + localIdx}>
+              {(dp, snap) => (
+                <div
+                  ref={dp.innerRef}
+                  {...dp.draggableProps}
+                  style={getScaledDragStyle(
+                    { ...dp.draggableProps.style, marginBottom: 24 },
+                    snap.isDragging,
+                    scale,
+                    706,
+                  )}
                 >
-                  {content}
-                </SectionShell>
-              </div>
-            )}
-          </Draggable>
-        ))}
+                  <SectionShell
+                    dragHandleProps={dp.dragHandleProps}
+                    isDragging={snap.isDragging}
+                    accentColor={accentColor}
+                    title={title}
+                    fs={fs}
+                  >
+                    <div className="relative group pb-6">
+                      {items}
+                      {ADD_LABELS[sectionKey] && (
+                        <button
+                          onClick={ADD_DEFAULTS[sectionKey]}
+                          className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium hover:bg-blue-100 border border-blue-200"
+                        >
+                          + {ADD_LABELS[sectionKey]}
+                        </button>
+                      )}
+                    </div>
+                  </SectionShell>
+                </div>
+              )}
+            </Draggable>
+          ));
+        })()}
       </div>
     </div>
   );
@@ -158,51 +200,123 @@ export function SingleColumnLayout({
 }) {
   const accentColor = theme.primary;
   const scale = zoom / 100;
+  if (!data?.personal) return null;
 
-  // Build flat list of all sections to render
-  const allSections: SingleColSection[] = [];
-  order.filter((k) => k !== 'personal').forEach((key) => {
-    if (key === 'experiences') {
-      allSections.push({ key, title: 'Kinh nghiệm làm việc', content: <ExperienceSection data={data} ctx={ctx} /> });
-      return;
-    }
-    if (key === 'skills') {
-      allSections.push({ key, title: 'Kỹ năng', content: <SkillsBlock data={data} ctx={ctx} dark={false} /> });
-      return;
-    }
+  // Build flat list of all sections
+  const units: RenderUnit[] = [];
+  order.filter(k => k !== 'personal').forEach(key => {
     const sectionTitles: Record<string, string> = {
+      experiences: 'Kinh nghiệm làm việc',
       education: 'Học vấn',
+      skills: 'Kỹ năng',
       projects: 'Dự án',
       awards: 'Chứng chỉ & Giải thưởng',
       languages: 'Ngoại ngữ',
     };
     const title = sectionTitles[key];
     if (!title) return;
-    allSections.push({ key, title, content: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
+    // Header unit
+    units.push({ kind: 'section-header', sectionKey: key, title });
+    // Item units
+    if (key === 'experiences') {
+      if (data.experience?.length) {
+        data.experience.forEach(e =>
+          units.push({ kind: 'item', sectionKey: key, node: <ExperienceItem entry={e} ctx={ctx} /> })
+        );
+      } else {
+        units.push({ kind: 'item', sectionKey: key, node: <ExperienceSection data={data} ctx={ctx} /> });
+      }
+    } else if (key === 'education') {
+      if (data.education?.length) {
+        data.education.forEach(e =>
+          units.push({ kind: 'item', sectionKey: key, node: <EducationItem entry={e} ctx={ctx} /> })
+        );
+      } else {
+        units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
+      }
+    } else if (key === 'projects') {
+      if (data.projects?.length) {
+        data.projects.forEach(e =>
+          units.push({ kind: 'item', sectionKey: key, node: <ProjectItem entry={e} ctx={ctx} /> })
+        );
+      } else {
+        units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
+      }
+    } else if (key === 'awards') {
+      if (data.awards?.length) {
+        data.awards.forEach(e =>
+          units.push({ kind: 'item', sectionKey: key, node: <AwardItem entry={e} ctx={ctx} /> })
+        );
+      } else {
+        units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
+      }
+    } else if (key === 'languages') {
+      if (data.languages?.length) {
+        data.languages.forEach(l =>
+          units.push({ kind: 'item', sectionKey: key, node: <LanguageItem entry={l} ctx={ctx} /> })
+        );
+      } else {
+        units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
+      }
+    } else if (key === 'skills') {
+      units.push({ kind: 'item', sectionKey: key, node: <SkillsBlock data={data} ctx={ctx} dark={false} /> });
+    } else {
+      units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
+    }
   });
 
-  const sectionKeys = allSections.map((s) => s.key);
+  // sectionKeys for DnD reorder — unique sections only
+  const sectionKeys = [...new Set(units.filter(u => u.kind === 'item').map(u => u.sectionKey))];
+
+  // ── Measurement refs ─────────────────────────────────────────────────
+  const measureRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [pages, setPages] = useState<RenderUnit[][]>([[...units]]);
+  const HEADER_H = 220;
+  const BODY_PAD = 72;
+  const FIRST_AVAIL = PAGE_HEIGHT_PX - HEADER_H - BODY_PAD;
+  const REST_AVAIL = PAGE_HEIGHT_PX - BODY_PAD;
+  useLayoutEffect(() => {
+    const heights = measureRefs.current.map(el => el?.getBoundingClientRect().height ?? 0);
+    if (heights.every(h => h === 0)) return;
+    setPages(paginateUnits(units, heights, FIRST_AVAIL, REST_AVAIL));
+  }, [order.join(','), data]);
 
   return (
-    <>
-      {/* Actual pageless output wrapped in section-level DnD */}
-      <DragDropContext
-        onDragEnd={(result: DropResult) => {
-          if (!result.destination) return;
-          if (result.destination.index === result.source.index) return;
-          const fromKey = sectionKeys[result.source.index];
-          const toKey = sectionKeys[result.destination.index];
-          if (fromKey && toKey) ctx.reorderSection(fromKey, toKey);
-        }}
-      >
-        <Droppable droppableId="sections-main">
-          {(provided) => (
-            <div ref={provided.innerRef} {...provided.droppableProps} className="cv-pages-wrapper">
+    <DragDropContext
+      onDragEnd={(result: DropResult) => {
+        if (!result.destination) return;
+        if (result.destination.index === result.source.index) return;
+        const fromKey = sectionKeys[result.source.index];
+        const toKey = sectionKeys[result.destination.index];
+        if (fromKey && toKey) ctx.reorderSection(fromKey, toKey);
+      }}
+    >
+      {/* ── Hidden measurement container ── */}
+      <div style={{ position: 'absolute', visibility: 'hidden', pointerEvents: 'none', width: 706, fontFamily, fontSize: fs, lineHeight: lh }}>
+        {units.map((u, i) => (
+          <div key={i} ref={el => { measureRefs.current[i] = el; }}>
+            {u.kind === 'section-header'
+              ? <div style={{ fontSize: fs * 0.84, fontWeight: 700, paddingBottom: 5, marginBottom: 12 }}>{u.title}</div>
+              : u.node}
+          </div>
+        ))}
+      </div>
+
+
+      {/* ── Actual paginated output ── */}
+      <Droppable droppableId="sections-main">
+        {(provided) => (
+          <div ref={provided.innerRef} {...provided.droppableProps} className="cv-pages-wrapper">
+            {pages.map((pageUnits, pageIdx) => (
               <SingleColumnPage
-                key="pageless"
-                isFirst={true}
-                startIndex={0}
-                sections={allSections}
+                key={pageIdx}
+                isFirst={pageIdx === 0}
+                startIndex={pages.slice(0, pageIdx).reduce((sum, p) => {
+                  // count unique sections per page for DnD index
+                  const keys = new Set(p.filter(u => u.kind === 'item').map(u => u.sectionKey));
+                  return sum + keys.size;
+                }, 0)}
+                sections={pageUnits}
                 data={data}
                 theme={theme}
                 fontFamily={fontFamily}
@@ -213,11 +327,11 @@ export function SingleColumnLayout({
                 ctx={ctx}
                 scale={scale}
               />
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-    </>
+            ))}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
 }

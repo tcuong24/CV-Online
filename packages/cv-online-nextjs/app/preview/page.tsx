@@ -132,6 +132,7 @@ export default function PreviewPage() {
   const style = useCvEditorStore(s => s.style);
   const layoutType = useCvEditorStore(s => s.layoutType);
   const sideKeys = useCvEditorStore(s => s.sideKeys);
+  const visibility = useCvEditorStore(s => s.visibility);
 
   const [hydrated, setHydrated] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -166,7 +167,7 @@ export default function PreviewPage() {
               if (node.tagName === 'BUTTON') return false;
               if (node.getAttribute('title')?.includes('Kéo')) return false;
               if (node.classList.contains('cursor-pointer') &&
-                  node.classList.contains('group')) return false;
+                node.classList.contains('group')) return false;
             }
             return true;
           },
@@ -240,10 +241,10 @@ export default function PreviewPage() {
         <div className="preview-content preview-readonly" ref={contentRef}>
           <CVTemplate
             data={data as CvData}
-            order={order}
+            order={order.filter(k => visibility[k] !== false)}
             style={style}
             layoutType={layoutType}
-            sideKeys={sideKeys.length > 0 ? sideKeys : undefined}
+            sideKeys={sideKeys.length > 0 ? sideKeys.filter(k => visibility[k] !== false) : undefined}
             zoom={100}
           />
         </div>

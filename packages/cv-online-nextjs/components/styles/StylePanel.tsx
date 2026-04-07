@@ -305,11 +305,11 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
             onClick={onSave}
             disabled={isSaving || !isDirty}
             title={
-              isSaving       ? 'Đang lưu...'
-              : !isDirty     ? lastSavedAt
-                                ? `Đã lưu lúc ${new Date(lastSavedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
-                                : 'Chưa có thay đổi'
-              : 'Lưu CV'
+              isSaving ? 'Đang lưu...'
+                : !isDirty ? lastSavedAt
+                  ? `Đã lưu lúc ${new Date(lastSavedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+                  : 'Chưa có thay đổi'
+                  : 'Lưu CV'
             }
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
@@ -360,21 +360,24 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
         </>
       )}
       <div className="flex gap-2">
-      <Button 
-        onClick={() => undo()} 
-        disabled={pastStates.length === 0}
-        className="px-3! py-1 bg-gray-200 rounded cursor-pointer disabled:opacity-50"
-      >
-        <Undo size={16} className='text-black ' /> 
-      </Button>
-      <Button 
-        onClick={() => redo()} 
-        disabled={futureStates.length === 0}
-        className="px-3! py-1 bg-gray-200 rounded cursor-pointer disabled:opacity-50"
-      >
-         <Redo size={16} className='text-black '/>
-      </Button>
-    </div>
+        <Button
+          onClick={() => undo()}
+          disabled={
+            pastStates.length === 0 ||
+            !(pastStates[pastStates.length - 1] as any)?.data?.personal
+          }
+          className="px-3! py-1 bg-gray-200 rounded cursor-pointer disabled:opacity-50"
+        >
+          <Undo size={16} className='text-black ' />
+        </Button>
+        <Button
+          onClick={() => redo()}
+          disabled={futureStates.length === 0}
+          className="px-3! py-1 bg-gray-200 rounded cursor-pointer disabled:opacity-50"
+        >
+          <Redo size={16} className='text-black ' />
+        </Button>
+      </div>
     </div>
   );
 }

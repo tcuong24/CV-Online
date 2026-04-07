@@ -17,7 +17,8 @@ export const CvLayout: React.FC<CvLayoutProps> = ({ layoutType, columnRatio = "3
     const getSectionsForRegion = (regionFilter: (id: string) => boolean) => {
         return sectionsOrder
             .filter(regionFilter)
-            .map(sectionId => (
+            .filter((sectionId: string) => currentCV?.sectionsVisibility?.[sectionId] !== false)
+            .map((sectionId: string) => (
                 <SectionRenderer key={sectionId} sectionId={sectionId} />
             ));
     };
