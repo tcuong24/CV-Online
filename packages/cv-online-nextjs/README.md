@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎨 CV-Online Frontend (Next.js)
 
-## Getting Started
+Đây là Giao diện Web (Front-end) của dự án **CV-Online**. Nền tảng mang đến trình chỉnh sửa CV linh hoạt, theo phong cách "Pageless", cho phép người dùng kéo thả, điều chỉnh section trực quan mà không bị ngăn cách bởi khổ giấy A4 truyền thống.
 
-First, run the development server:
+## 🌟 Tính năng chính
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Pageless Canvas Editor**: Giao diện liền mạch, tự do thiết kế không gò bó.
+- **Drag & Drop Layouting**: Kéo thả và thay đổi thứ tự các khối thông tin (Học vấn, Kinh nghiệm, Kỹ năng, ...) dễ dàng.
+- **Real-time Preview**: Mọi chỉnh sửa được render ngay lập tức (WYSWYG).
+- **Zustand State Management**: Quản lý state của CV (nội dung, style, layout) cực nhẹ và hiệu quả.
+- **Dynamic Theming**: Hỗ trợ nhiều template layout (ví dụ: Single Column, Sidebar Left).
+- **Responsive System**: Giao diện linh hoạt, tối ưu trên cả desktop lẫn tablet.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠 Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: [Next.js](https://nextjs.org/) (App Router)
+- **UI & Styling**: React, TailwindCSS, Radix UI Primitives (shadcn/ui layout)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Authentication**: [NextAuth.js](https://next-auth.js.org/)
+- **Ngôn ngữ**: TypeScript
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Hướng dẫn chạy (Local)
 
-## Learn More
+1. **Cấu hình môi trường (`.env.local`)**:
+   Bạn cần tạo file `.env.local` tại thư mục này với các thông tin:
+   ```env
+   NEXT_PUBLIC_API_URL="http://localhost:3001/api"
+   NEXTAUTH_SECRET="your-nextauth-secret"
+   NEXTAUTH_URL="http://localhost:3000"
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. **Cài đặt thư viện**:
+   ```bash
+   pnpm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Chạy Môi trường Development**:
+   ```bash
+   pnpm run dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Frontend sẽ chạy tại mạch định là: `http://localhost:3000`.
 
-## Deploy on Vercel
+## 📂 Các thư mục chính
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/`: Các routing pages (App Router) như `/(home)`, `/cvs/create`, `/preview`.
+- `components/`: Nơi chứa các components tái sử dụng (UI, Editor Panel, Layout Templates).
+- `store/`: Thiết lập Zustand store (`useCvEditorStore.ts`) quản lý logic state chuyên sâu của CV.
+- `lib/`: Các tiện ích, API calls, mapper data.
