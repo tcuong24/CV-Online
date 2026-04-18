@@ -8,6 +8,8 @@ import {
   Roboto,
   Playfair_Display,
   Roboto_Mono,
+  Noto_Serif,
+  Be_Vietnam_Pro,
 } from "next/font/google";
 import "./globals.css";
 import "./tiptap.css";
@@ -67,6 +69,21 @@ const robotoMono = Roboto_Mono({
   variable: "--font-roboto-mono",
   weight: ["400", "500"],
 });
+
+const notoSerif = Noto_Serif({
+  subsets: ["latin", "vietnamese"],
+  display: "swap",
+  variable: "--font-noto-serif",
+  weight: ["400", "700", "900"],
+});
+
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ["latin", "vietnamese"],
+  display: "swap",
+  variable: "--font-be-vietnam-pro",
+  weight: ["300", "400", "600", "700"],
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -75,7 +92,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${merriweather.variable} ${inter.variable} ${poppins.variable} ${roboto.variable} ${playfairDisplay.variable} ${robotoMono.variable} ${geistMono.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${merriweather.variable} ${inter.variable} ${poppins.variable} ${roboto.variable} ${playfairDisplay.variable} ${robotoMono.variable} ${geistMono.variable} ${notoSerif.variable} ${beVietnamPro.variable} antialiased`}
       >
         <Providers>
           {children}

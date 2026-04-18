@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { MdDragIndicator } from 'react-icons/md';
+import { Palette } from 'lucide-react';
 import { LH_MAP } from '@/constants/cvEditor';
 import { CvData, SectionLayoutConfig, SkillEntry, StyleConfig, ExperienceEntry, EducationEntry, ProjectEntry, AwardEntry, LanguageEntry } from '@/types/cvEditor';
 import { resolveFontFamily, resolveTheme } from '@/lib/mappers/templateMapper';
@@ -69,6 +70,107 @@ export interface RenderCtx {
   reorderSection: (fromKey: string, toKey: string) => void;
   reorderSideKey: (fromKey: string, toKey: string) => void;
   moveSectionToZone: (key: string, toSidebar: boolean) => void;
+  patchSectionLayout: (key: string, patch: Record<string, unknown>) => void;
+}
+
+// ─── StylePicker — Palette icon + hover dropdown to switch section display style ──
+
+export function StylePicker<T extends string>({
+  options,
+  value,
+  onChange,
+  fs,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  fs: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  React.useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
+        title="Đổi kiểu hiển thị"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '3px',
+          border: '1px solid #d1d5db',
+          borderRadius: 6,
+          cursor: 'pointer',
+          background: open ? '#eff6ff' : 'transparent',
+          color: open ? '#3b82f6' : '#9ca3af',
+          transition: 'background 0.12s, color 0.12s',
+          lineHeight: 0,
+        }}
+      >
+        <Palette size={Math.round(fs * 0.9)} />
+      </button>
+      {open && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            right: 0,
+            marginTop: 4,
+            background: '#fff',
+            border: '1px solid #e5e7eb',
+            borderRadius: 8,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+            padding: '4px',
+            zIndex: 50,
+            minWidth: 100,
+          }}
+        >
+          {options.map(opt => (
+            <button
+              key={opt.value}
+              onClick={e => { e.stopPropagation(); onChange(opt.value); setOpen(false); }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                width: '100%',
+                padding: '5px 10px',
+                fontSize: fs * 0.8,
+                fontWeight: value === opt.value ? 700 : 400,
+                background: value === opt.value ? '#eff6ff' : 'transparent',
+                color: value === opt.value ? '#3b82f6' : '#374151',
+                border: 'none',
+                borderRadius: 6,
+                cursor: 'pointer',
+                textAlign: 'left' as const,
+                fontFamily: 'inherit',
+                transition: 'background 0.1s',
+              }}
+            >
+              {value === opt.value && <span style={{ fontSize: fs * 0.75 }}>✓</span>}
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** @deprecated use StylePicker */
+export function StyleSwitcher<T extends string>(props: Parameters<typeof StylePicker<T>>[0]) {
+  return <StylePicker {...props} />;
 }
 
 // ─── SectionShell — hover outline + drag handle for section-level DnD ────────
@@ -81,6 +183,8 @@ export function SectionShell({
   title,
   fs,
   dark = false,
+  addButton,
+  styleControls,
 }: {
   children: React.ReactNode;
   dragHandleProps?: React.HTMLAttributes<HTMLElement> | null;
@@ -89,6 +193,8 @@ export function SectionShell({
   title: string;
   fs: number;
   dark?: boolean;
+  addButton?: React.ReactNode;
+  styleControls?: React.ReactNode;
 }) {
   const [hovered, setHovered] = useState(false);
   const titleColor = dark ? 'rgba(255,255,255,0.9)' : accentColor;
@@ -109,45 +215,64 @@ export function SectionShell({
         opacity: isDragging ? 0.85 : 1,
       }}
     >
-      {/* Section title row with drag handle */}
+      {/* Section title row: [drag][title] ←→ [style picker][+ add] */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 4,
+          justifyContent: 'space-between',
           borderBottom: `2px solid ${borderColor}`,
           paddingBottom: 5,
           marginBottom: 12,
         }}
       >
-        <span
-          {...(dragHandleProps ?? {})}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'grab',
-            color: titleColor,
-            opacity: hovered ? 0.55 : 0,
-            transition: 'opacity 0.12s',
-            flexShrink: 0,
-            marginLeft: -20,
-            userSelect: 'none',
-          }}
-          title="Kéo để sắp xếp section"
-        >
-          <MdDragIndicator size={14} />
-        </span>
-        <span
-          style={{
-            fontSize: fs * 0.84,
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            color: titleColor,
-          }}
-        >
-          {title}
-        </span>
+        {/* Left: drag handle + title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span
+            {...(dragHandleProps ?? {})}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'grab',
+              color: titleColor,
+              opacity: hovered ? 0.55 : 0,
+              transition: 'opacity 0.12s',
+              flexShrink: 0,
+              marginLeft: -20,
+              userSelect: 'none',
+            }}
+            title="Kéo để sắp xếp section"
+          >
+            <MdDragIndicator size={14} />
+          </span>
+          <span
+            style={{
+              fontSize: fs * 0.84,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              color: titleColor,
+            }}
+          >
+            {title}
+          </span>
+        </div>
+        {/* Right: style picker + add button — visible only on hover */}
+        {(styleControls || addButton) && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              opacity: hovered ? 1 : 0,
+              transition: 'opacity 0.15s',
+              pointerEvents: hovered ? 'auto' : 'none',
+            }}
+          >
+            {styleControls}
+            {addButton}
+          </div>
+        )}
       </div>
       {children}
     </div>
@@ -190,28 +315,9 @@ export function ExperienceSection({
   const expStyle = ctx.sectionLayout.experiences?.style ?? 'timeline';
   const { fs, lh, accentColor } = ctx;
 
-  if (!data.experience?.length) {
+  if (!data.experiences?.length) {
     return (
-      <div className="flex flex-col relative group pb-6 cursor-pointer" onClick={() => ctx.addEntry('experience', { title: '', company: '', from: '', to: '', location: '', desc: '' })}>
-        <div className="opacity-50 pointer-events-none select-none">
-          {expStyle === 'timeline' ? (
-            <TimelineEntry ctx={ctx}>
-              <div style={{ fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace" }}>Thời gian</div>
-              <div style={{ fontWeight: 700, color: '#1c1917' }}>Chức danh</div>
-              <div style={{ fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3 }}>Công ty · Địa điểm</div>
-              <div style={{ fontSize: fs * 0.88, color: '#57534e', lineHeight: lh }}>Mô tả công việc</div>
-            </TimelineEntry>
-          ) : (
-            <div style={{ marginBottom: 13 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 2 }}>
-                <span style={{ fontWeight: 700, color: '#1c1917' }}>Chức danh</span>
-                <span style={{ fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace" }}>Thời gian</span>
-              </div>
-              <div style={{ fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3 }}>Công ty · Địa điểm</div>
-              <div style={{ fontSize: fs * 0.9, color: '#57534e', lineHeight: lh }}>Mô tả công việc</div>
-            </div>
-          )}
-        </div>
+      <div className="flex flex-col relative h-6 group pb-6 cursor-pointer" onClick={() => ctx.addEntry('experiences', { title: '', company: '', from: '', to: '', location: '', desc: '' })}>
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <button className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium border border-blue-200 pointer-events-none shadow-sm">+ Thêm kinh nghiệm</button>
         </div>
@@ -222,12 +328,12 @@ export function ExperienceSection({
   return (
     <DragDropContext onDragEnd={(result: DropResult) => {
       if (!result.destination || result.destination.index === result.source.index) return;
-      ctx.reorderEntry('experience', result.source.index, result.destination.index);
+      ctx.reorderEntry('experiences', result.source.index, result.destination.index);
     }}>
-      <Droppable droppableId="experience">
+      <Droppable droppableId="experiences">
         {(provided) => (
           <div ref={provided.innerRef} {...provided.droppableProps} className="flex flex-col relative group pb-6">
-            {data.experience.map((e, index) => (
+            {data.experiences.map((e, index) => (
               <Draggable key={e.id} draggableId={e.id} index={index}>
                 {(dragProvided, snapshot) => (
                   <div
@@ -241,25 +347,25 @@ export function ExperienceSection({
                         <div className="flex-1">
                           <TimelineEntry ctx={ctx}>
                             <div style={{ fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace", display: 'flex', gap: 4 }}>
-                              <EditableText value={e.from} onChange={(v) => ctx.updateEntry('experience', e.id, { from: v })} placeholder="Bắt đầu" />
+                              <EditableText value={e.from} onChange={(v) => ctx.updateEntry('experiences', e.id, { from: v })} placeholder="Bắt đầu" />
                               <span>–</span>
-                              <EditableText value={e.to} onChange={(v) => ctx.updateEntry('experience', e.id, { to: v })} placeholder="Kết thúc" />
+                              <EditableText value={e.to} onChange={(v) => ctx.updateEntry('experiences', e.id, { to: v })} placeholder="Kết thúc" />
                             </div>
                             <div style={{ fontWeight: 700, color: '#1c1917' }}>
-                              <EditableText value={e.title} onChange={(v) => ctx.updateEntry('experience', e.id, { title: v })} placeholder="Chức danh" />
+                              <EditableText value={e.title} onChange={(v) => ctx.updateEntry('experiences', e.id, { title: v })} placeholder="Chức danh" />
                             </div>
                             <div style={{ fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3, display: 'flex', gap: 4 }}>
-                              <EditableText value={e.company} onChange={(v) => ctx.updateEntry('experience', e.id, { company: v })} placeholder="Công ty" />
+                              <EditableText value={e.company} onChange={(v) => ctx.updateEntry('experiences', e.id, { company: v })} placeholder="Công ty" />
                               <span>·</span>
-                              <EditableText value={e.location} onChange={(v) => ctx.updateEntry('experience', e.id, { location: v })} placeholder="Địa điểm" />
+                              <EditableText value={e.location} onChange={(v) => ctx.updateEntry('experiences', e.id, { location: v })} placeholder="Địa điểm" />
                             </div>
                             <div style={{ fontSize: fs * 0.88, color: '#57534e', lineHeight: lh }}>
-                              <EditableText value={e.desc} onChange={(v) => ctx.updateEntry('experience', e.id, { desc: v })} placeholder="Mô tả công việc" multiline />
+                              <EditableText value={e.desc} onChange={(v) => ctx.updateEntry('experiences', e.id, { desc: v })} placeholder="Mô tả công việc" multiline />
                             </div>
                           </TimelineEntry>
                         </div>
                         <button
-                          onClick={() => ctx.removeEntry('experience', e.id)}
+                          onClick={() => ctx.removeEntry('experiences', e.id)}
                           className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded"
                           title="Xóa kinh nghiệm này"
                         >✕</button>
@@ -270,24 +376,24 @@ export function ExperienceSection({
                         <div className="flex-1">
                           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 2 }}>
                             <span style={{ fontWeight: 700, color: '#1c1917' }}>
-                              <EditableText value={e.title} onChange={(v) => ctx.updateEntry('experience', e.id, { title: v })} placeholder="Chức danh" />
+                              <EditableText value={e.title} onChange={(v) => ctx.updateEntry('experiences', e.id, { title: v })} placeholder="Chức danh" />
                             </span>
                             <span style={{ fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace", whiteSpace: 'nowrap', display: 'flex', gap: 4 }}>
-                              <EditableText value={e.from} onChange={(v) => ctx.updateEntry('experience', e.id, { from: v })} placeholder="Bắt đầu" />
+                              <EditableText value={e.from} onChange={(v) => ctx.updateEntry('experiences', e.id, { from: v })} placeholder="Bắt đầu" />
                               <span>–</span>
-                              <EditableText value={e.to} onChange={(v) => ctx.updateEntry('experience', e.id, { to: v })} placeholder="Kết thúc" />
+                              <EditableText value={e.to} onChange={(v) => ctx.updateEntry('experiences', e.id, { to: v })} placeholder="Kết thúc" />
                             </span>
                           </div>
                           <div style={{ fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3, display: 'flex', gap: 4 }}>
-                            <EditableText value={e.company} onChange={(v) => ctx.updateEntry('experience', e.id, { company: v })} placeholder="Công ty" />
+                            <EditableText value={e.company} onChange={(v) => ctx.updateEntry('experiences', e.id, { company: v })} placeholder="Công ty" />
                             <span>·</span>
-                            <EditableText value={e.location} onChange={(v) => ctx.updateEntry('experience', e.id, { location: v })} placeholder="Địa điểm" />
+                            <EditableText value={e.location} onChange={(v) => ctx.updateEntry('experiences', e.id, { location: v })} placeholder="Địa điểm" />
                           </div>
                           <div style={{ fontSize: fs * 0.9, color: '#57534e', lineHeight: lh }}>
-                            <EditableText value={e.desc} onChange={(v) => ctx.updateEntry('experience', e.id, { desc: v })} placeholder="Mô tả công việc" multiline />
+                            <EditableText value={e.desc} onChange={(v) => ctx.updateEntry('experiences', e.id, { desc: v })} placeholder="Mô tả công việc" multiline />
                           </div>
                         </div>
-                        <button onClick={() => ctx.removeEntry('experience', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+                        <button onClick={() => ctx.removeEntry('experiences', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
                       </div>
                     )}
                   </div>
@@ -295,7 +401,6 @@ export function ExperienceSection({
               </Draggable>
             ))}
             {provided.placeholder}
-            <button onClick={() => ctx.addEntry('experience', { title: '', company: '', from: '', to: '', location: '', desc: '' })} className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium hover:bg-blue-100 border border-blue-200">+ Thêm kinh nghiệm</button>
           </div>
         )}
       </Droppable>
@@ -320,51 +425,6 @@ export function SkillsBlock({
   const fillBg = dark ? 'rgba(255,255,255,0.8)' : accentColor;
   const newSkill = () => ({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' });
 
-  if (!data.skills?.length) {
-    return (
-      <div className="flex flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addSkill(newSkill())}>
-        <div className="opacity-50 pointer-events-none select-none">
-          {skillStyle === 'bars' ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {[1, 2].map((i) => (
-                <div key={i} className="pr-6">
-                  <div style={{ fontSize: fs * 0.9, color: textColor, marginBottom: 3 }}>Kỹ năng {i}</div>
-                  <div style={{ height: dark ? 3 : 4, background: trackBg, borderRadius: 2 }}>
-                    <div style={{ width: `${80 - i * 15}%`, height: '100%', background: fillBg, borderRadius: 2 }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : skillStyle === 'dots' ? (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {[1, 2, 3].map((i) => (
-                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs * 0.88, color: textColor }} className="pr-5">
-                  <span style={{ width: dark ? 5 : 6, height: dark ? 5 : 6, borderRadius: '50%', background: fillBg, flexShrink: 0 }} /> Kỹ năng {i}
-                </span>
-              ))}
-            </div>
-          ) : dark ? (
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {[1, 2, 3].map((i) => (
-                <div key={i} style={{ fontSize: fs * 0.84, color: textColor, marginBottom: 5 }}>Kỹ năng {i}</div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {[1, 2, 3].map((i) => (
-                <span key={i} style={{ padding: '3px 10px', border: `1px solid ${accentColor}40`, borderRadius: 99, fontSize: fs * 0.88, color: accentColor }} className="inline-flex items-center">
-                  Kỹ năng {i}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <button className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium border border-blue-200 pointer-events-none shadow-sm">+ Thêm kỹ năng</button>
-        </div>
-      </div>
-    );
-  }
 
   if (skillStyle === 'bars') {
     return (
@@ -380,7 +440,7 @@ export function SkillsBlock({
             <button onClick={() => ctx.removeSkill(s.id)} className="absolute top-1/2 -translate-y-1/2 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
           </div>
         ))}
-        <button onClick={() => ctx.addSkill(newSkill())} className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium hover:bg-blue-100 border border-blue-200">+ Thêm kỹ năng</button>
+        
       </div>
     );
   }
@@ -395,7 +455,7 @@ export function SkillsBlock({
             <button onClick={() => ctx.removeSkill(s.id)} className="absolute top-1/2 -translate-y-1/2 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
           </span>
         ))}
-        <button onClick={() => ctx.addSkill(newSkill())} className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium hover:bg-blue-100 border border-blue-200">+ Thêm kỹ năng</button>
+        
       </div>
     );
   }
@@ -410,7 +470,6 @@ export function SkillsBlock({
             <button onClick={() => ctx.removeSkill(s.id)} className="absolute top-1/2 -translate-y-1/2 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
           </div>
         ))}
-        <button onClick={() => ctx.addSkill(newSkill())} className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium hover:bg-blue-100 border border-blue-200">+ Thêm kỹ năng</button>
       </div>
     );
   }
@@ -432,7 +491,7 @@ export function SkillsBlock({
           <button onClick={() => ctx.removeSkill(s.id)} className="absolute right-1 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
         </span>
       ))}
-      <button onClick={() => ctx.addSkill(newSkill())} className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium hover:bg-blue-100 border border-blue-200">+ Thêm kỹ năng</button>
+    
     </div>
   );
 }
@@ -456,15 +515,7 @@ export function MainSectionBlocks({
   if (sectionKey === 'education') {
     if (!data.education?.length) {
       return (
-        <div className="flex flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' })}>
-          <div className="opacity-50 pointer-events-none select-none" style={entryStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 2 }}>
-              <span style={titleStyle}>Chuyên ngành</span>
-              <span style={dateStyle}>Thời gian</span>
-            </div>
-            <div style={subStyle}>Trường</div>
-            <div style={descStyle}>Chú thích</div>
-          </div>
+        <div className="flex h-6 flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' })}>
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <button className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium border border-blue-200 pointer-events-none shadow-sm">+ Thêm học vấn</button>
           </div>
@@ -504,7 +555,6 @@ export function MainSectionBlocks({
                 </Draggable>
               ))}
               {provided.placeholder}
-              <button onClick={() => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' })} className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium hover:bg-blue-100 border border-blue-200">+ Thêm học vấn</button>
             </div>
           )}
         </Droppable>
@@ -515,15 +565,7 @@ export function MainSectionBlocks({
   if (sectionKey === 'projects') {
     if (!data.projects?.length) {
       return (
-        <div className="flex flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' })}>
-          <div className="opacity-50 pointer-events-none select-none" style={entryStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 2 }}>
-              <span style={titleStyle}>Tên dự án</span>
-              <span style={dateStyle}>link.example.com</span>
-            </div>
-            <div style={subStyle}>Công nghệ sử dụng</div>
-            <div style={descStyle}>Mô tả dự án</div>
-          </div>
+        <div className="flex h-6 flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' })}>         
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <button className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium border border-blue-200 pointer-events-none shadow-sm">+ Thêm dự án</button>
           </div>
@@ -559,7 +601,6 @@ export function MainSectionBlocks({
                 </Draggable>
               ))}
               {provided.placeholder}
-              <button onClick={() => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' })} className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium hover:bg-blue-100 border border-blue-200">+ Thêm dự án</button>
             </div>
           )}
         </Droppable>
@@ -570,14 +611,7 @@ export function MainSectionBlocks({
   if (sectionKey === 'awards') {
     if (!data.awards?.length) {
       return (
-        <div className="flex flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('awards', { title: '', year: '', org: '' })}>
-          <div className="opacity-50 pointer-events-none select-none" style={entryStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-              <span style={titleStyle}>Tên chứng chỉ / Giải thưởng</span>
-              <span style={dateStyle}>Năm</span>
-            </div>
-            <div style={subStyle}>Tổ chức cấp</div>
-          </div>
+        <div className="flex h-6 flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('awards', { title: '', year: '', org: '' })}>
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <button className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium border border-blue-200 pointer-events-none shadow-sm">+ Thêm giải thưởng</button>
           </div>
@@ -612,7 +646,6 @@ export function MainSectionBlocks({
                 </Draggable>
               ))}
               {provided.placeholder}
-              <button onClick={() => ctx.addEntry('awards', { title: '', year: '', org: '' })} className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium hover:bg-blue-100 border border-blue-200">+ Thêm giải thưởng</button>
             </div>
           )}
         </Droppable>
@@ -623,27 +656,7 @@ export function MainSectionBlocks({
   if (sectionKey === 'languages') {
     if (!data.languages?.length) {
       return (
-        <div className="flex flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 })}>
-          <div className="opacity-50 pointer-events-none select-none">
-            {[{ lang: 'Tiếng Việt', level: 5 }, { lang: 'Tiếng Anh', level: 3 }].map((l) => (
-              <div key={l.lang} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
-                <span style={{ fontSize: fs * 0.95, fontWeight: 500 }}>{l.lang}</span>
-                <div style={{ display: 'flex', gap: 4 }}>
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width: 18,
-                        height: 4,
-                        borderRadius: 2,
-                        background: l.level >= i ? accentColor : '#e7e5e4',
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="flex h-6 flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 })}>
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <button className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium border border-blue-200 pointer-events-none shadow-sm">+ Thêm ngôn ngữ</button>
           </div>
@@ -688,7 +701,6 @@ export function MainSectionBlocks({
                 </Draggable>
               ))}
               {provided.placeholder}
-              <button onClick={() => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 })} className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium hover:bg-blue-100 border border-blue-200">+ Thêm ngôn ngữ</button>
             </div>
           )}
         </Droppable>
@@ -704,7 +716,7 @@ export function MainSectionBlocks({
 
 export function ExperienceItem({ entry: e, ctx }: { entry: ExperienceEntry; ctx: RenderCtx }) {
   const { fs, lh, accentColor } = ctx;
-  const expStyle  = ctx.sectionLayout.experiences?.style ?? 'timeline';
+  const expStyle = ctx.sectionLayout.experiences?.style ?? 'timeline';
   const monoStyle = { fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace" };
   const descStyle = { fontSize: fs * 0.88, color: '#57534e', lineHeight: lh };
   if (expStyle === 'timeline') {
@@ -712,17 +724,17 @@ export function ExperienceItem({ entry: e, ctx }: { entry: ExperienceEntry; ctx:
       <div className="group/item relative flex" style={{ marginBottom: 13 }}>
         <div style={{ paddingLeft: 12, borderLeft: `2px solid ${accentColor}30`, flex: 1 }}>
           <div style={{ ...monoStyle, display: 'flex', gap: 4, marginBottom: 2 }}>
-            <EditableText value={e.from} onChange={v => ctx.updateEntry('experience', e.id, { from: v })} placeholder="Bắt đầu" />–
-            <EditableText value={e.to}   onChange={v => ctx.updateEntry('experience', e.id, { to: v })}   placeholder="Kết thúc" />
+            <EditableText value={e.from} onChange={v => ctx.updateEntry('experiences', e.id, { from: v })} placeholder="Bắt đầu" />–
+            <EditableText value={e.to} onChange={v => ctx.updateEntry('experiences', e.id, { to: v })} placeholder="Kết thúc" />
           </div>
-          <div style={{ fontWeight: 700, color: '#1c1917' }}><EditableText value={e.title} onChange={v => ctx.updateEntry('experience', e.id, { title: v })} placeholder="Chức danh" /></div>
+          <div style={{ fontWeight: 700, color: '#1c1917' }}><EditableText value={e.title} onChange={v => ctx.updateEntry('experiences', e.id, { title: v })} placeholder="Chức danh" /></div>
           <div style={{ fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3, display: 'flex', gap: 4 }}>
-            <EditableText value={e.company}  onChange={v => ctx.updateEntry('experience', e.id, { company: v })}  placeholder="Công ty" />·
-            <EditableText value={e.location} onChange={v => ctx.updateEntry('experience', e.id, { location: v })} placeholder="Địa điểm" />
+            <EditableText value={e.company} onChange={v => ctx.updateEntry('experiences', e.id, { company: v })} placeholder="Công ty" />·
+            <EditableText value={e.location} onChange={v => ctx.updateEntry('experiences', e.id, { location: v })} placeholder="Địa điểm" />
           </div>
-          <div style={descStyle}><EditableText value={e.desc} onChange={v => ctx.updateEntry('experience', e.id, { desc: v })} placeholder="Mô tả công việc" multiline /></div>
+          <div style={descStyle}><EditableText value={e.desc} onChange={v => ctx.updateEntry('experiences', e.id, { desc: v })} placeholder="Mô tả công việc" multiline /></div>
         </div>
-        <button onClick={() => ctx.removeEntry('experience', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+        <button onClick={() => ctx.removeEntry('experiences', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
       </div>
     );
   }
@@ -730,19 +742,19 @@ export function ExperienceItem({ entry: e, ctx }: { entry: ExperienceEntry; ctx:
     <div style={{ marginBottom: 13 }} className="group/item relative flex">
       <div className="flex-1">
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 2 }}>
-          <span style={{ fontWeight: 700, color: '#1c1917' }}><EditableText value={e.title} onChange={v => ctx.updateEntry('experience', e.id, { title: v })} placeholder="Chức danh" /></span>
+          <span style={{ fontWeight: 700, color: '#1c1917' }}><EditableText value={e.title} onChange={v => ctx.updateEntry('experiences', e.id, { title: v })} placeholder="Chức danh" /></span>
           <span style={{ ...monoStyle, display: 'flex', gap: 4 }}>
-            <EditableText value={e.from} onChange={v => ctx.updateEntry('experience', e.id, { from: v })} placeholder="Bắt đầu" />–
-            <EditableText value={e.to}   onChange={v => ctx.updateEntry('experience', e.id, { to: v })}   placeholder="Kết thúc" />
+            <EditableText value={e.from} onChange={v => ctx.updateEntry('experiences', e.id, { from: v })} placeholder="Bắt đầu" />–
+            <EditableText value={e.to} onChange={v => ctx.updateEntry('experiences', e.id, { to: v })} placeholder="Kết thúc" />
           </span>
         </div>
         <div style={{ fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3, display: 'flex', gap: 4 }}>
-          <EditableText value={e.company}  onChange={v => ctx.updateEntry('experience', e.id, { company: v })}  placeholder="Công ty" />·
-          <EditableText value={e.location} onChange={v => ctx.updateEntry('experience', e.id, { location: v })} placeholder="Địa điểm" />
+          <EditableText value={e.company} onChange={v => ctx.updateEntry('experiences', e.id, { company: v })} placeholder="Công ty" />·
+          <EditableText value={e.location} onChange={v => ctx.updateEntry('experiences', e.id, { location: v })} placeholder="Địa điểm" />
         </div>
-        <div style={descStyle}><EditableText value={e.desc} onChange={v => ctx.updateEntry('experience', e.id, { desc: v })} placeholder="Mô tả công việc" multiline /></div>
+        <div style={descStyle}><EditableText value={e.desc} onChange={v => ctx.updateEntry('experiences', e.id, { desc: v })} placeholder="Mô tả công việc" multiline /></div>
       </div>
-      <button onClick={() => ctx.removeEntry('experience', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+      <button onClick={() => ctx.removeEntry('experiences', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
     </div>
   );
 }
@@ -750,9 +762,9 @@ export function ExperienceItem({ entry: e, ctx }: { entry: ExperienceEntry; ctx:
 export function EducationItem({ entry: e, ctx }: { entry: EducationEntry; ctx: RenderCtx }) {
   const { fs, lh } = ctx;
   const titleStyle = { fontSize: fs * 1.05, fontWeight: 700, color: '#1c1917' };
-  const subStyle   = { fontSize: fs * 0.9, color: '#57534e', fontStyle: 'italic' as const, marginBottom: 3 };
-  const descStyle  = { fontSize: fs * 0.9, color: '#57534e', lineHeight: lh };
-  const dateStyle  = { fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace", whiteSpace: 'nowrap' as const };
+  const subStyle = { fontSize: fs * 0.9, color: '#57534e', fontStyle: 'italic' as const, marginBottom: 3 };
+  const descStyle = { fontSize: fs * 0.9, color: '#57534e', lineHeight: lh };
+  const dateStyle = { fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace", whiteSpace: 'nowrap' as const };
   return (
     <div style={{ marginBottom: 14 }} className="group/item relative flex">
       <div className="flex-1">
@@ -760,11 +772,11 @@ export function EducationItem({ entry: e, ctx }: { entry: EducationEntry; ctx: R
           <span style={titleStyle}><EditableText value={e.degree} onChange={v => ctx.updateEntry('education', e.id, { degree: v })} placeholder="Chuyên ngành" /></span>
           <span style={dateStyle} className="flex gap-1">
             <EditableText value={e.from} onChange={v => ctx.updateEntry('education', e.id, { from: v })} placeholder="Bắt đầu" />–
-            <EditableText value={e.to}   onChange={v => ctx.updateEntry('education', e.id, { to: v })}   placeholder="Kết thúc" />
+            <EditableText value={e.to} onChange={v => ctx.updateEntry('education', e.id, { to: v })} placeholder="Kết thúc" />
           </span>
         </div>
         <div style={subStyle}><EditableText value={e.school} onChange={v => ctx.updateEntry('education', e.id, { school: v })} placeholder="Trường" /></div>
-        <div style={descStyle}><EditableText value={e.desc}   onChange={v => ctx.updateEntry('education', e.id, { desc: v })}  placeholder="Mô tả" multiline /></div>
+        <div style={descStyle}><EditableText value={e.desc} onChange={v => ctx.updateEntry('education', e.id, { desc: v })} placeholder="Mô tả" multiline /></div>
       </div>
       <button onClick={() => ctx.removeEntry('education', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
     </div>
@@ -774,15 +786,15 @@ export function EducationItem({ entry: e, ctx }: { entry: EducationEntry; ctx: R
 export function ProjectItem({ entry: e, ctx }: { entry: ProjectEntry; ctx: RenderCtx }) {
   const { fs, lh, accentColor } = ctx;
   const titleStyle = { fontSize: fs * 1.05, fontWeight: 700, color: '#1c1917' };
-  const subStyle   = { fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3 };
-  const descStyle  = { fontSize: fs * 0.9, color: '#57534e', lineHeight: lh };
-  const dateStyle  = { fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace", whiteSpace: 'nowrap' as const };
+  const subStyle = { fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3 };
+  const descStyle = { fontSize: fs * 0.9, color: '#57534e', lineHeight: lh };
+  const dateStyle = { fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace", whiteSpace: 'nowrap' as const };
   return (
     <div style={{ marginBottom: 14 }} className="group/item relative flex">
       <div className="flex-1">
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 2 }}>
           <span style={titleStyle}><EditableText value={e.name} onChange={v => ctx.updateEntry('projects', e.id, { name: v })} placeholder="Tên dự án" /></span>
-          <span style={dateStyle}><EditableText value={e.link}  onChange={v => ctx.updateEntry('projects', e.id, { link: v })} placeholder="Link dự án" /></span>
+          <span style={dateStyle}><EditableText value={e.link} onChange={v => ctx.updateEntry('projects', e.id, { link: v })} placeholder="Link dự án" /></span>
         </div>
         <div style={subStyle}><EditableText value={e.tech} onChange={v => ctx.updateEntry('projects', e.id, { tech: v })} placeholder="Công nghệ sử dụng" /></div>
         <div style={descStyle}><EditableText value={e.desc} onChange={v => ctx.updateEntry('projects', e.id, { desc: v })} placeholder="Mô tả dự án" multiline /></div>
@@ -795,14 +807,14 @@ export function ProjectItem({ entry: e, ctx }: { entry: ProjectEntry; ctx: Rende
 export function AwardItem({ entry: e, ctx }: { entry: AwardEntry; ctx: RenderCtx }) {
   const { fs } = ctx;
   const titleStyle = { fontSize: fs * 1.05, fontWeight: 700, color: '#1c1917' };
-  const subStyle   = { fontSize: fs * 0.9, color: '#57534e', fontStyle: 'italic' as const };
-  const dateStyle  = { fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace", whiteSpace: 'nowrap' as const };
+  const subStyle = { fontSize: fs * 0.9, color: '#57534e', fontStyle: 'italic' as const };
+  const dateStyle = { fontSize: fs * 0.82, color: '#a8a29e', fontFamily: "'DM Mono', monospace", whiteSpace: 'nowrap' as const };
   return (
     <div style={{ marginBottom: 14 }} className="group/item relative flex">
       <div className="flex-1">
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
           <span style={titleStyle}><EditableText value={e.title} onChange={v => ctx.updateEntry('awards', e.id, { title: v })} placeholder="Tên giải thưởng" /></span>
-          <span style={dateStyle}><EditableText  value={e.year}  onChange={v => ctx.updateEntry('awards', e.id, { year: v })}  placeholder="Năm" /></span>
+          <span style={dateStyle}><EditableText value={e.year} onChange={v => ctx.updateEntry('awards', e.id, { year: v })} placeholder="Năm" /></span>
         </div>
         <div style={subStyle}><EditableText value={e.org} onChange={v => ctx.updateEntry('awards', e.id, { org: v })} placeholder="Tổ chức cấp" /></div>
       </div>
@@ -819,7 +831,7 @@ export function LanguageItem({ entry: l, ctx }: { entry: LanguageEntry; ctx: Ren
         <EditableText value={l.lang} onChange={v => ctx.updateEntry('languages', l.id, { lang: v })} placeholder="Ngoại ngữ" />
       </span>
       <div style={{ display: 'flex', gap: 4 }}>
-        {[1,2,3,4,5].map(i => (
+        {[1, 2, 3, 4, 5].map(i => (
           <div key={i} onClick={() => ctx.updateEntry('languages', l.id, { level: i })}
             style={{ width: 18, height: 4, borderRadius: 2, background: l.level >= i ? accentColor : '#e7e5e4', cursor: 'pointer' }}
           />
@@ -867,7 +879,7 @@ export function paginateSections(
 
 export type RenderUnit =
   | { kind: 'section-header'; sectionKey: string; title: string }
-  | { kind: 'item';           sectionKey: string; node: React.ReactNode };
+  | { kind: 'item'; sectionKey: string; node: React.ReactNode };
 
 /**
  * Item-level paginator — cho phép split section theo từng item.
@@ -949,13 +961,19 @@ export function CVTemplate({
   style,
   layoutType = 'single-column',
   sideKeys = DEFAULT_SIDE_KEYS,
-  sectionLayout = {},
+  sectionLayout: sectionLayoutProp = {},
   zoom = 100,
 }: CVTemplateProps) {
   const theme = resolveTheme(style);
   const fontFamily = resolveFontFamily(style);
   const lh = LH_MAP[style.lineHeight] || 1.65;
   const fs = style.fontSize || 13;
+
+  // Read sectionLayout from store so patchSectionLayout updates are reactive.
+  // Fall back to the prop (e.g. read-only preview) when no store value exists.
+  const sectionLayoutStore = useCvEditorStore(s => s.sectionLayout);
+  const sectionLayout = Object.keys(sectionLayoutStore).length > 0 ? sectionLayoutStore : sectionLayoutProp;
+
   const personalStyle = sectionLayout.personal?.style ?? 'default';
   const align = personalStyle === 'centered' ? 'center' : (style.nameAlign || 'left');
   const accentColor = theme.primary;
@@ -972,12 +990,13 @@ export function CVTemplate({
   const reorderSection = useCvEditorStore(s => s.reorderSection);
   const reorderSideKey = useCvEditorStore(s => s.reorderSideKey);
   const moveSectionToZone = useCvEditorStore(s => s.moveSectionToZone);
+  const patchSectionLayout = useCvEditorStore(s => s.patchSectionLayout);
 
   const ctx: RenderCtx = {
     fs, lh, accentColor, sectionLayout,
     updatePersonalInfo, updateEntry, addEntry, removeEntry,
     addSkill, removeSkill, updateSkill, reorderEntry, reorderSkills,
-    reorderSection, reorderSideKey, moveSectionToZone,
+    reorderSection, reorderSideKey, moveSectionToZone, patchSectionLayout,
   };
 
   if (layoutType === 'sidebar-left') {

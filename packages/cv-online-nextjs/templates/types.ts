@@ -44,7 +44,7 @@ export interface TemplateSection {
   type:
     | "personal-info"
     | "summary"
-    | "experience"
+    | "experiences"
     | "education"
     | "skills"
     | "projects"

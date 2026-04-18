@@ -14,6 +14,9 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-headline: var(--font-noto-serif);
+  --font-body: var(--font-be-vietnam-pro);
+  --font-label: var(--font-be-vietnam-pro);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -47,6 +50,29 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+}
+
+@utility container {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 1rem; /* Padding 2 bên */
+
+  /* Nếu bạn muốn container giới hạn max-width theo breakpoint (giống v3) */
+  @variant sm {
+    max-width: var(--breakpoint-sm);
+  }
+  @variant md {
+    max-width: var(--breakpoint-md);
+  }
+  @variant lg {
+    max-width: var(--breakpoint-lg);
+  }
+  @variant xl {
+    max-width: var(--breakpoint-xl);
+  }
+  @variant 2xl {
+    max-width: 1400px; /* Hoặc var(--breakpoint-2xl) */
+  }
 }
 
 :root {

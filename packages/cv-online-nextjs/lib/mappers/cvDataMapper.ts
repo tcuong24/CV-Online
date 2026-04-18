@@ -168,7 +168,7 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
         : null,
       nationality:  (pi['nationality'] as string | undefined) ?? null,
     },
-    experience: experiences,
+    experiences,
     education,
     skills,
     projects,

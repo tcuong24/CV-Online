@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   MdCheck,
   MdFormatAlignCenter,
   MdFormatAlignLeft,
   MdFormatAlignRight,
+  MdFormatListBulleted,
+  MdFormatListNumbered,
   MdLayers,
   MdOpenInNew,
   MdPalette,
@@ -50,6 +52,110 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
   const { undo, redo, pastStates, futureStates } = useStore(useCvEditorStore.temporal, (state) => state);
   const [savedThemeId, setSavedThemeId] = useState(style.themeId);
   const [savedFontId, setSavedFontId] = useState(style.fontId);
+  const [isInDescField, setIsInDescField] = useState(false);
+  const [activeListType, setActiveListType] = useState<'bullet' | 'numbered' | null>(null);
+  const focusedDescElRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const getListType = (el: HTMLElement): 'bullet' | 'numbered' | null => {
+      try {
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return null;
+        const range = sel.getRangeAt(0);
+        const preRange = document.createRange();
+        preRange.selectNodeContents(el);
+        preRange.setEnd(range.endContainer, range.endOffset);
+        const beforeCursor = preRange.toString();
+        const lineStart = beforeCursor.lastIndexOf('\n') + 1;
+        const currentLine = el.innerText.slice(lineStart).split('\n')[0] ?? '';
+        if (currentLine.startsWith('• ')) return 'bullet';
+        if (/^\d+\. /.test(currentLine)) return 'numbered';
+        return null;
+      } catch { return null; }
+    };
+
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.isContentEditable && target.style.display === 'block') {
+        focusedDescElRef.current = target;
+        setIsInDescField(true);
+        setActiveListType(getListType(target));
+      }
+    };
+
+    const handleFocusOut = (e: FocusEvent) => {
+      if (e.target === focusedDescElRef.current) {
+        setTimeout(() => {
+          if (document.activeElement !== focusedDescElRef.current) {
+            focusedDescElRef.current = null;
+            setIsInDescField(false);
+            setActiveListType(null);
+          }
+        }, 0);
+      }
+    };
+
+    const handleSelectionChange = () => {
+      const el = focusedDescElRef.current;
+      if (el) setActiveListType(getListType(el));
+    };
+
+    document.addEventListener('focusin', handleFocusIn);
+    document.addEventListener('focusout', handleFocusOut);
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => {
+      document.removeEventListener('focusin', handleFocusIn);
+      document.removeEventListener('focusout', handleFocusOut);
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, []);
+
+  const applyListFormat = (type: 'bullet' | 'numbered') => {
+    const el = focusedDescElRef.current;
+    if (!el) return;
+    el.focus();
+
+    const transformLines = (lines: string[], t: 'bullet' | 'numbered', current: 'bullet' | 'numbered' | null): string[] => {
+      const togglingOff = current === t;
+      if (t === 'bullet') {
+        if (togglingOff) return lines.map(l => l.replace(/^• /, ''));
+        return lines.map(l => {
+          if (!l.trim()) return l;
+          const stripped = l.replace(/^\d+\. /, '');
+          return stripped.startsWith('• ') ? stripped : `• ${stripped}`;
+        });
+      } else {
+        if (togglingOff) return lines.map(l => l.replace(/^\d+\. /, ''));
+        let counter = 1;
+        return lines.map(l => {
+          if (!l.trim()) return l;
+          const stripped = l.replace(/^• /, '').replace(/^\d+\. /, '');
+          return `${counter++}. ${stripped}`;
+        });
+      }
+    };
+
+    const sel = window.getSelection();
+    const hasTextSel = sel && !sel.isCollapsed && sel.toString().length > 0;
+
+    // Capture activeListType at time of click via ref to avoid stale closure
+    const currentType = activeListType;
+
+    if (hasTextSel) {
+      const lines = sel!.toString().split('\n');
+      const result = transformLines(lines, type, currentType);
+      document.execCommand('insertText', false, result.join('\n'));
+    } else {
+      // Apply to entire field content
+      const lines = el.innerText.split('\n');
+      const result = transformLines(lines, type, currentType);
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+      document.execCommand('insertText', false, result.join('\n'));
+    }
+  };
 
   return (
     <div className="style-panel-horizontal" style={{
@@ -230,6 +336,43 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
           style={{ padding: '6px', cursor: 'pointer', borderRadius: 6, border: 'none', background: style.nameAlign === 'right' ? '#e0f2fe' : 'transparent', color: style.nameAlign === 'right' ? '#0369a1' : '#6b7280' }}
         >
           <MdFormatAlignRight size={18} />
+        </Button>
+
+        {/* ── List format buttons ── */}
+        <div style={{ width: 1, height: 18, background: '#e5e7eb', margin: '0 2px' }} />
+        <Button
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => applyListFormat('bullet')}
+          disabled={!isInDescField}
+          title={isInDescField ? (activeListType === 'bullet' ? 'Bỏ bullet list' : 'Bullet list') : 'Click vào phần mô tả để dùng'}
+          style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: '4px 6px', borderRadius: 6, border: 'none', gap: 1,
+            background: activeListType === 'bullet' ? '#e0f2fe' : 'transparent',
+            color: !isInDescField ? '#d1d5db' : activeListType === 'bullet' ? '#0369a1' : '#6b7280',
+            cursor: isInDescField ? 'pointer' : 'not-allowed',
+            transition: 'color 0.15s, background 0.15s',
+          }}
+        >
+          <MdFormatListBulleted size={18} />
+          <span style={{ fontSize: 9, lineHeight: 1, userSelect: 'none' }}></span>
+        </Button>
+        <Button
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => applyListFormat('numbered')}
+          disabled={!isInDescField}
+          title={isInDescField ? (activeListType === 'numbered' ? 'Bỏ numbered list' : 'Numbered list') : 'Click vào phần mô tả để dùng'}
+          style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: '4px 6px', borderRadius: 6, border: 'none', gap: 1,
+            background: activeListType === 'numbered' ? '#e0f2fe' : 'transparent',
+            color: !isInDescField ? '#d1d5db' : activeListType === 'numbered' ? '#0369a1' : '#6b7280',
+            cursor: isInDescField ? 'pointer' : 'not-allowed',
+            transition: 'color 0.15s, background 0.15s',
+          }}
+        >
+          <MdFormatListNumbered size={18} />
+          <span style={{ fontSize: 9, lineHeight: 1, userSelect: 'none' }}></span>
         </Button>
       </div>
 

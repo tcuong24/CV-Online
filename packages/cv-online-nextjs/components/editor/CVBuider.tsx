@@ -65,7 +65,7 @@ interface LanguageEntry {
 
 interface CvData {
   personal: PersonalInfo;
-  experience: ExperienceEntry[];
+  experiences: ExperienceEntry[];
   education: EducationEntry[];
   skills: string[];
   projects: ProjectEntry[];
@@ -215,44 +215,44 @@ body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; colo
 
 // ─── Color themes ───
 const COLOR_THEMES = [
-  { id: "teal",    label: "Teal",    primary: "#0f766e", dark: "#134e4a", light: "#ccfbf1", text: "#fff" },
-  { id: "navy",    label: "Navy",    primary: "#1e3a8a", dark: "#172554", light: "#dbeafe", text: "#fff" },
-  { id: "slate",   label: "Slate",   primary: "#1c1917", dark: "#0c0a09", light: "#f5f5f4", text: "#fff" },
-  { id: "rose",    label: "Rose",    primary: "#be123c", dark: "#881337", light: "#ffe4e6", text: "#fff" },
-  { id: "violet",  label: "Violet",  primary: "#6d28d9", dark: "#4c1d95", light: "#ede9fe", text: "#fff" },
-  { id: "amber",   label: "Amber",   primary: "#b45309", dark: "#78350f", light: "#fef3c7", text: "#fff" },
+  { id: "teal", label: "Teal", primary: "#0f766e", dark: "#134e4a", light: "#ccfbf1", text: "#fff" },
+  { id: "navy", label: "Navy", primary: "#1e3a8a", dark: "#172554", light: "#dbeafe", text: "#fff" },
+  { id: "slate", label: "Slate", primary: "#1c1917", dark: "#0c0a09", light: "#f5f5f4", text: "#fff" },
+  { id: "rose", label: "Rose", primary: "#be123c", dark: "#881337", light: "#ffe4e6", text: "#fff" },
+  { id: "violet", label: "Violet", primary: "#6d28d9", dark: "#4c1d95", light: "#ede9fe", text: "#fff" },
+  { id: "amber", label: "Amber", primary: "#b45309", dark: "#78350f", light: "#fef3c7", text: "#fff" },
   { id: "emerald", label: "Emerald", primary: "#065f46", dark: "#064e3b", light: "#d1fae5", text: "#fff" },
-  { id: "sky",     label: "Sky",     primary: "#0369a1", dark: "#0c4a6e", light: "#e0f2fe", text: "#fff" },
-  { id: "pink",    label: "Pink",    primary: "#9d174d", dark: "#831843", light: "#fce7f3", text: "#fff" },
-  { id: "gray",    label: "Gray",    primary: "#374151", dark: "#111827", light: "#f3f4f6", text: "#fff" },
+  { id: "sky", label: "Sky", primary: "#0369a1", dark: "#0c4a6e", light: "#e0f2fe", text: "#fff" },
+  { id: "pink", label: "Pink", primary: "#9d174d", dark: "#831843", light: "#fce7f3", text: "#fff" },
+  { id: "gray", label: "Gray", primary: "#374151", dark: "#111827", light: "#f3f4f6", text: "#fff" },
 ];
 
 // ─── Font options ───
 const FONT_OPTIONS = [
-  { id: "jakarta",    label: "Plus Jakarta Sans", family: "'Plus Jakarta Sans', sans-serif",   sample: "Modern & Clean" },
-  { id: "lora",       label: "Lora",              family: "'Lora', serif",                      sample: "Elegant Serif" },
-  { id: "raleway",    label: "Raleway",            family: "'Raleway', sans-serif",              sample: "Geometric Sans" },
-  { id: "merriweather", label: "Merriweather",    family: "'Merriweather', serif",              sample: "Traditional" },
-  { id: "nunito",     label: "Nunito",             family: "'Nunito', sans-serif",               sample: "Friendly Round" },
-  { id: "crimson",    label: "Crimson Pro",        family: "'Crimson Pro', serif",               sample: "Literary Serif" },
-  { id: "dm",         label: "DM Sans",            family: "'DM Sans', sans-serif",             sample: "Minimal Sans" },
+  { id: "jakarta", label: "Plus Jakarta Sans", family: "'Plus Jakarta Sans', sans-serif", sample: "Modern & Clean" },
+  { id: "lora", label: "Lora", family: "'Lora', serif", sample: "Elegant Serif" },
+  { id: "raleway", label: "Raleway", family: "'Raleway', sans-serif", sample: "Geometric Sans" },
+  { id: "merriweather", label: "Merriweather", family: "'Merriweather', serif", sample: "Traditional" },
+  { id: "nunito", label: "Nunito", family: "'Nunito', sans-serif", sample: "Friendly Round" },
+  { id: "crimson", label: "Crimson Pro", family: "'Crimson Pro', serif", sample: "Literary Serif" },
+  { id: "dm", label: "DM Sans", family: "'DM Sans', sans-serif", sample: "Minimal Sans" },
 ];
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 
 const SECTION_META = {
-  personal:   { label: "Thông tin cá nhân",      icon: <MdPerson />,      color: "#dbeafe", iconColor: "#2563eb" },
-  experience: { label: "Kinh nghiệm",             icon: <MdWork />,        color: "#dcfce7", iconColor: "#16a34a" },
-  education:  { label: "Học vấn",                 icon: <MdSchool />,      color: "#fef3c7", iconColor: "#d97706" },
-  skills:     { label: "Kỹ năng",                 icon: <MdStar />,        color: "#fce7f3", iconColor: "#db2777" },
-  projects:   { label: "Dự án / Portfolio",       icon: <MdCode />,        color: "#ede9fe", iconColor: "#7c3aed" },
-  awards:     { label: "Chứng chỉ & Giải thưởng", icon: <MdEmojiEvents />, color: "#fff7ed", iconColor: "#ea580c" },
-  languages:  { label: "Ngoại ngữ",              icon: <MdLanguage />,    color: "#e0f2fe", iconColor: "#0284c7" },
+  personal: { label: "Thông tin cá nhân", icon: <MdPerson />, color: "#dbeafe", iconColor: "#2563eb" },
+  experiences: { label: "Kinh nghiệm", icon: <MdWork />, color: "#dcfce7", iconColor: "#16a34a" },
+  education: { label: "Học vấn", icon: <MdSchool />, color: "#fef3c7", iconColor: "#d97706" },
+  skills: { label: "Kỹ năng", icon: <MdStar />, color: "#fce7f3", iconColor: "#db2777" },
+  projects: { label: "Dự án / Portfolio", icon: <MdCode />, color: "#ede9fe", iconColor: "#7c3aed" },
+  awards: { label: "Chứng chỉ & Giải thưởng", icon: <MdEmojiEvents />, color: "#fff7ed", iconColor: "#ea580c" },
+  languages: { label: "Ngoại ngữ", icon: <MdLanguage />, color: "#e0f2fe", iconColor: "#0284c7" },
 };
 
 const DEFAULT_DATA = {
   personal: { name: "Nguyễn Văn An", role: "Senior Frontend Developer", email: "nguyenvanan@email.com", phone: "0912 345 678", location: "Hà Nội, Việt Nam", website: "github.com/nguyenvanan", summary: "Frontend developer với 5+ năm kinh nghiệm xây dựng ứng dụng web hiệu suất cao. Đam mê UI/UX, clean code và các công nghệ hiện đại như React, Next.js, TypeScript." },
-  experience: [
+  experiences: [
     { id: uid(), title: "Senior Frontend Developer", company: "FPT Software", location: "Hà Nội", from: "2021", to: "Hiện tại", desc: "Phát triển và tối ưu ứng dụng web với React/Next.js. Cải thiện hiệu suất tải trang lên 40%. Mentor 3 junior developers.", open: false },
     { id: uid(), title: "Frontend Developer", company: "VNG Corporation", location: "TP.HCM", from: "2019", to: "2021", desc: "Xây dựng các tính năng mới cho nền tảng e-commerce với 2M+ người dùng.", open: false },
   ],
@@ -266,7 +266,7 @@ const DEFAULT_DATA = {
   languages: [{ id: uid(), lang: "Tiếng Anh", level: 4 }, { id: uid(), lang: "Tiếng Nhật", level: 2 }],
 };
 
-const DEFAULT_ORDER = ["personal","experience","education","skills","projects","awards","languages"];
+const DEFAULT_ORDER = ["personal", "experiences", "education", "skills", "projects", "awards", "languages"];
 
 const DEFAULT_STYLE = {
   themeId: "teal",
@@ -300,7 +300,7 @@ function LangEditor({ languages, onChange }: { languages: LanguageEntry[]; onCha
       {languages.map(l => (
         <div key={l.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center", marginBottom: 8 }}>
           <input className="field-input" placeholder="Ngôn ngữ" value={l.lang} onChange={e => update(l.id, "lang", e.target.value)} />
-          <div style={{ display: "flex", gap: 4 }}>{[1,2,3,4,5].map(i => <div key={i} className={`lang-dot${l.level >= i ? " filled" : ""}`} onClick={() => update(l.id, "level", i)} />)}</div>
+          <div style={{ display: "flex", gap: 4 }}>{[1, 2, 3, 4, 5].map(i => <div key={i} className={`lang-dot${l.level >= i ? " filled" : ""}`} onClick={() => update(l.id, "level", i)} />)}</div>
           <button className="icon-btn danger" onClick={() => remove(l.id)}><MdDelete size={14} /></button>
         </div>
       ))}
@@ -393,7 +393,7 @@ function SectionForm({ sectionKey, data, onChange }: { sectionKey: string; data:
       </div>
     );
   }
-  if (sectionKey === "experience") return <EntryEditor entries={data.experience as unknown as Entry[]} fields={expFields} addLabel="Thêm kinh nghiệm" onChange={v => onChange({ ...data, experience: v as unknown as ExperienceEntry[] })} />;
+  if (sectionKey === "experiences") return <EntryEditor entries={data.experiences as unknown as Entry[]} fields={expFields} addLabel="Thêm kinh nghiệm" onChange={v => onChange({ ...data, experiences: v as unknown as ExperienceEntry[] })} />;
   if (sectionKey === "education") return <EntryEditor entries={data.education as unknown as Entry[]} fields={eduFields} addLabel="Thêm học vấn" onChange={v => onChange({ ...data, education: v as unknown as EducationEntry[] })} />;
   if (sectionKey === "skills") return <SkillsEditor skills={data.skills} onChange={(v: string[]) => onChange({ ...data, skills: v })} />;
   if (sectionKey === "projects") return <EntryEditor entries={data.projects as unknown as Entry[]} fields={projFields} addLabel="Thêm dự án" onChange={v => onChange({ ...data, projects: v as unknown as ProjectEntry[] })} />;
@@ -522,10 +522,10 @@ function CVClassic({ data, order, style }: { data: CvData; order: string[]; styl
           const descStyle = { fontSize: fs * 0.9, color: "#57534e", lineHeight: lh };
           const dateStyle = { fontSize: fs * 0.82, color: "#78716c", fontFamily: "'DM Mono', monospace", whiteSpace: "nowrap" };
 
-          if (key === "experience" && data.experience?.length) return (
+          if (key === "experiences" && data.experiences?.length) return (
             <div key={key} style={{ marginBottom: 24 }}>
               {secTitle("Kinh nghiệm làm việc")}
-              {data.experience.map(e => (
+              {data.experiences.map(e => (
                 <div key={e.id} style={entryStyle}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 2 }}>
                     <span style={titleStyle}>{e.title}</span>
@@ -596,7 +596,7 @@ function CVClassic({ data, order, style }: { data: CvData; order: string[]; styl
                 <div key={l.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                   <span style={{ fontSize: fs * 0.95, fontWeight: 500 }}>{l.lang}</span>
                   <div style={{ display: "flex", gap: 4 }}>
-                    {[1,2,3,4,5].map(i => <div key={i} style={{ width: 18, height: 4, borderRadius: 2, background: l.level >= i ? accentColor : "#e7e5e4" }} />)}
+                    {[1, 2, 3, 4, 5].map(i => <div key={i} style={{ width: 18, height: 4, borderRadius: 2, background: l.level >= i ? accentColor : "#e7e5e4" }} />)}
                   </div>
                 </div>
               ))}
@@ -618,7 +618,7 @@ function CVModern({ data, order, style }: { data: CvData; order: string[]; style
   const accentColor = theme.primary;
   const initials = (data.personal.name || "??").split(" ").slice(-2).map((w: string) => w[0]).join("");
 
-  const sideKeys = ["skills","languages","awards"];
+  const sideKeys = ["skills", "languages", "awards"];
   const mainKeys = order.filter(k => k !== "personal" && !sideKeys.includes(k));
 
   return (
@@ -635,7 +635,7 @@ function CVModern({ data, order, style }: { data: CvData; order: string[]; style
           {data.personal.website && <div style={{ fontSize: fs * 0.84, color: "rgba(255,255,255,0.85)", marginBottom: 5, display: "flex", alignItems: "center", gap: 5 }}><MdLink size={10} />{data.personal.website}</div>}
         </SideSection>
         {data.skills?.length > 0 && <SideSection title="Kỹ năng">{data.skills.map((s: string) => <div key={s} style={{ fontSize: fs * 0.84, color: "rgba(255,255,255,0.85)", marginBottom: 5 }}>{s}<div style={{ height: 3, background: "rgba(255,255,255,0.2)", borderRadius: 2, marginTop: 2 }}><div style={{ width: "70%", height: "100%", background: "rgba(255,255,255,0.8)", borderRadius: 2 }} /></div></div>)}</SideSection>}
-        {data.languages?.length > 0 && <SideSection title="Ngoại ngữ">{data.languages.map(l => <div key={l.id} style={{ fontSize: fs * 0.84, color: "rgba(255,255,255,0.85)", marginBottom: 6 }}>{l.lang}<div style={{ display: "flex", gap: 2, marginTop: 2 }}>{[1,2,3,4,5].map(i => <div key={i} style={{ flex: 1, height: 3, background: l.level >= i ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.2)", borderRadius: 1 }} />)}</div></div>)}</SideSection>}
+        {data.languages?.length > 0 && <SideSection title="Ngoại ngữ">{data.languages.map(l => <div key={l.id} style={{ fontSize: fs * 0.84, color: "rgba(255,255,255,0.85)", marginBottom: 6 }}>{l.lang}<div style={{ display: "flex", gap: 2, marginTop: 2 }}>{[1, 2, 3, 4, 5].map(i => <div key={i} style={{ flex: 1, height: 3, background: l.level >= i ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.2)", borderRadius: 1 }} />)}</div></div>)}</SideSection>}
         {data.awards?.length > 0 && <SideSection title="Chứng chỉ">{data.awards.map(e => <div key={e.id} style={{ fontSize: fs * 0.84, color: "rgba(255,255,255,0.85)", marginBottom: 6 }}><div style={{ fontWeight: 600 }}>{e.title}</div><div style={{ opacity: 0.7, fontSize: fs * 0.78 }}>{e.org} · {e.year}</div></div>)}</SideSection>}
       </div>
 
@@ -648,9 +648,9 @@ function CVModern({ data, order, style }: { data: CvData; order: string[]; style
         )}
         {mainKeys.map((key: string) => {
           const entryL = { paddingLeft: 12, borderLeft: `2px solid #e7e5e4`, marginBottom: 13 };
-          if (key === "experience" && data.experience?.length) return (
+          if (key === "experiences" && data.experiences?.length) return (
             <MainSection key={key} title="Kinh nghiệm" accentColor={accentColor} fs={fs}>
-              {data.experience.map(e => <div key={e.id} style={entryL}><div style={{ fontSize: fs * 0.82, color: "#a8a29e", fontFamily: "'DM Mono', monospace" }}>{e.from}{e.to ? ` – ${e.to}` : ""}</div><div style={{ fontWeight: 700, color: "#1c1917" }}>{e.title}</div><div style={{ fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3 }}>{e.company}{e.location ? ` · ${e.location}` : ""}</div>{e.desc && <div style={{ fontSize: fs * 0.88, color: "#57534e", lineHeight: lh }}>{e.desc}</div>}</div>)}
+              {data.experiences.map(e => <div key={e.id} style={entryL}><div style={{ fontSize: fs * 0.82, color: "#a8a29e", fontFamily: "'DM Mono', monospace" }}>{e.from}{e.to ? ` – ${e.to}` : ""}</div><div style={{ fontWeight: 700, color: "#1c1917" }}>{e.title}</div><div style={{ fontSize: fs * 0.9, color: accentColor, fontWeight: 500, marginBottom: 3 }}>{e.company}{e.location ? ` · ${e.location}` : ""}</div>{e.desc && <div style={{ fontSize: fs * 0.88, color: "#57534e", lineHeight: lh }}>{e.desc}</div>}</div>)}
             </MainSection>
           );
           if (key === "education" && data.education?.length) return (

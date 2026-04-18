@@ -1,6 +1,7 @@
-import { MdAdd, MdDelete } from 'react-icons/md';
+import { MdAdd, MdDelete, MdDragIndicator } from 'react-icons/md';
 import { Entry, FieldDef } from '@/types/cvEditor';
 import { uid } from '@/constants/cvEditor';
+import { useRef } from 'react';
 
 interface EntryEditorProps {
   entries: Entry[];
@@ -10,6 +11,8 @@ interface EntryEditorProps {
 }
 
 export function EntryEditor({ entries, fields, addLabel, onChange }: EntryEditorProps) {
+  const dragIndex = useRef<number | null>(null);
+
   const update = (id: string, field: string, value: string) =>
     onChange(entries.map((e) => (e.id === id ? { ...e, [field]: value } : e)));
 
@@ -29,12 +32,43 @@ export function EntryEditor({ entries, fields, addLabel, onChange }: EntryEditor
       },
     ]);
 
+  const handleDragStart = (index: number) => {
+    dragIndex.current = index;
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (dragIndex.current === null || dragIndex.current === index) return;
+    const next = [...entries];
+    const [dragged] = next.splice(dragIndex.current, 1);
+    next.splice(index, 0, dragged);
+    dragIndex.current = index;
+    onChange(next);
+  };
+
+  const handleDragEnd = () => {
+    dragIndex.current = null;
+  };
+
   return (
     <div>
-      {entries.map((e) => (
-        <div key={e.id} className="entry-card">
+      {entries.map((e, index) => (
+        <div
+          key={e.id}
+          className="entry-card"
+          draggable
+          onDragStart={() => handleDragStart(index)}
+          onDragOver={(ev) => handleDragOver(ev, index)}
+          onDragEnd={handleDragEnd}
+        >
           {/* Entry header */}
           <div className="entry-header" onClick={() => toggle(e.id)}>
+            <span
+              style={{ cursor: 'grab', color: 'var(--subtle)', display: 'flex', alignItems: 'center' }}
+              onClick={(ev) => ev.stopPropagation()}
+            >
+              <MdDragIndicator size={16} />
+            </span>
             <span
               style={{
                 fontSize: 14,

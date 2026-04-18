@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TemplateCard } from "./TemplateCard";
 import { useCvEditorStore } from "@/stores/useCvEditor";
 import { parseSectionsConfig,DB_KEY_MAP } from "@/lib/mappers/templateMapper";
+import { uid } from "@/constants/cvEditor";
 
 // Template from API (matches backend response)
 interface Template {
@@ -102,15 +103,15 @@ export function TemplatesGrid() {
         summary: '',
         avatarUrl: session?.user?.image ?? null,
       },
-      experiences: [],
-      education: [],
-      skills: [],
-      projects: [],
-      certifications: [],
-      languages: [],
-      awards: [],
+      experiences:    [{ id: uid(), open: true,  title: '',  company: '',             location: '', from: '', to: '', desc: '' }],
+      education:      [{ id: uid(), open: true,  degree: '', school: '',              from: '', to: '', desc: '' }],
+      skills:         [{ id: uid(), name: '',    proficiencyLevel: 'intermediate',   proficiencyPercentage: 50, category: '' }],
+      projects:       [{ id: uid(), open: true,  name: '',   role: '',               tech: '', link: '', desc: '' }],
+      certifications: [{ id: uid(), open: true,  name: '',   issuingOrganization: '', issueDate: '', expiryDate: '', credentialId: '', credentialUrl: '', description: '' }],
+      languages:      [{ id: uid(), lang: '',    level: 3 }],
+      awards:         [{ id: uid(), open: true,  title: '',  org: '',                year: '' }],
       references: [],
-      interests: [],
+      interests:  [],
       activities: [],
     };
 

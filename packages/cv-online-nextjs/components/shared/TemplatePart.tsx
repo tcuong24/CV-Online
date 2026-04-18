@@ -1,16 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // ─── SideSection (for Modern template sidebar) ───
 interface SideSectionProps {
   title: string;
   children: React.ReactNode;
+  addButton?: React.ReactNode;
 }
 
-export function SideSection({ title, children }: SideSectionProps) {
+export function SideSection({ title, children, addButton }: SideSectionProps) {
+  const [hovered, setHovered] = useState(false);
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div
+      style={{ marginBottom: 20 }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <div
         style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           fontSize: 9,
           fontWeight: 700,
           textTransform: 'uppercase',
@@ -21,7 +30,12 @@ export function SideSection({ title, children }: SideSectionProps) {
           borderBottom: '1px solid rgba(255,255,255,0.15)',
         }}
       >
-        {title}
+        <span>{title}</span>
+        {addButton && (
+          <span style={{ opacity: hovered ? 1 : 0, transition: 'opacity 0.15s', pointerEvents: hovered ? 'auto' : 'none' }}>
+            {addButton}
+          </span>
+        )}
       </div>
       {children}
     </div>

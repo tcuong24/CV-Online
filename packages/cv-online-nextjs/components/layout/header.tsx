@@ -4,53 +4,43 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 
 import DropdownUser from "../user/DropdownUser";
+import { Menu } from "lucide-react";
 
 export default async function Header() {
   const session = await getServerSession(authOptions);
-
+  const btnEditorial =
+    "border border-foreground px-8 py-3 font-label uppercase tracking-widest text-[0.75rem] transition-colors duration-100 hover:bg-foreground hover:text-background";
   return (
-    <header className="flex py-2 items-center justify-between whitespace-nowrap px-4 md:px-6">
-      <div className="flex items-center gap-3 text-primary">
-        <div className="size-6 text-foreground">
-          <svg
-            fill="none"
-            viewBox="0 0 48 48"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z"
-              fill="currentColor"
-            ></path>
-          </svg>
+    <header className="flex items-center justify-between whitespace-nowrap ">
+      <nav className="fixed top-0 w-full border-b border-foreground/20 bg-background z-50">
+        <div className="flex justify-between items-center px-6 md:px-12 py-4 w-full max-w-[1440px] mx-auto">
+          <div className="font-headline text-2xl font-black tracking-tighter text-foreground">
+            CVision
+          </div>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-12 font-headline tracking-tight text-lg">
+            <Link className="text-muted-foreground hover:text-foreground transition-colors" href="/templates">
+              Templates
+            </Link>
+            <Link className="text-muted-foreground hover:text-foreground transition-colors" href="#">
+              Features
+            </Link>
+            <Link className="text-muted-foreground hover:text-foreground transition-colors" href="#">
+              Pricing
+            </Link>
+            <Link className="text-muted-foreground hover:text-foreground transition-colors" href="#">
+              About
+            </Link>
+          </div>
+          <div className="flex items-center gap-6">
+            <Link href="/editor" className={`hidden md:block inline-block text-center ${btnEditorial}`}>
+              Create CV
+            </Link>
+            <button className="md:hidden">
+              <Menu size={24} />
+            </button>
+          </div>
         </div>
-        <h2 className="text-xl font-bold">CVBuilder</h2>
-      </div>
-
-      <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-        <Link
-          className="text-muted-foreground transition-colors hover:text-foreground"
-          href="/templates"
-        >
-          Mẫu CV
-        </Link>
-        <Link
-          className="text-muted-foreground transition-colors hover:text-foreground"
-          href="/editor"
-        >
-          Chỉnh sửa CV
-        </Link>
-        <Link
-          className="text-muted-foreground transition-colors hover:text-foreground"
-          href="/preview"
-        >
-          Xem trước
-        </Link>
-        <Link
-          className="text-muted-foreground transition-colors hover:text-foreground"
-          href="/cv-management"
-        >
-          Quản lý CV
-        </Link>
       </nav>
       {session?.user ? <DropdownUser /> : <div className="flex items-center gap-2">
         <Button variant="secondary" size="default">

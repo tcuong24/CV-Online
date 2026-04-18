@@ -10,6 +10,7 @@ import { SideSection } from '../shared/TemplatePart';
 import {
   RenderCtx,
   SectionShell,
+  StylePicker,
   ExperienceSection,
   SkillsBlock,
   MainSectionBlocks,
@@ -40,7 +41,7 @@ export function SidebarLeftPage({
   ctx,
   scale,
 }: {
-  mainSections: ({ key: string; title: string; content: React.ReactNode })[];
+  mainSections: ({ key: string; title: string; content: React.ReactNode; addButton?: React.ReactNode; styleControls?: React.ReactNode })[];
   sideSections: SidebarSection[];
   isFirst: boolean;
   data: CvData;
@@ -194,7 +195,7 @@ export function SidebarLeftPage({
         <Droppable droppableId="sections-main">
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
-              {mainSections.map(({ key, title, content }, idx) => (
+              {mainSections.map(({ key, title, content, addButton, styleControls }, idx) => (
                 <Draggable key={key} draggableId={`section-${key}`} index={idx}>
                   {(dp, snap) => (
                     <div
@@ -213,6 +214,8 @@ export function SidebarLeftPage({
                         accentColor={accentColor}
                         title={title}
                         fs={fs}
+                        addButton={addButton}
+                        styleControls={styleControls}
                       >
                         {content}
                       </SectionShell>
@@ -256,15 +259,64 @@ export function SidebarLeftLayout({
   const scale = zoom / 100;
   const mainKeyList = order.filter((k) => k !== 'personal' && !sideKeys.includes(k));
 
+  // Helpers for add button and style switcher
+  const makeAddBtn = (key: string, label: string, action: () => void, hasData: boolean) =>
+    hasData ? (
+      <button
+        onClick={action}
+        style={{
+          padding: '3px 10px',
+          fontSize: fs * 0.78,
+          fontWeight: 600,
+          border: '1px solid #bfdbfe',
+          borderRadius: 99,
+          cursor: 'pointer',
+          background: '#eff6ff',
+          color: '#3b82f6',
+          transition: 'background 0.12s',
+          whiteSpace: 'nowrap' as const,
+          fontFamily: 'inherit',
+        }}
+      >{label}</button>
+    ) : undefined;
+
   // Build main sections list
-  const allMainSections: { key: string; title: string; content: React.ReactNode }[] = [];
+  const allMainSections: { key: string; title: string; content: React.ReactNode; addButton?: React.ReactNode; styleControls?: React.ReactNode }[] = [];
   mainKeyList.forEach((key) => {
     if (key === 'experiences') {
-      allMainSections.push({ key, title: 'Kinh nghiệm', content: <ExperienceSection data={data} ctx={ctx} variant="main" /> });
+      const expStyle = ctx.sectionLayout.experiences?.style ?? 'timeline';
+      allMainSections.push({
+        key,
+        title: 'Kinh nghiệm',
+        content: <ExperienceSection data={data} ctx={ctx} variant="main" />,
+        addButton: makeAddBtn(key, '+ Kinh nghiệm', () => ctx.addEntry('experiences', { title: '', company: '', from: '', to: '', location: '', desc: '' }), !!data.experiences?.length),
+        styleControls: (
+          <StylePicker
+            fs={fs}
+            value={expStyle}
+            options={[{ value: 'timeline', label: 'Timeline' }, { value: 'simple', label: 'Simple' }]}
+            onChange={(v) => ctx.patchSectionLayout('experiences', { style: v })}
+          />
+        ),
+      });
       return;
     }
     if (key === 'skills') {
-      allMainSections.push({ key, title: 'Kỹ năng', content: <SkillsBlock data={data} ctx={ctx} dark={false} /> });
+      const profStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
+      allMainSections.push({
+        key,
+        title: 'Kỹ năng',
+        content: <SkillsBlock data={data} ctx={ctx} dark={false} />,
+        addButton: makeAddBtn(key, '+ Kỹ năng', () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' }), !!data.skills?.length),
+        styleControls: (
+          <StylePicker
+            fs={fs}
+            value={profStyle}
+            options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }]}
+            onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
+          />
+        ),
+      });
       return;
     }
     const titles: Record<string, string> = {
@@ -273,54 +325,180 @@ export function SidebarLeftLayout({
       awards: 'Chứng chỉ & Giải thưởng',
       languages: 'Ngoại ngữ',
     };
+    const addActions: Record<string, { label: string; action: () => void; hasData: boolean }> = {
+      education: { label: '+ Học vấn', action: () => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' }), hasData: !!data.education?.length },
+      projects:  { label: '+ Dự án',   action: () => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' }), hasData: !!data.projects?.length },
+      awards:    { label: '+ Giải thưởng', action: () => ctx.addEntry('awards', { title: '', year: '', org: '' }), hasData: !!data.awards?.length },
+      languages: { label: '+ Ngôn ngữ', action: () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }), hasData: !!data.languages?.length },
+    };
     const title = titles[key];
     if (!title) return;
-    allMainSections.push({ key, title, content: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
+    const add = addActions[key];
+    allMainSections.push({
+      key,
+      title,
+      content: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />,
+      addButton: add ? makeAddBtn(key, add.label, add.action, add.hasData) : undefined,
+    });
   });
+
+  // ── Shared sidebar button style ──────────────────────────────────────────
+  const sideBtnStyle: React.CSSProperties = {
+    padding: '1px 6px',
+    fontSize: 8,
+    fontWeight: 600,
+    border: '1px solid rgba(255,255,255,0.3)',
+    borderRadius: 99,
+    cursor: 'pointer',
+    background: 'transparent',
+    color: 'rgba(255,255,255,0.7)',
+    fontFamily: 'inherit',
+  };
+  const sideDeleteStyle: React.CSSProperties = {
+    padding: '0 4px',
+    fontSize: 9,
+    border: 'none',
+    borderRadius: 3,
+    cursor: 'pointer',
+    background: 'transparent',
+    color: 'rgba(255,255,255,0.35)',
+    lineHeight: 1,
+    fontFamily: 'inherit',
+  };
 
   // Build sidebar sections list
   const sideSectionNodes: SidebarSection[] = sideKeys.flatMap((key) => {
     if (key === 'skills') {
-      return [{ key, content: <SideSection key={key} title="Kỹ năng"><SkillsBlock data={data} ctx={ctx} dark={true} /></SideSection> }];
+      const addBtn = (
+        <button style={sideBtnStyle} onClick={() => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' })}>
+          + Thêm
+        </button>
+      );
+      return [{ key, content: <SideSection key={key} title="Kỹ năng" addButton={addBtn}><SkillsBlock data={data} ctx={ctx} dark={true} /></SideSection> }];
     }
+
     if (key === 'languages') {
-      const hasData = data.languages?.length;
+      const addBtn = (
+        <button style={sideBtnStyle} onClick={() => ctx.addEntry('languages', { lang: 'Ngôn ngữ mới', level: 1 })}>
+          + Thêm
+        </button>
+      );
       return [{
         key, content: (
-          <SideSection key={key} title="Ngoại ngữ">
-            {hasData
-              && data.languages.map((l) => (
-                <div key={l.id} style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', marginBottom: 6 }}>
-                  {l.lang || 'Ngôn ngữ'}
+          <SideSection key={key} title="Ngoại ngữ" addButton={addBtn}>
+            {data.languages?.map((l) => (
+              <div key={l.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 6 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)' }}>{l.lang || 'Ngôn ngữ'}</div>
                   <div style={{ display: 'flex', gap: 2, marginTop: 2 }}>
                     {[1, 2, 3, 4, 5].map((i) => (
                       <div key={i} style={{ flex: 1, height: 3, background: l.level >= i ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.2)', borderRadius: 1 }} />
                     ))}
                   </div>
                 </div>
-              ))
-            }
+                <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('languages', l.id)} title="Xóa">✕</button>
+              </div>
+            ))}
           </SideSection>
         ),
       }];
     }
+
     if (key === 'awards') {
-      const hasData = data.awards?.length;
+      const addBtn = (
+        <button style={sideBtnStyle} onClick={() => ctx.addEntry('awards', { title: '', year: '', org: '' })}>
+          + Thêm
+        </button>
+      );
       return [{
         key, content: (
-          <SideSection key={key} title="Chứng chỉ">
-            {hasData > 0
-              && data.awards.map((e) => (
-                <div key={e.id} style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', marginBottom: 6 }}>
-                  <div style={{ fontWeight: 600 }}>{e.title || 'Tên chứng chỉ'}</div>
-                  <div style={{ opacity: 0.7, fontSize: fs * 0.78 }}>{e.org || 'Tổ chức'} · {e.year || 'Năm'}</div>
+          <SideSection key={key} title="Chứng chỉ" addButton={addBtn}>
+            {data.awards?.map((e) => (
+              <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 6 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{e.title || 'Tên chứng chỉ'}</div>
+                  <div style={{ opacity: 0.7, fontSize: fs * 0.78, color: 'rgba(255,255,255,0.7)' }}>{e.org || 'Tổ chức'} · {e.year || 'Năm'}</div>
                 </div>
-              ))
-            }
+                <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('awards', e.id)} title="Xóa">✕</button>
+              </div>
+            ))}
           </SideSection>
         ),
       }];
     }
+
+    if (key === 'education') {
+      const addBtn = (
+        <button style={sideBtnStyle} onClick={() => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' })}>
+          + Thêm
+        </button>
+      );
+      return [{
+        key, content: (
+          <SideSection key={key} title="Học vấn" addButton={addBtn}>
+            {data.education?.map((e) => (
+              <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{e.degree || 'Chuyên ngành'}</div>
+                  <div style={{ fontSize: fs * 0.78, color: 'rgba(255,255,255,0.65)' }}>{e.school || 'Trường'}</div>
+                  {(e.from || e.to) && <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.45)' }}>{e.from} – {e.to}</div>}
+                </div>
+                <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('education', e.id)} title="Xóa">✕</button>
+              </div>
+            ))}
+          </SideSection>
+        ),
+      }];
+    }
+
+    if (key === 'projects') {
+      const addBtn = (
+        <button style={sideBtnStyle} onClick={() => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' })}>
+          + Thêm
+        </button>
+      );
+      return [{
+        key, content: (
+          <SideSection key={key} title="Dự án" addButton={addBtn}>
+            {data.projects?.map((e) => (
+              <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{e.name || 'Tên dự án'}</div>
+                  {e.tech && <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.55)' }}>{e.tech}</div>}
+                </div>
+                <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('projects', e.id)} title="Xóa">✕</button>
+              </div>
+            ))}
+          </SideSection>
+        ),
+      }];
+    }
+
+    if (key === 'experiences') {
+      const addBtn = (
+        <button style={sideBtnStyle} onClick={() => ctx.addEntry('experiences', { title: '', company: '', from: '', to: '', location: '', desc: '' })}>
+          + Thêm
+        </button>
+      );
+      return [{
+        key, content: (
+          <SideSection key={key} title="Kinh nghiệm" addButton={addBtn}>
+            {data.experiences?.map((e) => (
+              <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{e.title || 'Vị trí'}</div>
+                  <div style={{ fontSize: fs * 0.78, color: 'rgba(255,255,255,0.65)' }}>{e.company || 'Công ty'}</div>
+                  {(e.from || e.to) && <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.45)' }}>{e.from} – {e.to}</div>}
+                </div>
+                <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('experiences', e.id)} title="Xóa">✕</button>
+              </div>
+            ))}
+          </SideSection>
+        ),
+      }];
+    }
+
+    // Generic fallback — section key không được nhận diện
     return [];
   });
 

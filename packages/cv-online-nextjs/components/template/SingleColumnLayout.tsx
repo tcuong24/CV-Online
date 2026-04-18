@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { MdEmail, MdLink, MdLocationOn, MdPhone } from 'react-icons/md';
 import { CvData } from '@/types/cvEditor';
 import { Droppable, Draggable, DragDropContext, type DropResult } from '@hello-pangea/dnd';
@@ -8,6 +6,7 @@ import { EditableText } from '../shared/EditableText';
 import {
   RenderCtx,
   SectionShell,
+  StylePicker,
   ExperienceSection,
   SkillsBlock,
   MainSectionBlocks,
@@ -15,11 +14,6 @@ import {
   RenderUnit,
   getScaledDragStyle,
   PAGE_HEIGHT_PX,
-  ExperienceItem,
-  EducationItem,
-  ProjectItem,
-  AwardItem,
-  LanguageItem,
 } from './CVTemplate';
 
 // ─── Layout: single-column ────────────────────────────────────────────────────
@@ -110,21 +104,89 @@ export function SingleColumnPage({
             </div>
           </div>
         )}
-        {/* Group units by section for DnD — section-header triggers a new Draggable group */}
+        {/* Group units by section for DnD */}
         {(() => {
-          const ADD_LABELS: Record<string, string> = {
-            experiences: 'Thêm kinh nghiệm',
-            education:   'Thêm học vấn',
-            projects:    'Thêm dự án',
-            awards:      'Thêm giải thưởng',
-            languages:   'Thêm ngôn ngữ',
-          };
           const ADD_DEFAULTS: Record<string, () => void> = {
-            experiences: () => ctx.addEntry('experience', { title: '', company: '', from: '', to: '', location: '', desc: '' }),
+            experiences: () => ctx.addEntry('experiences', { title: '', company: '', from: '', to: '', location: '', desc: '' }),
             education:   () => ctx.addEntry('education',  { degree: '', school: '', from: '', to: '', desc: '' }),
             projects:    () => ctx.addEntry('projects',   { name: '', link: '', tech: '', desc: '' }),
             awards:      () => ctx.addEntry('awards',     { title: '', year: '', org: '' }),
             languages:   () => ctx.addEntry('languages',  { lang: 'Ngoại ngữ mới', level: 1 }),
+          };
+          const ADD_LABELS: Record<string, string> = {
+            experiences: '+ Kinh nghiệm',
+            education:   '+ Học vấn',
+            projects:    '+ Dự án',
+            awards:      '+ Giải thưởng',
+            languages:   '+ Ngôn ngữ',
+            skills:      '+ Kỹ năng',
+          };
+          const HAS_DATA: Record<string, boolean> = {
+            experiences: !!data.experiences?.length,
+            education:   !!data.education?.length,
+            projects:    !!data.projects?.length,
+            awards:      !!data.awards?.length,
+            languages:   !!data.languages?.length,
+            skills:      !!data.skills?.length,
+          };
+
+          // Helper: build add button (only when section has data)
+          const makeAddBtn = (sectionKey: string) => {
+            if (!HAS_DATA[sectionKey] || !ADD_DEFAULTS[sectionKey]) return undefined;
+            return (
+              <button
+                onClick={ADD_DEFAULTS[sectionKey]}
+                style={{
+                  padding: '3px 10px',
+                  fontSize: fs * 0.78,
+                  fontWeight: 600,
+                  border: '1px solid #bfdbfe',
+                  borderRadius: 99,
+                  cursor: 'pointer',
+                  background: '#eff6ff',
+                  color: '#3b82f6',
+                  transition: 'background 0.12s',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {ADD_LABELS[sectionKey]}
+              </button>
+            );
+          };
+
+          // Helper: build style switcher controls per section
+          const makeStyleControls = (sectionKey: string): React.ReactNode => {
+            if (sectionKey === 'experiences') {
+              const cur = ctx.sectionLayout.experiences?.style ?? 'timeline';
+              return (
+                <StylePicker
+                  fs={fs}
+                  value={cur}
+                  options={[
+                    { value: 'timeline', label: 'Timeline' },
+                    { value: 'simple',   label: 'Simple' },
+                  ]}
+                  onChange={(v) => ctx.patchSectionLayout('experiences', { style: v })}
+                />
+              );
+            }
+            if (sectionKey === 'skills') {
+              const cur = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
+              return (
+                <StylePicker
+                  fs={fs}
+                  value={cur}
+                  options={[
+                    { value: 'tags', label: 'Tags' },
+                    { value: 'bars', label: 'Bars' },
+                    { value: 'dots', label: 'Dots' },
+                  ]}
+                  onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
+                />
+              );
+            }
+            return undefined;
           };
 
           const groups: { sectionKey: string; title: string; items: React.ReactNode[] }[] = [];
@@ -154,18 +216,10 @@ export function SingleColumnPage({
                     accentColor={accentColor}
                     title={title}
                     fs={fs}
+                    addButton={makeAddBtn(sectionKey)}
+                    styleControls={makeStyleControls(sectionKey)}
                   >
-                    <div className="relative group pb-6">
-                      {items}
-                      {ADD_LABELS[sectionKey] && (
-                        <button
-                          onClick={ADD_DEFAULTS[sectionKey]}
-                          className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium hover:bg-blue-100 border border-blue-200"
-                        >
-                          + {ADD_LABELS[sectionKey]}
-                        </button>
-                      )}
-                    </div>
+                    {items}
                   </SectionShell>
                 </div>
               )}
@@ -202,7 +256,9 @@ export function SingleColumnLayout({
   const scale = zoom / 100;
   if (!data?.personal) return null;
 
-  // Build flat list of all sections
+  // Build flat list of all sections — use ExperienceSection/MainSectionBlocks
+  // so that item-level DragDropContext (already embedded in those components) works,
+  // same pattern as SidebarLeftLayout.
   const units: RenderUnit[] = [];
   order.filter(k => k !== 'personal').forEach(key => {
     const sectionTitles: Record<string, string> = {
@@ -215,49 +271,10 @@ export function SingleColumnLayout({
     };
     const title = sectionTitles[key];
     if (!title) return;
-    // Header unit
+    // One unit per section — the section component handles item-level DnD internally
     units.push({ kind: 'section-header', sectionKey: key, title });
-    // Item units
     if (key === 'experiences') {
-      if (data.experience?.length) {
-        data.experience.forEach(e =>
-          units.push({ kind: 'item', sectionKey: key, node: <ExperienceItem entry={e} ctx={ctx} /> })
-        );
-      } else {
-        units.push({ kind: 'item', sectionKey: key, node: <ExperienceSection data={data} ctx={ctx} /> });
-      }
-    } else if (key === 'education') {
-      if (data.education?.length) {
-        data.education.forEach(e =>
-          units.push({ kind: 'item', sectionKey: key, node: <EducationItem entry={e} ctx={ctx} /> })
-        );
-      } else {
-        units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
-      }
-    } else if (key === 'projects') {
-      if (data.projects?.length) {
-        data.projects.forEach(e =>
-          units.push({ kind: 'item', sectionKey: key, node: <ProjectItem entry={e} ctx={ctx} /> })
-        );
-      } else {
-        units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
-      }
-    } else if (key === 'awards') {
-      if (data.awards?.length) {
-        data.awards.forEach(e =>
-          units.push({ kind: 'item', sectionKey: key, node: <AwardItem entry={e} ctx={ctx} /> })
-        );
-      } else {
-        units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
-      }
-    } else if (key === 'languages') {
-      if (data.languages?.length) {
-        data.languages.forEach(l =>
-          units.push({ kind: 'item', sectionKey: key, node: <LanguageItem entry={l} ctx={ctx} /> })
-        );
-      } else {
-        units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
-      }
+      units.push({ kind: 'item', sectionKey: key, node: <ExperienceSection data={data} ctx={ctx} variant="main" /> });
     } else if (key === 'skills') {
       units.push({ kind: 'item', sectionKey: key, node: <SkillsBlock data={data} ctx={ctx} dark={false} /> });
     } else {
@@ -279,7 +296,8 @@ export function SingleColumnLayout({
     const heights = measureRefs.current.map(el => el?.getBoundingClientRect().height ?? 0);
     if (heights.every(h => h === 0)) return;
     setPages(paginateUnits(units, heights, FIRST_AVAIL, REST_AVAIL));
-  }, [order.join(','), data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order.join(','), data, JSON.stringify(ctx.sectionLayout)]);
 
   return (
     <DragDropContext

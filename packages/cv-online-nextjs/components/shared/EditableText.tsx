@@ -41,6 +41,67 @@ export function EditableText({
     if (!multiline && e.key === 'Enter') {
       e.preventDefault();
       e.currentTarget.blur();
+      return;
+    }
+
+    if (multiline && e.key === 'Enter') {
+      e.preventDefault();
+      const el = e.currentTarget;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) {
+        document.execCommand('insertText', false, '\n');
+        return;
+      }
+
+      // Delete any selected text first
+      if (!sel.isCollapsed) document.execCommand('delete', false);
+
+      const range = sel.getRangeAt(0);
+      // Get text from start of element to cursor
+      const preRange = document.createRange();
+      preRange.selectNodeContents(el);
+      preRange.setEnd(range.endContainer, range.endOffset);
+      const beforeCursor = preRange.toString();
+
+      const lineStart = beforeCursor.lastIndexOf('\n') + 1;
+      const currentLine = beforeCursor.slice(lineStart);
+
+      const bulletMatch = currentLine.startsWith('\u2022 ');
+      const numberedMatch = currentLine.match(/^(\d+)\. /);
+
+      if (bulletMatch) {
+        const content = currentLine.slice(2); // text after "• "
+        if (!content.trim()) {
+          // Empty bullet → exit list: remove "• " then add plain newline
+          const delRange = sel.getRangeAt(0).cloneRange();
+          try {
+            delRange.setStart(delRange.startContainer, delRange.startOffset - 2);
+            sel.removeAllRanges();
+            sel.addRange(delRange);
+          } catch { /* offset edge case, skip */ }
+          document.execCommand('insertText', false, '\n');
+        } else {
+          document.execCommand('insertText', false, '\n\u2022 ');
+        }
+      } else if (numberedMatch) {
+        const num = parseInt(numberedMatch[1]);
+        const content = currentLine.slice(numberedMatch[0].length);
+        if (!content.trim()) {
+          // Empty numbered → exit list
+          const len = numberedMatch[0].length;
+          const delRange = sel.getRangeAt(0).cloneRange();
+          try {
+            delRange.setStart(delRange.startContainer, delRange.startOffset - len);
+            sel.removeAllRanges();
+            sel.addRange(delRange);
+          } catch { /* offset edge case, skip */ }
+          document.execCommand('insertText', false, '\n');
+        } else {
+          document.execCommand('insertText', false, `\n${num + 1}. `);
+        }
+      } else {
+        document.execCommand('insertText', false, '\n');
+      }
     }
   };
 

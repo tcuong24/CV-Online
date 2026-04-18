@@ -93,13 +93,13 @@ export function SectionForm({ sectionKey, data, onChange }: SectionFormProps) {
   }
 
   // ── Experience ──
-  if (sectionKey === 'experience') {
+  if (sectionKey === 'experiences') {
     return (
       <EntryEditor
-        entries={data.experience as unknown as Entry[]}
+        entries={data.experiences as unknown as Entry[]}
         fields={EXP_FIELDS}
         addLabel="Thêm kinh nghiệm"
-        onChange={(v) => onChange({ ...data, experience: v as unknown as typeof data.experience })}
+        onChange={(v) => onChange({ ...data, experiences: v as unknown as typeof data.experiences })}
       />
     );
   }

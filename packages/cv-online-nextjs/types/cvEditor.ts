@@ -111,7 +111,7 @@ export interface ActivityEntry {
 
 export interface CvData {
   personal: PersonalInfo;
-  experience: ExperienceEntry[];
+  experiences: ExperienceEntry[];
   education: EducationEntry[];
   skills: SkillEntry[];
   projects: ProjectEntry[];
@@ -142,8 +142,7 @@ export interface StyleConfig {
 }
 
 export interface SectionLayoutConfig {
-  experience?: { style: 'timeline' | 'simple'; showDates: boolean; dateFormat?: string; };
-  experiences?: { style: 'timeline' | 'simple'; showDates: boolean };
+  experiences?: { style: 'timeline' | 'simple'; showDates: boolean; dateFormat?: string; };
   education?: { style: 'timeline' | 'simple'; showGPA: boolean };
   skills?: { style: 'grid' | 'list'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags'; };
   awards?: { style: 'compact' | 'detailed' };

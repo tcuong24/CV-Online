@@ -77,7 +77,7 @@ export const DEFAULT_DATA: CvData = {
     website: 'github.com/nguyenvanan',
     summary: 'Frontend developer với 5+ năm kinh nghiệm xây dựng ứng dụng web hiệu suất cao. Đam mê UI/UX, clean code và các công nghệ hiện đại như React, Next.js, TypeScript.',
   },
-  experience: [
+  experiences: [
     { id: uid(), title: 'Senior Frontend Developer', company: 'FPT Software',    location: 'Hà Nội', from: '2021', to: 'Hiện tại', desc: 'Phát triển và tối ưu ứng dụng web với React/Next.js. Cải thiện hiệu suất tải trang lên 40%. Mentor 3 junior developers.', open: false },
     { id: uid(), title: 'Frontend Developer',         company: 'VNG Corporation', location: 'TP.HCM', from: '2019', to: '2021',      desc: 'Xây dựng các tính năng mới cho nền tảng e-commerce với 2M+ người dùng.', open: false },
   ],

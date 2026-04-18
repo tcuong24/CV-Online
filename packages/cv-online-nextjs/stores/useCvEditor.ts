@@ -134,6 +134,9 @@ interface CvEditorState {
   reorderEntry: (key: string, fromIndex: number, toIndex: number) => void;
   reorderSkills: (fromIndex: number, toIndex: number) => void;
 
+  /** Patch display config for a single section (merge, not replace) */
+  patchSectionLayout: (key: string, patch: Record<string, unknown>) => void;
+
   /** Toggle section visibility (true → false, false → true) */
   toggleVisibility: (key: string) => void;
 
@@ -391,6 +394,17 @@ export const useCvEditorStore = create<CvEditorState>()(
             })
           ),
 
+        patchSectionLayout: (key, patch) =>
+          set(
+            produce((s: CvEditorState) => {
+              s.sectionLayout[key as keyof typeof s.sectionLayout] = {
+                ...s.sectionLayout[key as keyof typeof s.sectionLayout],
+                ...patch,
+              } as never;
+              s.isDirty = true;
+            })
+          ),
+
         toggleVisibility: (key) =>
           set(
             produce((s: CvEditorState) => {
@@ -473,10 +487,7 @@ export const useCvEditorStore = create<CvEditorState>()(
             ] as const;
 
             for (const { key, path } of sections) {
-              // Frontend data key might differ (e.g. state has 'experience' but path is 'experiences')
-              // map the `key` to frontend data key if needed, or fallback.
-              const feKey = key === 'experiences' ? 'experience' : key;
-              const items = (s.data as Record<string, unknown>)[feKey];
+              const items = (s.data as Record<string, unknown>)[key];
               if (!Array.isArray(items)) continue;
 
               items.forEach((item: Record<string, unknown>, index: number) => {
@@ -564,7 +575,7 @@ export const useCvEditorStore = create<CvEditorState>()(
                       const dbId = res.data?.id as string | undefined;
                       if (dbId) {
                         set(produce((draft: CvEditorState) => {
-                          const section = (draft.data as Record<string, unknown>)[feKey];
+                          const section = (draft.data as Record<string, unknown>)[key];
                           if (!Array.isArray(section)) return;
                           const entry = section.find(
                             (e: Record<string, unknown>) => e['id'] === item['id']

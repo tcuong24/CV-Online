@@ -6,7 +6,7 @@ import { SectionLayoutConfig, StyleConfig } from '@/types/cvEditor';
 /** Maps DB sectionsConfig keys → editor CvData keys */
 export const DB_KEY_MAP: Record<string, string> = {
   personalInfo:    'personal',
-  experiences:     'experience',
+  experiences:     'experiences',
   education:       'education',
   skills:          'skills',
   projects:        'projects',
@@ -180,8 +180,8 @@ export function parseSectionLayouts(sectionsConfig: unknown): SectionLayoutConfi
     const layout    = (secDef['layout'] ?? {}) as Record<string, unknown>;
     const editorKey = DB_KEY_MAP[dbKey] ?? dbKey;
 
-    if (editorKey === 'experience') {
-      result.experience = {
+    if (editorKey === 'experiences') {
+      result.experiences = {
         style:      (layout['style'] as 'timeline' | 'simple' | undefined) ?? 'timeline',
         showDates:  (layout['showDates'] as boolean | undefined) ?? true,
         dateFormat: (layout['dateFormat'] as string | undefined),
