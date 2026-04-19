@@ -116,7 +116,7 @@ export function AuthForm() {
       setErrors({ general: 'Email hoặc mật khẩu không đúng' });
       return;
     }
-    const callbackUrl = searchParams.get('callbackUrl') ?? '/';
+    const callbackUrl = searchParams.get('callbackUrl') ?? '/dashboard';
     router.push(callbackUrl);
     router.refresh(); // cập nhật server components (layout, header...)
   };

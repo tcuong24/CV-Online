@@ -37,7 +37,7 @@ interface StylePanelProps {
   onChange: (v: StyleConfig) => void;
   sidebarOpen?: boolean;
   onToggleSidebar?: () => void;
-  onSave?: () => Promise<string | null>;
+  onSave?: (opts?: { captureThumbnail?: boolean }) => Promise<string | null>;
   isSaving?: boolean;
   isDirty?: boolean;
   lastSavedAt?: number | null;
@@ -445,42 +445,33 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
         <>
           <div style={{ width: 1, height: 24, background: '#e5e7eb' }} />
           <Button
-            onClick={onSave}
-            disabled={isSaving || !isDirty}
+            onClick={() => onSave?.({ captureThumbnail: true })}
+            disabled={isSaving}
             title={
               isSaving ? 'Đang lưu...'
-                : !isDirty ? lastSavedAt
-                  ? `Đã lưu lúc ${new Date(lastSavedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
-                  : 'Chưa có thay đổi'
-                  : 'Lưu CV'
+                : 'Lưu CV & Preview'
             }
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
               padding: '7px 13px', borderRadius: 8, fontFamily: 'inherit',
               fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap',
-              cursor: isSaving || !isDirty ? 'default' : 'pointer',
+              cursor: isSaving ? 'default' : 'pointer',
               transition: 'background 0.15s, transform 0.1s',
-              border: isDirty
-                ? '1px solid #2563eb'
-                : '1px solid #d1fae5',
+              border: '1px solid #2563eb',
               background: isSaving
                 ? '#eff6ff'
-                : isDirty
-                  ? '#eff6ff'
-                  : '#f0fdf4',
+                : '#eff6ff',
               color: isSaving
                 ? '#93c5fd'
-                : isDirty
-                  ? '#2563eb'
-                  : '#16a34a',
+                : '#2563eb',
               opacity: isSaving ? 0.7 : 1,
             }}
             onMouseEnter={e => {
-              if (!isSaving && isDirty)
+              if (!isSaving)
                 e.currentTarget.style.background = '#dbeafe';
             }}
             onMouseLeave={e => {
-              if (!isSaving && isDirty)
+              if (!isSaving)
                 e.currentTarget.style.background = '#eff6ff';
             }}
           >
@@ -491,12 +482,10 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
                 border: '2px solid #93c5fd', borderTopColor: '#2563eb',
                 borderRadius: '50%', animation: 'spin 0.7s linear infinite',
               }} />
-            ) : isDirty ? (
-              <MdSave size={15} />
             ) : (
-              <MdCheck size={15} />
+              <MdSave size={15} />
             )}
-            {isSaving ? 'Đang lưu...' : isDirty ? 'Lưu CV' : 'Đã lưu'}
+            {isSaving ? 'Đang lưu...' : 'Lưu CV'}
           </Button>
           {/* CSS cho spinner */}
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

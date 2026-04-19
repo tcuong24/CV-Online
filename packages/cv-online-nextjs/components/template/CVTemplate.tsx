@@ -11,6 +11,11 @@ import { EditableText } from '../shared/EditableText';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { SingleColumnLayout } from './SingleColumnLayout';
 import { SidebarLeftLayout } from './SidebarLeftLayout';
+import { SidebarRightLayout } from './SidebarRightLayout';
+import { ExecutiveCenteredLayout } from './ExecutiveCentered';
+import { TechTimelineLayout } from './TechTimeline';
+import { AsymmetricLayout } from './AsymmetricLayout';
+import { TwoColumnLayout } from './TwoColumnLayout';
 
 export const PAGE_HEIGHT_PX = 1123; // full A4 height at 96dpi
 
@@ -199,6 +204,10 @@ export function SectionShell({
   const [hovered, setHovered] = useState(false);
   const titleColor = dark ? 'rgba(255,255,255,0.9)' : accentColor;
   const borderColor = dark ? 'rgba(255,255,255,0.3)' : accentColor;
+  const globalStyle = useCvEditorStore(s => s.style);
+  
+  const align = globalStyle?.sectionTitleAlign || 'left';
+  const borderStyle = globalStyle?.sectionTitleBorder || 'bottom';
 
   return (
     <div
@@ -220,10 +229,12 @@ export function SectionShell({
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: `2px solid ${borderColor}`,
-          paddingBottom: 5,
-          marginBottom: 12,
+          justifyContent: align === 'center' ? 'center' : 'space-between',
+          borderBottom: borderStyle === 'bottom' ? `2px solid ${borderColor}` : 'none',
+          paddingBottom: borderStyle !== 'none' ? 5 : 0,
+          marginBottom: borderStyle !== 'none' ? 12 : 6,
+          borderLeft: borderStyle === 'left' ? `4px solid ${borderColor}` : 'none',
+          paddingLeft: borderStyle === 'left' ? 8 : 0,
         }}
       >
         {/* Left: drag handle + title */}
@@ -369,6 +380,52 @@ export function ExperienceSection({
                           className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded"
                           title="Xóa kinh nghiệm này"
                         >✕</button>
+                      </div>
+                    ) : expStyle === 'cards' ? (
+                      <div style={{ marginBottom: 13, background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }} className="group/item relative flex">
+                        <span {...dragProvided.dragHandleProps} className="shrink-0 mr-2 cursor-grab opacity-0 group-hover/item:opacity-40 hover:opacity-100 transition-opacity text-gray-400 select-none" title="Kéo thả">⠿</span>
+                        <div className="flex-1">
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
+                            <span style={{ fontWeight: 700, color: '#111827', fontSize: fs * 1.05 }}>
+                              <EditableText value={e.title} onChange={(v) => ctx.updateEntry('experiences', e.id, { title: v })} placeholder="Chức danh" />
+                            </span>
+                            <span style={{ fontSize: fs * 0.82, color: '#6b7280', display: 'flex', gap: 4, alignItems: 'center', background: '#f3f4f6', padding: '2px 8px', borderRadius: '12px' }}>
+                              <EditableText value={e.from} onChange={(v) => ctx.updateEntry('experiences', e.id, { from: v })} placeholder="Bắt đầu" />
+                              <span>–</span>
+                              <EditableText value={e.to} onChange={(v) => ctx.updateEntry('experiences', e.id, { to: v })} placeholder="Kết thúc" />
+                            </span>
+                          </div>
+                          <div style={{ fontSize: fs * 0.9, color: accentColor, fontWeight: 600, marginBottom: 8, display: 'flex', gap: 4 }}>
+                            <EditableText value={e.company} onChange={(v) => ctx.updateEntry('experiences', e.id, { company: v })} placeholder="Công ty" />
+                            <span>·</span>
+                            <EditableText value={e.location} onChange={(v) => ctx.updateEntry('experiences', e.id, { location: v })} placeholder="Địa điểm" />
+                          </div>
+                          <div style={{ fontSize: fs * 0.9, color: '#4b5563', lineHeight: lh }}>
+                            <EditableText value={e.desc} onChange={(v) => ctx.updateEntry('experiences', e.id, { desc: v })} placeholder="Mô tả công việc" multiline />
+                          </div>
+                        </div>
+                        <button onClick={() => ctx.removeEntry('experiences', e.id)} className="absolute top-2 right-2 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+                      </div>
+                    ) : expStyle === 'bullets' ? (
+                      <div style={{ marginBottom: 12, paddingLeft: 16, position: 'relative' }} className="group/item flex">
+                        <div style={{ position: 'absolute', left: 4, top: 8, width: 4, height: 4, borderRadius: '50%', background: accentColor }} />
+                        <span {...dragProvided.dragHandleProps} className="shrink-0 -ml-5 mr-1 cursor-grab opacity-0 group-hover/item:opacity-40 hover:opacity-100 transition-opacity text-gray-400 select-none" title="Kéo thả">⠿</span>
+                        <div className="flex-1">
+                          <div style={{ fontWeight: 600, color: '#1c1917', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                            <EditableText value={e.title} onChange={(v) => ctx.updateEntry('experiences', e.id, { title: v })} placeholder="Chức danh" />
+                            <span style={{ fontWeight: 400, color: '#78716c' }}>tại</span>
+                            <span style={{ color: accentColor }}><EditableText value={e.company} onChange={(v) => ctx.updateEntry('experiences', e.id, { company: v })} placeholder="Công ty" /></span>
+                            <span style={{ fontSize: fs * 0.85, color: '#9ca3af', fontWeight: 400, display: 'flex', gap: 4, marginLeft: 'auto' }}>
+                              (<EditableText value={e.from} onChange={(v) => ctx.updateEntry('experiences', e.id, { from: v })} placeholder="Từ" />
+                              <span>-</span>
+                              <EditableText value={e.to} onChange={(v) => ctx.updateEntry('experiences', e.id, { to: v })} placeholder="Đến" />)
+                            </span>
+                          </div>
+                          <div style={{ fontSize: fs * 0.9, color: '#57534e', lineHeight: lh, mt: 2 }}>
+                            <EditableText value={e.desc} onChange={(v) => ctx.updateEntry('experiences', e.id, { desc: v })} placeholder="Mô tả công việc" multiline />
+                          </div>
+                        </div>
+                        <button onClick={() => ctx.removeEntry('experiences', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
                       </div>
                     ) : (
                       <div style={{ marginBottom: 13 }} className="group/item relative flex">
@@ -999,24 +1056,25 @@ export function CVTemplate({
     reorderSection, reorderSideKey, moveSectionToZone, patchSectionLayout,
   };
 
-  if (layoutType === 'sidebar-left') {
-    return (
-      <SidebarLeftLayout
-        data={data} order={order} ctx={ctx}
-        theme={theme} fontFamily={fontFamily}
-        align={align} fs={fs} lh={lh}
-        sideKeys={sideKeys}
-        zoom={zoom}
-      />
-    );
-  }
+  const layoutProps = {
+    data, order, ctx, theme, fontFamily, align, fs, lh, zoom,
+  };
 
-  return (
-    <SingleColumnLayout
-      data={data} order={order} ctx={ctx}
-      theme={theme} fontFamily={fontFamily}
-      align={align} fs={fs} lh={lh}
-      zoom={zoom}
-    />
-  );
+  switch (layoutType) {
+    case 'sidebar-left':
+      return <SidebarLeftLayout {...layoutProps} sideKeys={sideKeys} />;
+    case 'sidebar-right':
+      return <SidebarRightLayout {...layoutProps} sideKeys={sideKeys} />;
+    case 'executive-centered':
+      return <ExecutiveCenteredLayout {...layoutProps} />;
+    case 'tech-timeline':
+      return <TechTimelineLayout {...layoutProps} />;
+    case 'asymmetric':
+      return <AsymmetricLayout {...layoutProps} sideKeys={sideKeys} />;
+    case 'two-column':
+      return <TwoColumnLayout {...layoutProps} sideKeys={sideKeys} />;
+    case 'single-column':
+    default:
+      return <SingleColumnLayout {...layoutProps} />;
+  }
 }

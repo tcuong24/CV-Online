@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsBoolean, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsObject, IsArray } from 'class-validator';
 
 export class CreateTemplateDto {
   @IsString()
@@ -29,6 +29,11 @@ export class CreateTemplateDto {
 
   @IsObject()
   sectionsConfig: any;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }
 
 export class UpdateTemplateDto {
@@ -71,4 +76,9 @@ export class UpdateTemplateDto {
   @IsOptional()
   @IsObject()
   sectionsConfig?: any;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }

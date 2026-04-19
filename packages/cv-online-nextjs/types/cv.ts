@@ -49,6 +49,7 @@ export interface TemplateInfo {
   designConfig: DbDesignConfig;
   sectionsConfig: DbSectionsConfig;
   isPremium?: boolean;
+  tags?: string[];
 }
 export interface CvCustomSection {
   id: string;
@@ -213,6 +214,7 @@ export interface TemplateInCv {
   designConfig: DbDesignConfig;
   sectionsConfig: DbSectionsConfig;
   version: string;
+  tags?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -236,6 +238,7 @@ export interface CVWithRelations {
   createdAt: Date;
   updatedAt: Date;
   publishedAt?: Date | null;
+  thumbnailUrl?: string | null;
 
   // ── Style & layout ────────────────────────────────────────────────────────
   /**

@@ -9,7 +9,7 @@ import type { CVWithRelations, DbDesignConfig, DbSectionsConfig, TemplateInCv } 
 import { Skeleton } from "@/components/ui/skeleton";
 import { TemplateCard } from "./TemplateCard";
 import { useCvEditorStore } from "@/stores/useCvEditor";
-import { parseSectionsConfig,DB_KEY_MAP } from "@/lib/mappers/templateMapper";
+import { parseSectionsConfig, DB_KEY_MAP } from "@/lib/mappers/templateMapper";
 import { uid } from "@/constants/cvEditor";
 
 // Template from API (matches backend response)
@@ -28,15 +28,29 @@ interface Template {
   version: string;
   designConfig: DbDesignConfig;
   sectionsConfig: DbSectionsConfig;
+  tags: string[];
 }
 
 export function TemplatesGrid() {
   const router = useRouter();
   const { setCV } = useCvEditorStore();
   const { data: session } = useSession();
-  
+
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTag, setActiveTag] = useState<string>("All");
+
+  const allTags = Array.from(
+    new Set(
+      templates.flatMap((t) => t.tags || [])
+    )
+  );
+  const filteredTemplates =
+    activeTag === "All"
+      ? templates
+      : templates.filter((t) =>
+        t.tags?.includes(activeTag)
+      );
   const handleSelectTemplate = (template: Template) => {
     const { order, sideKeys: _sideKeys } = parseSectionsConfig(template.sectionsConfig);
     const availableSections = (template.sectionsConfig?.available_sections ?? []) as Array<{
@@ -69,8 +83,8 @@ export function TemplatesGrid() {
       customStyles: undefined,                        // user hasn't customised anything yet
       sectionsOrder: order,                           // normalized app keys
       sectionsVisibility: Object.keys(sectionsVisibility).length > 0
-      ? sectionsVisibility
-      : undefined,
+        ? sectionsVisibility
+        : undefined,
 
       // ── Template relation ──
       template: {
@@ -103,15 +117,15 @@ export function TemplatesGrid() {
         summary: '',
         avatarUrl: session?.user?.image ?? null,
       },
-      experiences:    [{ id: uid(), open: true,  title: '',  company: '',             location: '', from: '', to: '', desc: '' }],
-      education:      [{ id: uid(), open: true,  degree: '', school: '',              from: '', to: '', desc: '' }],
-      skills:         [{ id: uid(), name: '',    proficiencyLevel: 'intermediate',   proficiencyPercentage: 50, category: '' }],
-      projects:       [{ id: uid(), open: true,  name: '',   role: '',               tech: '', link: '', desc: '' }],
-      certifications: [{ id: uid(), open: true,  name: '',   issuingOrganization: '', issueDate: '', expiryDate: '', credentialId: '', credentialUrl: '', description: '' }],
-      languages:      [{ id: uid(), lang: '',    level: 3 }],
-      awards:         [{ id: uid(), open: true,  title: '',  org: '',                year: '' }],
+      experiences: [{ id: uid(), open: true, title: '', company: '', location: '', from: '', to: '', desc: '' }],
+      education: [{ id: uid(), open: true, degree: '', school: '', from: '', to: '', desc: '' }],
+      skills: [{ id: uid(), name: '', proficiencyLevel: 'intermediate', proficiencyPercentage: 50, category: '' }],
+      projects: [{ id: uid(), open: true, name: '', role: '', tech: '', link: '', desc: '' }],
+      certifications: [{ id: uid(), open: true, name: '', issuingOrganization: '', issueDate: '', expiryDate: '', credentialId: '', credentialUrl: '', description: '' }],
+      languages: [{ id: uid(), lang: '', level: 3 }],
+      awards: [{ id: uid(), open: true, title: '', org: '', year: '' }],
       references: [],
-      interests:  [],
+      interests: [],
       activities: [],
     };
 
@@ -147,27 +161,54 @@ export function TemplatesGrid() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {templates.map((template) => {
-       const primaryColor =
-          ((template.designConfig as Record<string, unknown> | undefined)
-            ?.['colors'] as Record<string, string> | undefined)?.['primary'] ?? "#3b82f6";
+    <div>
+      <div className="flex flex-wrap gap-2 mb-6">
+        <button
+          onClick={() => setActiveTag("All")}
+          className={`px-4 py-1 rounded-full text-sm border ${activeTag === "All"
+            ? "bg-blue-500 text-white"
+            : "bg-muted"
+            }`}
+        >
+          All
+        </button>
 
-        return (
-          <TemplateCard
-            key={template.id}
-            id={template.id}
-            image={template.thumbnailUrl || "/placeholder-cv.jpg"}
-            title={template.name}
-            description={template.description || ""}
-            alt={`${template.name} CV template`}
-            isEditable={true}
-            isPremium={template.isPremium}
-            accentColor={primaryColor}
-            handleSelectTemplate={() => handleSelectTemplate(template)}
-          />
-        );
-      })}
+        {allTags.map((tag) => (
+          <button
+            key={tag}
+            onClick={() => setActiveTag(tag)}
+            className={`px-4 py-1 rounded-full text-sm border ${activeTag === tag
+              ? "bg-blue-500 text-white"
+              : "bg-muted"
+              }`}
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+        {filteredTemplates.map((template) => {
+          const primaryColor =
+            ((template.designConfig as Record<string, unknown> | undefined)
+              ?.['colors'] as Record<string, string> | undefined)?.['primary'] ?? "#3b82f6";
+
+          return (
+            <TemplateCard
+              key={template.id}
+              id={template.id}
+              image={template.thumbnailUrl || "/placeholder-cv.jpg"}
+              title={template.name}
+              description={template.description || ""}
+              alt={`${template.name} CV template`}
+              isEditable={true}
+              isPremium={template.isPremium}
+              accentColor={primaryColor}
+              handleSelectTemplate={() => handleSelectTemplate(template)}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }

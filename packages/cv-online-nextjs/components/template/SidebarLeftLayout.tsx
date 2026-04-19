@@ -60,6 +60,8 @@ export function SidebarLeftPage({
     .map((w: string) => w[0])
     .join('');
   const avatarMargin = align === 'center' ? '0 auto 14px' : '0 0 14px';
+  const titleAlign = ctx.sectionLayout.global?.headerAlign || 'left';
+  const borderStyle = ctx.sectionLayout.global?.headerBorder || 'bottom';
   console.log(data);
   
   return (
@@ -184,7 +186,12 @@ export function SidebarLeftPage({
               style={{
                 fontSize: fs * 0.84, fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.1em', color: accentColor,
-                borderBottom: `2px solid ${accentColor}`, paddingBottom: 5, marginBottom: 12,
+                textAlign: titleAlign === 'center' ? 'center' : 'left',
+                borderBottom: borderStyle === 'bottom' ? `2px solid ${accentColor}` : 'none',
+                paddingBottom: borderStyle !== 'none' ? 5 : 0, 
+                marginBottom: borderStyle !== 'none' ? 12 : 6,
+                borderLeft: borderStyle === 'left' ? `4px solid ${accentColor}` : 'none',
+                paddingLeft: borderStyle === 'left' ? 8 : 0,
               }}
             >Giới thiệu</div>
             <div style={{ color: '#57534e', lineHeight: lh }}>

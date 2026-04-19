@@ -30,6 +30,7 @@ import {
   SectionLayoutConfig,
   SkillEntry,
   StyleConfig,
+  LayoutType,
 } from '@/types/cvEditor';
 import type { CVWithRelations, TemplateInfo } from '@/types/cv';
 import { DEFAULT_DATA, DEFAULT_ORDER, DEFAULT_STYLE } from '@/constants/cvEditor';
@@ -41,9 +42,6 @@ import {
 import { mapDbCvToCvData } from '@/lib/mappers/cvDataMapper';
 import axiosInstance from '@/lib/axios';
 import { temporal } from 'zundo';
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type LayoutType = 'single-column' | 'sidebar-left' | 'sidebar-right' | 'two-column';
 
 interface CvEditorState {
   // ── CV Content ──────────────────────────────────────────────────────────────
@@ -147,7 +145,7 @@ interface CvEditorState {
    * - PATCH /cvs/:cvId    when cvId is set
    * Returns the cvId on success, null on failure.
    */
-  syncToDb: () => Promise<string | null>;
+  syncToDb: (opts?: { captureThumbnail?: boolean }) => Promise<string | null>;
   markClean: () => void;
 
   // ── Actions: Editor UI ───────────────────────────────────────────────────────
@@ -420,13 +418,35 @@ export const useCvEditorStore = create<CvEditorState>()(
           ),
 
         // ── Sync ─────────────────────────────────────────────────────────────────
-        syncToDb: async () => {
+        syncToDb: async (opts) => {
           const s = get();
-          if (!s.isDirty) return s.cvId;
+          if (!s.isDirty && !opts?.captureThumbnail) return s.cvId;
 
           set({ isSaving: true });
           try {
             let cvId = s.cvId;
+            let uploadedUrl: string | undefined = undefined;
+
+            // Thumbnail Capture Logic
+            if (opts?.captureThumbnail) {
+              const firstPage = document.querySelector('.cv-paper') as HTMLElement;
+              if (firstPage) {
+                try {
+                  const { toJpeg } = await import('html-to-image');
+                  const base64Image = await toJpeg(firstPage, { quality: 0.6 });
+                  const fetchRes = await fetch(base64Image);
+                  const blob = await fetchRes.blob();
+                  const formData = new FormData();
+                  formData.append('file', blob, 'thumbnail.jpg');
+                  const uploadRes = await axiosInstance.post('/upload/image', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                  });
+                  uploadedUrl = uploadRes.data.url;
+                } catch (e) {
+                  console.error('Error uploading thumbnail to Cloudinary:', e);
+                }
+              }
+            }
 
             // ── 1. Tạo hoặc update CV record ─────────────────────────────────────
             if (!cvId) {
@@ -439,6 +459,7 @@ export const useCvEditorStore = create<CvEditorState>()(
                 customStyles: s.style,
                 sectionsOrder: s.order,
                 sectionsVisibility: s.visibility,
+                ...(uploadedUrl ? { thumbnailUrl: uploadedUrl } : {})
               });
               cvId = res.data.id as string;
               set({ cvId });
@@ -448,6 +469,7 @@ export const useCvEditorStore = create<CvEditorState>()(
                 customStyles: s.style,
                 sectionsOrder: s.order,
                 sectionsVisibility: s.visibility,
+                ...(uploadedUrl ? { thumbnailUrl: uploadedUrl } : {})
               });
             }
 

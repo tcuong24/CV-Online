@@ -50,6 +50,7 @@ export class TemplateService {
       version: true,
       sectionsConfig: true,
       designConfig: true,
+      tags: true,
     },
     });
   }
@@ -105,6 +106,7 @@ export class TemplateService {
         layoutType: createTemplateDto.layoutType,
         designConfig: createTemplateDto.designConfig,
         sectionsConfig: createTemplateDto.sectionsConfig,
+        tags: createTemplateDto.tags || [],
       },
     });
   }
@@ -130,6 +132,7 @@ export class TemplateService {
       layoutType,
       designConfig,
       sectionsConfig,
+      tags,
     } = updateTemplateDto;
 
     return this.prisma.template.update({
@@ -145,6 +148,7 @@ export class TemplateService {
         ...(layoutType !== undefined && { layoutType }),
         ...(designConfig !== undefined && { designConfig }),
         ...(sectionsConfig !== undefined && { sectionsConfig }),
+        ...(tags !== undefined && { tags }),
       },
     });
   }

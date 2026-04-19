@@ -1,4 +1,5 @@
 // ─── Core Data Types ───
+export type LayoutType = 'single-column' | 'sidebar-left' | 'sidebar-right' | 'executive-centered' | 'tech-timeline' | 'asymmetric' | 'two-column';
 
 export interface PersonalInfo {
   name: string;
@@ -139,14 +140,22 @@ export interface StyleConfig {
   nameAlign: string;
   fontSize: number;
   lineHeight: string;
+  sectionTitleAlign?: 'left' | 'center' | 'right';
+  sectionTitleBorder?: 'bottom' | 'none' | 'left';
+  headerStyle?: 'default' | 'centered' | 'floating';
+  headerBgColor?: string;
+  borderStyle?: 'minimal' | 'bold' | 'none';
+  contentAlignment?: 'left' | 'justified';
+  columnRatio?: string;
 }
 
 export interface SectionLayoutConfig {
-  experiences?: { style: 'timeline' | 'simple'; showDates: boolean; dateFormat?: string; };
-  education?: { style: 'timeline' | 'simple'; showGPA: boolean };
-  skills?: { style: 'grid' | 'list'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags'; };
+  experiences?: { style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines'; showDates: boolean; dateFormat?: string; };
+  education?: { style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines'; showGPA: boolean };
+  skills?: { style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags'; };
   awards?: { style: 'compact' | 'detailed' };
   personal?: { style: 'default' | 'centered' };
+  global?: { headerAlign?: 'left' | 'center' | 'right'; headerBorder?: 'bottom' | 'none' | 'left'; };
 }
 
 export interface FieldDef {

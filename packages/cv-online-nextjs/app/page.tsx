@@ -1,6 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
-import { Check, X, Menu } from "lucide-react";
 import Header from "@/components/layout/header";
 
 export default function Home() {
@@ -14,17 +12,17 @@ export default function Home() {
         {/* 2. Hero Section */}
         <section className="px-6 md:px-12 py-24 md:py-48 text-center max-w-5xl mx-auto">
           <h1 className="font-headline text-5xl md:text-8xl font-black tracking-tighter leading-tight mb-8">
-            Your Career,<br />Authored with Elegance.
+            Sự nghiệp của bạn,<br />Được viết bằng sự Tinh tế.
           </h1>
           <p className="font-body text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-            Professional CVs for those who value clarity and craft. Reject the ordinary; build a document that reflects your authority.
+            CV chuyên nghiệp dành cho những ai trân trọng sự rõ ràng và tỉ mỉ. Hãy từ bỏ những điều bình thường; xây dựng một bộ hồ sơ phản ánh quyền uy của bạn. Hãy từ chối sự tầm thường; xây dựng một tài liệu phản ánh uy quyền của bạn.
           </p>
           <div className="flex flex-col md:flex-row justify-center items-center gap-8">
             <Link href="/editor" className={`w-full md:w-auto px-12 text-center ${btnEditorial}`}>
-              Build your CV
+              Tạo CV của bạn
             </Link>
             <Link className="font-label uppercase tracking-widest text-[0.75rem] border-b border-foreground pb-1 hover:border-transparent transition-all" href="#">
-              View examples
+              Xem các mẫu CV
             </Link>
           </div>
           <hr className="mt-24 border-foreground/10" />
@@ -34,7 +32,7 @@ export default function Home() {
         <section className="px-6 md:px-12 py-24 max-w-[1440px] mx-auto">
           <div className="mb-16">
             <span className="block w-12 h-px bg-foreground mb-4"></span>
-            <h2 className="font-headline text-3xl md:text-5xl font-black italic tracking-tight">Templates</h2>
+            <h2 className="font-headline text-3xl md:text-5xl font-black italic tracking-tight">Mẫu CV</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {/* Template Card 1 */}
@@ -152,12 +150,11 @@ export default function Home() {
         </section>
 
         {/* 7. Pricing */}
-        <section className="px-6 md:px-12 py-32 max-w-[1440px] mx-auto">
+        {/* <section className="px-6 md:px-12 py-32 max-w-[1440px] mx-auto">
           <div className="mb-16 text-center">
             <h2 className="font-headline text-4xl font-black">Investment</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 border border-foreground divide-y md:divide-y-0 md:divide-x divide-foreground">
-            {/* Plan 1 */}
             <div className="p-12 space-y-8 flex flex-col">
               <div>
                 <h4 className="font-label uppercase tracking-widest text-[0.7rem] mb-2">Starter</h4>
@@ -170,7 +167,6 @@ export default function Home() {
               </ul>
               <button className={btnEditorial}>Select Plan</button>
             </div>
-            {/* Plan 2 */}
             <div className="p-12 space-y-8 flex flex-col bg-muted/40">
               <div>
                 <h4 className="font-label uppercase tracking-widest text-[0.7rem] mb-2">Professional</h4>
@@ -183,7 +179,6 @@ export default function Home() {
               </ul>
               <button className={`${btnEditorial} bg-foreground text-background`}>Current Standard</button>
             </div>
-            {/* Plan 3 */}
             <div className="p-12 space-y-8 flex flex-col">
               <div>
                 <h4 className="font-label uppercase tracking-widest text-[0.7rem] mb-2">Executive</h4>
@@ -197,7 +192,7 @@ export default function Home() {
               <button className={btnEditorial}>Select Plan</button>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* 8. CTA Banner */}
         <section className="px-6 md:px-12 py-32 bg-foreground text-background text-center">

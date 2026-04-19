@@ -273,7 +273,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (status === 'loading') return;
     if (status === 'unauthenticated') {
-      router.push('/login');
+      router.push('/auth');
       return;
     }
 
@@ -291,7 +291,7 @@ export default function ProfilePage() {
         );
 
         if (res.status === 401) {
-          router.push('/login');
+          router.push('/auth');
           return;
         }
 

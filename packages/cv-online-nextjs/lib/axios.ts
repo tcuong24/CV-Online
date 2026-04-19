@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getSession } from "next-auth/react";
+import { getSession, signOut } from "next-auth/react";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:9999/api";
@@ -25,10 +25,11 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
-        window.location.href = "/auth";
+        // Clear NextAuth session and redirect to login
+        await signOut({ callbackUrl: "/auth", redirect: true });
       }
     }
     return Promise.reject(error);

@@ -15,7 +15,7 @@ interface NestLoginResponse {
 }
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt', maxAge: 7 * 24 * 60 * 60 },
 
   providers: [
     GoogleProvider({
@@ -118,7 +118,7 @@ export const authOptions: NextAuthOptions = {
   },
 
   pages: {
-    signIn: '/login',
-    error:  '/login',
+    signIn: '/auth',
+    error:  '/auth',
   },
 };

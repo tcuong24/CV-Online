@@ -22,6 +22,7 @@ export class CvService {
         userId,
         title: createCVDto.title,
         templateId: createCVDto.templateId,
+        thumbnailUrl: createCVDto.thumbnailUrl,
         status: 'draft',
       },
       include: {

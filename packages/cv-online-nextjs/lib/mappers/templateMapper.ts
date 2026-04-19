@@ -114,6 +114,15 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
 
   // ── Alignment ──
   const nameAlign = (layout['nameAlign'] as string | undefined) ?? 'left';
+  const sectionTitleAlign = layout['sectionTitleAlign'] as 'left' | 'center' | 'right' | undefined;
+  const sectionTitleBorder = layout['sectionTitleBorder'] as 'bottom' | 'none' | 'left' | undefined;
+
+  // ── New Layout Props ──
+  const headerStyle = layout['headerStyle'] as 'default' | 'centered' | 'floating' | undefined;
+  const headerBgColor = layout['headerBgColor'] as string | undefined;
+  const borderStyle = layout['borderStyle'] as 'minimal' | 'bold' | 'none' | undefined;
+  const contentAlignment = layout['contentAlignment'] as 'left' | 'justified' | undefined;
+  const columnRatio = layout['columnRatio'] as string | undefined;
 
   return {
     themeId,
@@ -123,6 +132,13 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
     nameAlign,
     fontSize,
     lineHeight,
+    sectionTitleAlign,
+    sectionTitleBorder,
+    headerStyle,
+    headerBgColor,
+    borderStyle,
+    contentAlignment,
+    columnRatio,
   };
 }
 
@@ -182,19 +198,19 @@ export function parseSectionLayouts(sectionsConfig: unknown): SectionLayoutConfi
 
     if (editorKey === 'experiences') {
       result.experiences = {
-        style:      (layout['style'] as 'timeline' | 'simple' | undefined) ?? 'timeline',
+        style:      (layout['style'] as any) ?? 'timeline',
         showDates:  (layout['showDates'] as boolean | undefined) ?? true,
         dateFormat: (layout['dateFormat'] as string | undefined),
       };
     } else if (editorKey === 'education') {
       result.education = {
-        style:   (layout['style'] as 'timeline' | 'simple' | undefined) ?? 'timeline',
+        style:   (layout['style'] as any) ?? 'timeline',
         showGPA: (layout['showGPA'] as boolean | undefined) ?? false,
       };
     } else if (editorKey === 'skills') {
-      // FIX: tách layout style ('grid'|'list') khỏi proficiency style ('bars'|'dots'|'tags')
+      // FIX: tách layout style ('grid'|'list'|'comma-separated') khỏi proficiency style ('bars'|'dots'|'tags')
       result.skills = {
-        style:            (layout['style'] as 'grid' | 'list' | undefined) ?? 'grid',
+        style:            (layout['style'] as any) ?? 'grid',
         columns:          layout['columns'] as number | undefined,
         showProficiency:  (layout['showProficiency'] as boolean | undefined) ?? false,
         proficiencyStyle: (layout['proficiencyStyle'] as 'bars' | 'dots' | 'tags' | undefined) ?? 'bars',
@@ -206,6 +222,11 @@ export function parseSectionLayouts(sectionsConfig: unknown): SectionLayoutConfi
     } else if (editorKey === 'personal') {
       result.personal = {
         style: (layout['style'] as 'default' | 'centered' | undefined) ?? 'default',
+      };
+    } else if (editorKey === 'global') {
+      result.global = {
+        headerAlign:  layout['headerAlign'] as any,
+        headerBorder: layout['headerBorder'] as any,
       };
     }
   }

@@ -34,6 +34,11 @@ export class CreateTemplateDto {
 
   @IsObject()
   sectionsConfig: any;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }
 
 export class UpdateTemplateDto {
@@ -76,6 +81,11 @@ export class UpdateTemplateDto {
   @IsOptional()
   @IsObject()
   sectionsConfig?: any;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }
 
 // =============================================================================
@@ -89,6 +99,10 @@ export class CreateCVDto {
   @IsOptional()
   @IsString()
   templateId?: string;
+
+  @IsOptional()
+  @IsString()
+  thumbnailUrl?: string;
 }
 
 export class UpdateCVDto {
@@ -99,6 +113,10 @@ export class UpdateCVDto {
   @IsOptional()
   @IsString()
   templateId?: string;
+
+  @IsOptional()
+  @IsString()
+  thumbnailUrl?: string;
 
   @IsOptional()
   @IsObject()
