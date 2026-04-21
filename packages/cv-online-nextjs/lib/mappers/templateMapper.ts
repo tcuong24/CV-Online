@@ -1,21 +1,21 @@
 import { COLOR_THEMES, FONT_OPTIONS, LH_MAP } from '@/constants/cvEditor';
-import { SectionLayoutConfig, StyleConfig } from '@/types/cvEditor';
+import { SectionLayoutConfig, StyleConfig, StyleColors, StyleTypography, StyleSpacing, StyleBorders } from '@/types/cvEditor';
 
 // ─── Key normalisation ───────────────────────────────────────────────────────
 
 /** Maps DB sectionsConfig keys → editor CvData keys */
 export const DB_KEY_MAP: Record<string, string> = {
-  personalInfo:    'personal',
-  experiences:     'experiences',
-  education:       'education',
-  skills:          'skills',
-  projects:        'projects',
-  awards:          'awards',
-  languages:       'languages',
-  certifications:  'certifications',
-  references:      'references',
-  interests:       'interests',
-  activities:      'activities',
+  personalInfo: 'personal',
+  experiences: 'experiences',
+  education: 'education',
+  skills: 'skills',
+  projects: 'projects',
+  awards: 'awards',
+  languages: 'languages',
+  certifications: 'certifications',
+  references: 'references',
+  interests: 'interests',
+  activities: 'activities',
 };
 
 // ─── Design config parser ────────────────────────────────────────────────────
@@ -55,19 +55,41 @@ function normalizeAvailableSections(
   return {};
 }
 export function parseDesignConfig(designConfig: unknown): StyleConfig {
-  const cfg = (designConfig ?? {}) as Record<string, unknown>;
-  const colors    = (cfg['colors']     ?? {}) as Record<string, unknown>;
-  const typo      = (cfg['typography'] ?? {}) as Record<string, unknown>;
-  const layout    = (cfg['layout']     ?? {}) as Record<string, unknown>;
-  const fonts     = (typo['fonts']       ?? {}) as Record<string, unknown>;
-  const sizes     = (typo['sizes']       ?? {}) as Record<string, unknown>;
-  const lhMap     = (typo['lineHeights'] ?? {}) as Record<string, unknown>;
-  const bodyFont  = (fonts['body'] ?? {}) as Record<string, unknown>;
-  const bg        = (colors['background'] ?? {}) as Record<string, unknown>;
+  const cfg = (designConfig ?? {}) as Record<string, any>;
 
-  // ── Color ──
-  const primaryHex = (colors['primary'] as string | undefined) ?? '';
+  // --- Unified nested structure extraction ---
+  const colorsCfg = cfg['colors'] ?? {};
+  const typoCfg = cfg['typography'] ?? {};
+  const spacingCfg = cfg['spacing'] ?? {};
+  const bordersCfg = cfg['borders'] ?? {};
+  const layoutCfg = cfg['layout'] ?? {};
+
+  const backgroundCfg = colorsCfg['background'] ?? {};
+  const textColorsCfg = colorsCfg['text'] ?? {};
+  const fontsCfg = typoCfg['fonts'] ?? {};
+  const sizesCfg = typoCfg['sizes'] ?? {};
+  const lhMapCfg = typoCfg['lineHeights'] ?? {};
+
+  // ── Color Processing ──
+  const primaryHex = colorsCfg['primary'] || colorsCfg['accent'] || '';
   const presetTheme = COLOR_THEMES.find((t) => t.primary === primaryHex);
+
+  const colors: StyleColors = {
+    text: {
+      body: textColorsCfg['body'] || '#333333',
+      muted: textColorsCfg['muted'] || '#666666',
+      heading: textColorsCfg['heading'] || '#000000',
+    },
+    accent: colorsCfg['accent'] || primaryHex || '#0f766e',
+    primary: colorsCfg['primary'] || primaryHex || '#0f766e',
+    secondary: colorsCfg['secondary'] || '#0f766e',
+    divider: colorsCfg['divider'] || '#e5e7eb',
+    background: {
+      page: backgroundCfg['page'] || backgroundCfg['light'] || '#ffffff',
+      section: backgroundCfg['section'] || 'transparent',
+      sidebar: backgroundCfg['sidebar'] || '#f3f4f6',
+    },
+  };
 
   let themeId: string;
   let customColor: StyleConfig['customColor'];
@@ -77,17 +99,19 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
   } else {
     themeId = '_custom';
     customColor = {
-      primary: primaryHex || '#0f766e',
-      dark:    ((colors['secondary'] as string | undefined) ?? primaryHex) || '#0f766e',
-      light:   (bg['light'] as string | undefined) ?? (primaryHex ? `${primaryHex}20` : '#f0fdf4'),
+      primary: colors.primary,
+      dark: colors.secondary,
+      light: colors.background.page,
+      sidebar: colors.background.sidebar,
     };
   }
 
-  // ── Font ──
-  const dbFamily = (bodyFont['family'] as string | undefined) ?? '';
+  // ── Typography Processing ──
+  const fonts = fontsCfg['body'] ?? {};
+  const dbFamily = (fonts['family'] as string | undefined) ?? '';
   const presetFont = FONT_OPTIONS.find(
     (f) => f.family.toLowerCase().includes(dbFamily.toLowerCase()) ||
-           dbFamily.toLowerCase().includes(f.label.toLowerCase())
+      dbFamily.toLowerCase().includes(f.label.toLowerCase())
   );
 
   let fontId: string;
@@ -100,45 +124,97 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
     customFontFamily = dbFamily || undefined;
   }
 
-  // ── Font size ──
-  const rawSize = (sizes['body'] as string | undefined) ?? '13px';
-  const fontSize = parseInt(rawSize, 10) || 13;
+  const typography: StyleTypography = {
+    fonts: {
+      body: { 
+        family: dbFamily || 'sans-serif', 
+        weights: fontsCfg['body']?.weights || [400, 500, 600],
+        googleFont: !!fontsCfg['body']?.googleFont
+      },
+      heading: { 
+        family: fontsCfg['heading']?.family || dbFamily || 'sans-serif',
+        weights: fontsCfg['heading']?.weights || [600, 700],
+        googleFont: !!fontsCfg['heading']?.googleFont
+      },
+    },
+    sizes: {
+      body: sizesCfg['body'] || '14px',
+      name: sizesCfg['name'] || '32px',
+      small: sizesCfg['small'] || '12px',
+      subsection: sizesCfg['subsection'] || '16px',
+      section_title: sizesCfg['section_title'] || '20px',
+    },
+    lineHeights: {
+      body: typeof lhMapCfg['body'] === 'number' ? lhMapCfg['body'] : 1.6,
+      heading: typeof lhMapCfg['heading'] === 'number' ? lhMapCfg['heading'] : 1.2,
+    },
+    letterSpacing: typoCfg['letterSpacing'],
+    textTransform: typoCfg['textTransform'],
+  };
 
-  // ── Line height ──
-  const rawLh = lhMap['body'] as number | string | undefined;
-  const lhNum = typeof rawLh === 'string' ? parseFloat(rawLh) : rawLh ?? 1.65;
-  // Map number → tight/normal/loose by finding closest LH_MAP value
+  // ── Spacing ──
+  const pageSpacing = spacingCfg['page'] ?? {};
+  const spacing: StyleSpacing = {
+    page: {
+      margin: pageSpacing['margin'] || '0',
+      sidebarPadding: pageSpacing['sidebarPadding'] || '28px 18px',
+      mainPadding: pageSpacing['mainPadding'] || '28px 26px',
+    },
+    element: {
+      gap: spacingCfg['element']?.gap || '12px',
+    },
+    section: {
+      marginBottom: spacingCfg['section']?.marginBottom || '24px',
+      marginTop: spacingCfg['section']?.marginTop || '0px',
+    },
+  };
+
+  // ── Borders ──
+  const secDiv = bordersCfg['sectionDivider'] ?? {};
+  const borders: StyleBorders = {
+    sectionDivider: {
+      width: secDiv['width'] || '1px',
+      style: secDiv['style'] || 'solid',
+      color: secDiv['color'] || colors.divider,
+      spacing: secDiv['spacing'] || '12px',
+    },
+  };
+
+  // ── Final Config ──
+  const rawSize = typography.sizes.body;
+  const fontSize = parseInt(rawSize, 10) || 14;
+
+  const lhNum = typography.lineHeights.body;
   const lineHeight = Object.entries(LH_MAP).reduce((best, [key, val]) =>
     Math.abs(val - lhNum) < Math.abs(LH_MAP[best] - lhNum) ? key : best
-  , 'normal');
-
-  // ── Alignment ──
-  const nameAlign = (layout['nameAlign'] as string | undefined) ?? 'left';
-  const sectionTitleAlign = layout['sectionTitleAlign'] as 'left' | 'center' | 'right' | undefined;
-  const sectionTitleBorder = layout['sectionTitleBorder'] as 'bottom' | 'none' | 'left' | undefined;
-
-  // ── New Layout Props ──
-  const headerStyle = layout['headerStyle'] as 'default' | 'centered' | 'floating' | undefined;
-  const headerBgColor = layout['headerBgColor'] as string | undefined;
-  const borderStyle = layout['borderStyle'] as 'minimal' | 'bold' | 'none' | undefined;
-  const contentAlignment = layout['contentAlignment'] as 'left' | 'justified' | undefined;
-  const columnRatio = layout['columnRatio'] as string | undefined;
+    , 'normal');
 
   return {
     themeId,
     ...(customColor ? { customColor } : {}),
     fontId,
     ...(customFontFamily ? { customFontFamily } : {}),
-    nameAlign,
+    nameAlign: layoutCfg['nameAlign'] || 'left',
     fontSize,
     lineHeight,
-    sectionTitleAlign,
-    sectionTitleBorder,
-    headerStyle,
-    headerBgColor,
-    borderStyle,
-    contentAlignment,
-    columnRatio,
+    sectionTitleAlign: layoutCfg['sectionTitleAlign'],
+    sectionTitleBorder: layoutCfg['sectionTitleBorder'],
+    headerStyle: layoutCfg['headerStyle'],
+    headerBgColor: layoutCfg['headerBgColor'],
+    borderStyle: layoutCfg['borderStyle'],
+    contentAlignment: layoutCfg['contentAlignment'],
+    columnRatio: layoutCfg['columnRatio'],
+    // New nested properties
+    colors,
+    typography,
+    spacing,
+    borders,
+    layout: {
+      maxWidth: layoutCfg['maxWidth'] || '100%',
+      columnRatio: layoutCfg['columnRatio'] || '220px 1fr'
+    },
+    // Compatibility fields
+    textColor: colors.text
   };
 }
 
@@ -160,7 +236,7 @@ export function parseSectionsConfig(
   sectionsConfig: unknown
 ): { order: string[]; sideKeys: string[] } {
   const cfg = (sectionsConfig ?? {}) as Record<string, unknown>;
-  const defaultOrder    = (cfg['default_order']    ?? []) as string[];
+  const defaultOrder = (cfg['default_order'] ?? []) as string[];
   const sidebarSections = (cfg['sidebar_sections'] ?? []) as string[];
 
   // FIX: dùng normalizeAvailableSections thay vì cast thẳng
@@ -193,27 +269,27 @@ export function parseSectionLayouts(sectionsConfig: unknown): SectionLayoutConfi
   const result: SectionLayoutConfig = {};
 
   for (const [dbKey, secDef] of Object.entries(available)) {
-    const layout    = (secDef['layout'] ?? {}) as Record<string, unknown>;
+    const layout = (secDef['layout'] ?? {}) as Record<string, unknown>;
     const editorKey = DB_KEY_MAP[dbKey] ?? dbKey;
 
     if (editorKey === 'experiences') {
       result.experiences = {
-        style:      (layout['style'] as any) ?? 'timeline',
-        showDates:  (layout['showDates'] as boolean | undefined) ?? true,
+        style: (layout['style'] as any) || 'detailed', // Default to detailed if missing
+        showDates: (layout['showDates'] as boolean | undefined) ?? true,
         dateFormat: (layout['dateFormat'] as string | undefined),
       };
     } else if (editorKey === 'education') {
       result.education = {
-        style:   (layout['style'] as any) ?? 'timeline',
+        style: (layout['style'] as any) ?? 'timeline',
         showGPA: (layout['showGPA'] as boolean | undefined) ?? false,
       };
     } else if (editorKey === 'skills') {
       // FIX: tách layout style ('grid'|'list'|'comma-separated') khỏi proficiency style ('bars'|'dots'|'tags')
       result.skills = {
-        style:            (layout['style'] as any) ?? 'grid',
-        columns:          layout['columns'] as number | undefined,
-        showProficiency:  (layout['showProficiency'] as boolean | undefined) ?? false,
-        proficiencyStyle: (layout['proficiencyStyle'] as 'bars' | 'dots' | 'tags' | undefined) ?? 'bars',
+        style: (layout['style'] as any) ?? 'grid',
+        columns: layout['columns'] as number | undefined,
+        showProficiency: (layout['showProficiency'] as boolean | undefined) ?? false,
+        proficiencyStyle: (layout['proficiencyStyle'] || secDef['proficiencyStyle'] || 'bars') as any,
       };
     } else if (editorKey === 'awards') {
       result.awards = {
@@ -225,7 +301,7 @@ export function parseSectionLayouts(sectionsConfig: unknown): SectionLayoutConfi
       };
     } else if (editorKey === 'global') {
       result.global = {
-        headerAlign:  layout['headerAlign'] as any,
+        headerAlign: layout['headerAlign'] as any,
         headerBorder: layout['headerBorder'] as any,
       };
     }

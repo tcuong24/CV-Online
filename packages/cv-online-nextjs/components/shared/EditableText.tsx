@@ -109,6 +109,7 @@ export function EditableText({
     <span
       ref={contentEditableRef}
       contentEditable
+      spellCheck="false"
       suppressContentEditableWarning
       onFocus={(e) => {
         setIsFocused(true);

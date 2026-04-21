@@ -12,6 +12,7 @@ import {
   MdSave,
   MdTextFields,
   MdViewSidebar,
+  MdAutoFixHigh,
 } from 'react-icons/md';
 import { COLOR_THEMES, FONT_OPTIONS } from '@/constants/cvEditor';
 import { StyleConfig } from '@/types/cvEditor';
@@ -24,7 +25,9 @@ import {
 import { Button } from '../ui/button';
 import { useStore } from 'zustand';
 import { useCvEditorStore } from '@/stores/useCvEditor';
-import { ArrowLeft, ArrowRight, Redo, Undo } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Redo, Undo, Loader2 } from 'lucide-react';
+import axiosInstance from '@/lib/axios';
+import { toast } from 'sonner';
 
 import { resolveTheme } from '@/lib/mappers/templateMapper';
 
@@ -56,7 +59,12 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
   const [savedFontId, setSavedFontId] = useState(style.fontId);
   const [isInDescField, setIsInDescField] = useState(false);
   const [activeListType, setActiveListType] = useState<'bullet' | 'numbered' | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const focusedDescElRef = useRef<HTMLElement | null>(null);
+
+  const setData = useCvEditorStore((s) => s.setData);
+  const setOrder = useCvEditorStore((s) => s.setOrder);
 
   useEffect(() => {
     const getListType = (el: HTMLElement): 'bullet' | 'numbered' | null => {
@@ -156,6 +164,91 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
       sel?.removeAllRanges();
       sel?.addRange(range);
       document.execCommand('insertText', false, result.join('\n'));
+    }
+  };
+
+  const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setIsImporting(true);
+    const toastId = toast.loading('AI đang phân tích CV của bạn...');
+
+    try {
+      const res = await axiosInstance.post('/cvs/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      const importedData = res.data;
+      
+      const currentData = useCvEditorStore.getState().data;
+      
+      // Inject unique IDs for Draggable components
+      const formattedData = {
+        ...importedData,
+        personal: {
+          ...(currentData.personal || {}), 
+          ...(importedData.personal || {}),
+          name: importedData.personal?.name || currentData.personal?.name || '',
+          summary: importedData.summary || importedData.personal?.summary || currentData.personal?.summary || '', 
+          role: importedData.personal?.role || currentData.personal?.role || '',
+        },
+        experiences: (importedData.experiences || []).map((item: any) => ({ 
+          ...item, 
+          id: crypto.randomUUID(),
+          from: item.from || '',
+          to: item.to || '',
+          desc: item.desc || item.description || ''
+        })),
+        education: (importedData.educations || []).map((item: any) => ({ 
+          ...item, 
+          id: crypto.randomUUID(),
+          from: item.from || '',
+          to: item.to || '',
+          desc: item.desc || item.description || ''
+        })),
+        projects: (importedData.projects || []).map((item: any) => ({ 
+          ...item, 
+          id: crypto.randomUUID(),
+          name: item.name || item.title || '',
+          from: item.from || '',
+          to: item.to || '',
+          tech: item.tech || '',
+          desc: item.desc || item.description || ''
+        })),
+        languages: (importedData.languages || []).map((item: any) => ({ 
+          id: crypto.randomUUID(),
+          lang: item.lang || item.name || item, 
+          level: Number(item.level) || 3
+        })),
+        skills: (importedData.skills || []).map((skillName: string) => ({ id: crypto.randomUUID(), name: skillName })),
+      };
+
+      // Update store with formatted data
+      setData(formattedData as any);
+      
+      // Smartly set order based on what AI found
+      const activeSections = Object.keys(formattedData).filter(key => 
+        key !== 'personal' && 
+        key !== 'summary' &&
+        Array.isArray((formattedData as any)[key]) && 
+        (formattedData as any)[key].length > 0
+      );
+      
+      if (activeSections.length > 0) {
+        setOrder(['personal', 'summary', ...activeSections]);
+      }
+
+      toast.success('Đã nhập dữ liệu thành công!', { id: toastId });
+    } catch (error: any) {
+      console.error('Import error:', error);
+      toast.error(error.response?.data?.message || 'Không thể bóc tách dữ liệu từ file này.', { id: toastId });
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -404,7 +497,7 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
         <input
           type="range"
           min={11}
-          max={16}
+          max={18}
           value={style.fontSize}
           onChange={(e) => set('fontSize', Number(e.target.value))}
           style={{ width: 80, cursor: 'pointer' }}
@@ -461,6 +554,36 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
           Xem trước
         </Button>
       </a>
+      {/* ── AI Import ── */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileImport} 
+        style={{ display: 'none' }} 
+        accept=".pdf,.docx,.doc,image/*"
+      />
+      <Button
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isImporting}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          padding: '7px 13px', borderRadius: 8,
+          border: '1px solid #7c3aed', background: '#f5f3ff',
+          color: '#7c3aed', cursor: isImporting ? 'default' : 'pointer',
+          fontFamily: 'inherit', fontSize: 12.5, fontWeight: 600,
+          transition: 'all 0.15s ease', whiteSpace: 'nowrap',
+        }}
+        onMouseEnter={e => !isImporting && (e.currentTarget.style.background = '#ede9fe')}
+        onMouseLeave={e => !isImporting && (e.currentTarget.style.background = '#f5f3ff')}
+      >
+        {isImporting ? (
+          <Loader2 size={15} className="animate-spin" />
+        ) : (
+          <MdAutoFixHigh size={15} />
+        )}
+        {isImporting ? 'Đang bóc tách...' : 'Nhập từ file (AI)'}
+      </Button>
+
       {onSave && (
         <>
           <div style={{ width: 1, height: 24, background: '#e5e7eb' }} />

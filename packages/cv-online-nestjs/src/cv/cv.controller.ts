@@ -8,8 +8,15 @@ import {
   Param,
   Request,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CvService } from './cv.service';
+import { CvParserService } from './cv-parser.service';
 import {
   CreateCVDto,
   UpdateCVDto,
@@ -18,10 +25,30 @@ import {
   CreatePersonalInfoDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-@UseGuards(JwtAuthGuard)                                  
+
+@UseGuards(JwtAuthGuard)
 @Controller('cvs')
 export class CvController {
-  constructor(private readonly cvService: CvService) { }
+  constructor(
+    private readonly cvService: CvService,
+    private readonly cvParserService: CvParserService,
+  ) { }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  async import(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }), // 5MB limit
+          new FileTypeValidator({ fileType: /(pdf|docx|msword|image\/.*)/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.cvParserService.parseFile(file);
+  }
 
   @Post()
   async create(@Request() req, @Body() createCVDto: CreateCVDto) {

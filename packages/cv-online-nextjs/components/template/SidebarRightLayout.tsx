@@ -35,7 +35,7 @@ export function SidebarRightPage({
   sideSections: any[];
   isFirst: boolean;
   data: CvData;
-  theme: any;
+  theme: { primary: string; dark: string; light: string; sidebar?: string };
   fontFamily: string;
   align: string;
   fs: number;
@@ -125,6 +125,7 @@ export function SidebarRightPage({
                       >
                          <SideSection 
                            title={title} 
+                           fontSize={fs * 0.75}
                            addButton={addButton} 
                            styleControls={styleControls}
                            dragHandleProps={dp.dragHandleProps}
@@ -162,7 +163,7 @@ export function SidebarRightLayout({
   data: CvData;
   order: string[];
   ctx: RenderCtx;
-  theme: any;
+  theme: { primary: string; dark: string; light: string; sidebar?: string };
   fontFamily: string;
   align: string;
   fs: number;
@@ -170,7 +171,7 @@ export function SidebarRightLayout({
   sideKeys: string[];
   zoom?: number;
 }) {
-  const accentColor = theme.primary;
+  const accentColor = theme.sidebar || theme.primary;
   const scale = zoom / 100;
   const headerStyle = ctx.sectionLayout.global?.headerStyle as any || 'default';
   

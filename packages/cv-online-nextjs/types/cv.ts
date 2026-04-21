@@ -10,6 +10,7 @@
 import type {
   PersonalInfo,
   StyleConfig,
+  LayoutType,
 } from './cvEditor';
 
 // ─── DB raw JSON types (opaque — parsed at runtime by templateMapper) ──────────
@@ -45,7 +46,7 @@ export interface TemplateInfo {
   name: string;
   description?: string | null;
   thumbnailUrl: string;
-  layoutType: 'single-column' | 'sidebar-left' | 'sidebar-right' | 'two-column';
+  layoutType: LayoutType;
   designConfig: DbDesignConfig;
   sectionsConfig: DbSectionsConfig;
   isPremium?: boolean;
@@ -210,7 +211,7 @@ export interface TemplateInCv {
   isPublished: boolean;
   popularityScore: number;
   usageCount: number;
-  layoutType: 'single-column' | 'sidebar-left' | 'sidebar-right' | 'two-column';
+  layoutType: LayoutType;
   designConfig: DbDesignConfig;
   sectionsConfig: DbSectionsConfig;
   version: string;
@@ -267,6 +268,11 @@ export interface CVWithRelations {
    * Shape: { "awards": false, "languages": false }
    */
   sectionsVisibility?: Record<string, boolean> | null;
+  
+  /**
+    * Cấu hình hiển thị chi tiết từng section do user chỉnh (style: 'detailed', showDates: true...)
+    */
+  sectionsLayout?: any | null;
 
   /**
    * Hướng C — references + customSections gộp vào đây.

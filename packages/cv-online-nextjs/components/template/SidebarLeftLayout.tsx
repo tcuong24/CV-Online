@@ -45,7 +45,7 @@ export function SidebarLeftPage({
   sideSections: SidebarSection[];
   isFirst: boolean;
   data: CvData;
-  theme: { primary: string; dark: string; light: string };
+  theme: { primary: string; dark: string; light: string; sidebar?: string };
   fontFamily: string;
   align: string;
   fs: number;
@@ -254,7 +254,7 @@ export function SidebarLeftLayout({
   data: CvData;
   order: string[];
   ctx: RenderCtx;
-  theme: { primary: string; dark: string; light: string };
+  theme: { primary: string; dark: string; light: string; sidebar?: string };
   fontFamily: string;
   align: string;
   fs: number;
@@ -262,7 +262,7 @@ export function SidebarLeftLayout({
   sideKeys: string[];
   zoom?: number;
 }) {
-  const accentColor = theme.primary;
+  const accentColor = theme.sidebar || theme.primary;
   const scale = zoom / 100;
   const isPersonal = (k: string) => k === 'personal' || k === 'personalInfo';
   const mainKeyList = order.filter((k) => !isPersonal(k) && !sideKeys.includes(k));
@@ -387,7 +387,7 @@ export function SidebarLeftLayout({
           + Thêm
         </button>
       );
-      return [{ key, content: <SideSection key={key} title="Kỹ năng" addButton={addBtn}><SkillsBlock data={data} ctx={ctx} dark={true} /></SideSection> }];
+      return [{ key, content: <SideSection key={key} title="Kỹ năng" fontSize={fs * 0.75} addButton={addBtn}><SkillsBlock data={data} ctx={ctx} dark={true} /></SideSection> }];
     }
 
     if (key === 'languages') {
@@ -398,7 +398,7 @@ export function SidebarLeftLayout({
       );
       return [{
         key, content: (
-          <SideSection key={key} title="Ngoại ngữ" addButton={addBtn}>
+          <SideSection key={key} title="Ngoại ngữ" fontSize={fs * 0.75} addButton={addBtn}>
             {data.languages?.map((l) => (
               <div key={l.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 6 }}>
                 <div style={{ flex: 1 }}>
@@ -425,7 +425,7 @@ export function SidebarLeftLayout({
       );
       return [{
         key, content: (
-          <SideSection key={key} title="Chứng chỉ" addButton={addBtn}>
+          <SideSection key={key} title="Chứng chỉ" fontSize={fs * 0.75} addButton={addBtn}>
             {data.awards?.map((e) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 6 }}>
                 <div style={{ flex: 1 }}>

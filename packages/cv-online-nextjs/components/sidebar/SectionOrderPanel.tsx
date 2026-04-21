@@ -23,8 +23,9 @@ export function SectionOrderPanel() {
   const setDragOver      = useCvEditorStore(s => s.setDragOver);
   const resetDrag        = useCvEditorStore(s => s.resetDrag);
 
-  const isSidebarLayout = layoutType === 'sidebar-left' || layoutType === 'sidebar-right';
-
+  const isSidebarLayout = layoutType === 'sidebar-left' || layoutType === 'sidebar-right' || layoutType === 'two-column';
+  console.log("abc",isSidebarLayout);
+  
   // In-flight drag refs
   const dragItem   = useRef<string | null>(null);
   const dragTarget = useRef<string | null>(null);

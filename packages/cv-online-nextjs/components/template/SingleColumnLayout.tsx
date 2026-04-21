@@ -261,6 +261,7 @@ export function SingleColumnLayout({
   fs: number;
   lh: number;
   zoom?: number;
+  textColor?: { body: string; muted: string; heading: string };
 }) {
   const accentColor = theme.primary;
   const scale = zoom / 100;

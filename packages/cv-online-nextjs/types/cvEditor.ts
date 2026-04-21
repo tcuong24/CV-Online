@@ -124,35 +124,84 @@ export interface CvData {
   activities: ActivityEntry[];
 }
 
-export interface StyleConfig {
-  /** Preset theme id (e.g. 'teal') OR '_custom' when DB hex has no preset match */
-  themeId: string;
-  /** Populated only when themeId === '_custom' */
-  customColor?: {
-    primary: string; // colors.primary hex from DB
-    dark: string;    // colors.secondary from DB, or primary as fallback
-    light: string;   // colors.background.light from DB, or primary+'20'
+export interface StyleColors {
+  text: { body: string; muted: string; heading: string };
+  accent: string;
+  primary: string;
+  secondary: string;
+  divider: string;
+  background: { page: string; section: string; sidebar: string };
+}
+
+export interface StyleTypography {
+  fonts: {
+    body: { family: string; weights?: number[]; googleFont?: boolean };
+    heading: { family: string; weights?: number[]; googleFont?: boolean };
   };
-  /** Preset font id (e.g. 'jakarta') OR '_custom' when DB font has no preset match */
+  sizes: {
+    body: string;
+    name: string;
+    small: string;
+    subsection: string;
+    section_title: string;
+  };
+  lineHeights: { body: number; heading: number };
+  letterSpacing?: { name?: string; section_title?: string; subsection?: string };
+  textTransform?: { name?: string; section_title?: string; subsection?: string };
+}
+
+export interface StyleSpacing {
+  page: { margin: string; sidebarPadding: string; mainPadding: string };
+  element: { gap: string };
+  section: { marginBottom: string; marginTop: string };
+}
+
+export interface StyleBorders {
+  sectionDivider: { width: string; style: string; color: string; spacing: string };
+}
+
+export interface StyleConfig {
+  /** Unified nested style configurations */
+  colors?: StyleColors;
+  typography?: StyleTypography;
+  spacing?: StyleSpacing;
+  borders?: StyleBorders;
+  layout?: {
+    maxWidth: string;
+    columnRatio: string;
+  };
+
+  // Legacy & Compatibility fields
+  themeId: string;
   fontId: string;
-  /** Raw CSS font-family string from DB, used when fontId === '_custom' */
+  customColor?: {
+    primary: string;
+    dark: string;
+    light: string;
+    sidebar?: string;
+  };
   customFontFamily?: string;
   nameAlign: string;
   fontSize: number;
   lineHeight: string;
   sectionTitleAlign?: 'left' | 'center' | 'right';
-  sectionTitleBorder?: 'bottom' | 'none' | 'left';
+  sectionTitleBorder?: 'bottom' | 'none' | 'left' | 'top';
   headerStyle?: 'default' | 'centered' | 'floating';
   headerBgColor?: string;
   borderStyle?: 'minimal' | 'bold' | 'none';
   contentAlignment?: 'left' | 'justified';
   columnRatio?: string;
+  textColor?: {
+    body: string;
+    muted: string;
+    heading: string;
+  };
 }
 
 export interface SectionLayoutConfig {
-  experiences?: { style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines'; showDates: boolean; dateFormat?: string; };
-  education?: { style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines'; showGPA: boolean };
-  skills?: { style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags'; };
+  experiences?: { style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showDates: boolean; dateFormat?: string; };
+  education?: { style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showGPA: boolean };
+  skills?: { style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags' | 'none'; };
   awards?: { style: 'compact' | 'detailed' };
   personal?: { style: 'default' | 'centered' };
   global?: { headerAlign?: 'left' | 'center' | 'right'; headerBorder?: 'bottom' | 'none' | 'left'; };

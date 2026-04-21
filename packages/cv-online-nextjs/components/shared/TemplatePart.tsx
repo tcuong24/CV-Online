@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 interface SideSectionProps {
   title: string;
   children: React.ReactNode;
+  fontSize: number;
   addButton?: React.ReactNode;
   dragHandleProps?: any;
   titleColor?: string;
@@ -11,7 +12,7 @@ interface SideSectionProps {
   styleControls?: React.ReactNode;
 }
 
-export function SideSection({ title, children, addButton, dragHandleProps, titleColor, borderColor, styleControls }: SideSectionProps) {
+export function SideSection({ title, children, fontSize, addButton, dragHandleProps, titleColor, borderColor, styleControls }: SideSectionProps) {
   const [hovered, setHovered] = useState(false);
   const finalTitleColor = titleColor || 'rgba(255,255,255,0.5)';
   const finalBorderColor = borderColor || 'rgba(255,255,255,0.15)';
@@ -28,7 +29,7 @@ export function SideSection({ title, children, addButton, dragHandleProps, title
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          fontSize: 9,
+          fontSize: fontSize,
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '0.12em',
