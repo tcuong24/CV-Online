@@ -10,8 +10,11 @@ import {
   SkillsBlock,
   MainSectionBlocks,
   getScaledDragStyle,
+  StylePicker,
 } from './CVTemplate';
 import { DefaultHeader, CenteredHeader, FloatingHeader } from './parts/Headers';
+import { useCvEditorStore } from '@/stores/useCvEditor';
+import { EditableText } from '../shared/EditableText';
 
 export function TwoColumnPage({
   leftSections,
@@ -60,11 +63,19 @@ export function TwoColumnPage({
           <Droppable droppableId="sections-left">
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                {leftSections.map(({ key, title, content }, idx) => (
+                {leftSections.map(({ key, title, content, addButton, styleControls }, idx) => (
                   <Draggable key={key} draggableId={`section-${key}`} index={idx}>
                     {(dp, snap) => (
                       <div ref={dp.innerRef} {...dp.draggableProps} style={getScaledDragStyle(dp.draggableProps.style, snap.isDragging, scale, 330)}>
-                        <SectionShell dragHandleProps={dp.dragHandleProps} isDragging={snap.isDragging} accentColor={accentColor} title={title} fs={fs}>
+                        <SectionShell
+                          dragHandleProps={dp.dragHandleProps}
+                          isDragging={snap.isDragging}
+                          accentColor={accentColor}
+                          title={title}
+                          fs={fs}
+                          addButton={addButton}
+                          styleControls={styleControls}
+                        >
                           {content}
                         </SectionShell>
                       </div>
@@ -82,11 +93,19 @@ export function TwoColumnPage({
           <Droppable droppableId="sections-main">
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                {rightSections.map(({ key, title, content }, idx) => (
+                {rightSections.map(({ key, title, content, addButton, styleControls }, idx) => (
                   <Draggable key={key} draggableId={`section-${key}`} index={idx}>
                     {(dp, snap) => (
                       <div ref={dp.innerRef} {...dp.draggableProps} style={getScaledDragStyle(dp.draggableProps.style, snap.isDragging, scale, 330)}>
-                        <SectionShell dragHandleProps={dp.dragHandleProps} isDragging={snap.isDragging} accentColor={accentColor} title={title} fs={fs}>
+                        <SectionShell
+                          dragHandleProps={dp.dragHandleProps}
+                          isDragging={snap.isDragging}
+                          accentColor={accentColor}
+                          title={title}
+                          fs={fs}
+                          addButton={addButton}
+                          styleControls={styleControls}
+                        >
                           {content}
                         </SectionShell>
                       </div>
@@ -128,21 +147,84 @@ export function TwoColumnLayout({
 }) {
   const accentColor = theme.primary;
   const scale = zoom / 100;
-  const headerStyle = ctx.sectionLayout.global?.headerStyle as any || 'default';
+  const headerStyle = useCvEditorStore.getState().style.headerStyle || 'default';
 
+  const isPersonal = (k: string) => k === 'personal' || k === 'personalInfo';
   const leftKeys = sideKeys;
-  const rightKeys = order.filter(k => k !== 'personal' && !leftKeys.includes(k));
+  const rightKeys = order.filter(k => !isPersonal(k) && !leftKeys.includes(k));
 
-  const makeSection = (key: string) => ({
-    key,
-    title: key === 'experiences' ? 'Kinh nghiệm' : key === 'skills' ? 'Kỹ năng' : key,
-    content: key === 'experiences' ? <ExperienceSection data={data} ctx={ctx} variant="main" /> : 
-             key === 'skills' ? <SkillsBlock data={data} ctx={ctx} dark={false} /> :
-             <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />,
-  });
+  const titles: Record<string, string> = {
+    personal: 'Giới thiệu',
+    experiences: 'Kinh nghiệm',
+    education: 'Học vấn',
+    skills: 'Kỹ năng',
+    projects: 'Dự án',
+    awards: 'Giải thưởng',
+    languages: 'Ngoại ngữ',
+    certifications: 'Chứng chỉ',
+  };
+
+  const makeAddBtn = (key: string, label: string, action: () => void, hasData: boolean) =>
+    hasData ? (
+      <button
+        onClick={action}
+        style={{
+          padding: '3px 10px', fontSize: fs * 0.78, fontWeight: 600, border: '1px solid #bfdbfe',
+          borderRadius: 99, cursor: 'pointer', background: '#eff6ff', color: '#3b82f6',
+          transition: 'background 0.12s', whiteSpace: 'nowrap', fontFamily: 'inherit',
+        }}
+      >{label}</button>
+    ) : undefined;
+
+  const makeSection = (key: string) => {
+    const title = titles[key] || key;
+    let content: React.ReactNode = null;
+    let addButton: React.ReactNode = undefined;
+    let styleControls: React.ReactNode = undefined;
+
+    if (isPersonal(key)) {
+      content = (
+        <div style={{ color: '#57534e', lineHeight: lh }}>
+          <EditableText multiline value={data.personal.summary || ''} onChange={v => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." />
+        </div>
+      );
+    } else if (key === 'experiences') {
+      content = <ExperienceSection data={data} ctx={ctx} variant="main" />;
+      addButton = makeAddBtn(key, '+', () => ctx.addEntry('experiences', { title: '', company: '', from: '', to: '', location: '', desc: '' }), !!data.experiences?.length);
+      styleControls = (
+        <StylePicker
+          fs={fs}
+          value={ctx.sectionLayout.experiences?.style ?? 'timeline'}
+          options={[{ value: 'timeline', label: 'Timeline' }, { value: 'simple', label: 'Simple' }]}
+          onChange={(v) => ctx.patchSectionLayout('experiences', { style: v })}
+        />
+      );
+    } else if (key === 'skills') {
+      content = <SkillsBlock data={data} ctx={ctx} dark={false} />;
+      addButton = makeAddBtn(key, '+', () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' }), !!data.skills?.length);
+      styleControls = (
+        <StylePicker
+          fs={fs}
+          value={ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags'}
+          options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }]}
+          onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
+        />
+      );
+    } else {
+      content = <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />;
+      const addConf: Record<string, any> = {
+        education: { label: '+', action: () => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' }), has: !!data.education?.length },
+        projects: { label: '+', action: () => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' }), has: !!data.projects?.length },
+        certifications: { label: '+', action: () => ctx.addEntry('certifications', { name: '', issuingOrganization: '', issueDate: '', description: '' }), has: !!data.certifications?.length },
+      };
+      if (addConf[key]) addButton = makeAddBtn(key, addConf[key].label, addConf[key].action, addConf[key].has);
+    }
+
+    return { key, title, content, addButton, styleControls };
+  };
 
   const leftSections = leftKeys.map(makeSection);
-  const rightSections = rightKeys.map(makeSection);
+  const rightSections = rightKeys.map(makeSection).filter(s => s.key !== 'personal');
 
   return (
     <DragDropContext

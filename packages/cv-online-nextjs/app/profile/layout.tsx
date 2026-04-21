@@ -1,5 +1,4 @@
 'use client'
-import { SessionProvider } from "next-auth/react";
 
 export default function ProfileLayout({
     children,
@@ -8,9 +7,7 @@ export default function ProfileLayout({
 }) {
     return (
         <div>
-            <SessionProvider>
-                {children}
-            </SessionProvider>
+            {children}
         </div>
     );
 }

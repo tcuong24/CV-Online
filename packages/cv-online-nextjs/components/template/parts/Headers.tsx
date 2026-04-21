@@ -106,7 +106,31 @@ export function FloatingHeader({ data, ctx, theme, fontFamily, fs }: HeaderProps
     </div>
   );
 }
-
+function BlackWhiteHeader({ data, ctx, theme, fontFamily, fs, align }: HeaderProps) {
+  const justifyContact = align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
+  return (
+    <div
+      style={{
+        padding: '36px 44px 28px',
+        color: '#fff',
+        textAlign: align as React.CSSProperties['textAlign'],
+      }}
+    >
+      <div style={{ fontFamily, fontSize: fs * 2.2, fontWeight: 700, letterSpacing: '-0.5px', marginBottom: 4, lineHeight: 1.2 }}>
+        <EditableText value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="Họ và tên của bạn" />
+      </div>
+      <div style={{ fontSize: fs, color: 'rgba(255,255,255,0.65)', marginBottom: 14 }}>
+        <EditableText value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 18px', justifyContent: justifyContact }}>
+        <ContactItem icon={<MdEmail size={11} />} value={data.personal.email} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
+        <ContactItem icon={<MdPhone size={11} />} value={data.personal.phone} onChange={(v) => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
+        <ContactItem icon={<MdLocationOn size={11} />} value={data.personal.location} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
+        <ContactItem icon={<MdLink size={11} />} value={data.personal.website} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
+      </div>
+    </div>
+  );
+}
 function ContactItem({ icon, value, onChange, placeholder }: { icon: React.ReactNode; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>

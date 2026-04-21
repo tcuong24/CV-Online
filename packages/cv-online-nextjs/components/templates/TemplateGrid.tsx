@@ -166,8 +166,8 @@ export function TemplatesGrid() {
         <button
           onClick={() => setActiveTag("All")}
           className={`px-4 py-1 rounded-full text-sm border ${activeTag === "All"
-            ? "bg-blue-500 text-white"
-            : "bg-muted"
+            ? "bg-muted"
+            : "bg-white"
             }`}
         >
           All
@@ -178,8 +178,8 @@ export function TemplatesGrid() {
             key={tag}
             onClick={() => setActiveTag(tag)}
             className={`px-4 py-1 rounded-full text-sm border ${activeTag === tag
-              ? "bg-blue-500 text-white"
-              : "bg-muted"
+              ? "bg-muted"
+              : "bg-white"
               }`}
           >
             {tag}

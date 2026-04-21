@@ -1,5 +1,5 @@
 // ─── Core Data Types ───
-export type LayoutType = 'single-column' | 'sidebar-left' | 'sidebar-right' | 'executive-centered' | 'tech-timeline' | 'asymmetric' | 'two-column';
+export type LayoutType = 'single-column' | 'sidebar-left' | 'sidebar-right' | 'executive-centered' | 'tech-timeline' | 'asymmetric' | 'two-column' | 'black-white';
 
 export interface PersonalInfo {
   name: string;

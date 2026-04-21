@@ -14,10 +14,11 @@ import {
 } from './CVTemplate';
 import { DefaultHeader, CenteredHeader, FloatingHeader } from './parts/Headers';
 import { SideSection } from '../shared/TemplatePart';
+import { EditableText } from '../shared/EditableText';
 
 export function SidebarRightPage({
   mainSections,
-  sideSections,
+  sideSections, // Now receiving raw section data objects
   isFirst,
   data,
   theme,
@@ -108,7 +109,7 @@ export function SidebarRightPage({
           <Droppable droppableId="sections-sidebar">
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                {sideSections.map(({ key, content }, idx) => (
+                {sideSections.map(({ key, title, content, addButton, styleControls }, idx) => (
                   <Draggable key={key} draggableId={`section-${key}`} index={idx}>
                     {(dp, snap) => (
                       <div
@@ -122,9 +123,16 @@ export function SidebarRightPage({
                         )}
                         className="group/sidesec"
                       >
-                        <div style={{ position: 'relative' }}>
-                          {content}
-                        </div>
+                         <SideSection 
+                           title={title} 
+                           addButton={addButton} 
+                           styleControls={styleControls}
+                           dragHandleProps={dp.dragHandleProps}
+                           titleColor={accentColor}
+                           borderColor={`${accentColor}30`}
+                         >
+                           {content}
+                         </SideSection>
                       </div>
                     )}
                   </Draggable>
@@ -165,32 +173,89 @@ export function SidebarRightLayout({
   const accentColor = theme.primary;
   const scale = zoom / 100;
   const headerStyle = ctx.sectionLayout.global?.headerStyle as any || 'default';
-  const mainKeyList = order.filter((k) => k !== 'personal' && !sideKeys.includes(k));
+  
+  // Normalize IDs: use both 'personal' and 'personalInfo' to check for summary section
+  const isPersonal = (k: string) => k === 'personal' || k === 'personalInfo';
+  const mainKeyList = order.filter((k) => !isPersonal(k) && !sideKeys.includes(k));
+
+  const titles: Record<string, string> = {
+    personal: 'Giới thiệu',
+    personalInfo: 'Giới thiệu',
+    experiences: 'Kinh nghiệm',
+    education: 'Học vấn',
+    skills: 'Kỹ năng',
+    projects: 'Dự án',
+    awards: 'Giải thưởng',
+    languages: 'Ngoại ngữ',
+    certifications: 'Chứng chỉ',
+    references: 'Tham chiếu',
+    interests: 'Sở thích',
+    activities: 'Hoạt động',
+  };
 
   const makeAddBtn = (key: string, label: string, action: () => void, hasData: boolean) =>
     hasData ? (
       <button
         onClick={action}
-        style={{ padding: '3px 10px', fontSize: fs * 0.78, fontWeight: 600, border: '1px solid #bfdbfe', borderRadius: 99, background: '#eff6ff', color: '#3b82f6' }}
+        style={{
+          padding: '3px 10px', fontSize: fs * 0.78, fontWeight: 600, border: '1px solid #bfdbfe',
+          borderRadius: 99, cursor: 'pointer', background: '#eff6ff', color: '#3b82f6',
+          transition: 'background 0.12s', whiteSpace: 'nowrap', fontFamily: 'inherit',
+        }}
       >{label}</button>
     ) : undefined;
 
-  const allMainSections = mainKeyList.map(key => {
-    if (key === 'experiences') {
-      return {
-        key, title: 'Kinh nghiệm',
-        content: <ExperienceSection data={data} ctx={ctx} variant="main" />,
-        addButton: makeAddBtn(key, '+ Kinh nghiệm', () => ctx.addEntry('experiences', { title: '', company: '', from: '', to: '', location: '', desc: '' }), !!data.experiences?.length),
-        styleControls: <StylePicker fs={fs} value={ctx.sectionLayout.experiences?.style} options={[{ value: 'timeline', label: 'Timeline' }, { value: 'simple', label: 'Simple' }]} onChange={(v) => ctx.patchSectionLayout('experiences', { style: v })} />,
-      };
-    }
-    // ... logic for other sections (omitted for brevity but should be consistent)
-    return { key, title: key, content: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> };
-  });
+  const makeSection = (key: string) => {
+    const title = titles[key] || key;
+    let content: React.ReactNode = null;
+    let addButton: React.ReactNode = undefined;
+    let styleControls: React.ReactNode = undefined;
 
-  const sideSectionNodes = sideKeys.map(key => ({
-    key, content: <SideSection key={key} title={key}><MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /></SideSection>
-  }));
+    if (isPersonal(key)) {
+      content = (
+        <div style={{ color: '#57534e', lineHeight: lh }}>
+          <EditableText multiline value={data.personal.summary || ''} onChange={v => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." />
+        </div>
+      );
+    } else if (key === 'experiences') {
+      content = <ExperienceSection data={data} ctx={ctx} variant="main" />;
+      addButton = makeAddBtn(key, '+', () => ctx.addEntry('experiences', { title: '', company: '', from: '', to: '', location: '', desc: '' }), !!data.experiences?.length);
+      styleControls = (
+        <StylePicker
+          fs={fs}
+          value={ctx.sectionLayout.experiences?.style ?? 'timeline'}
+          options={[{ value: 'timeline', label: 'Timeline' }, { value: 'simple', label: 'Simple' }]}
+          onChange={(v) => ctx.patchSectionLayout('experiences', { style: v })}
+        />
+      );
+    } else if (key === 'skills') {
+      content = <SkillsBlock data={data} ctx={ctx} dark={false} />;
+      addButton = makeAddBtn(key, '+', () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' }), !!data.skills?.length);
+      styleControls = (
+        <StylePicker
+          fs={fs}
+          value={ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags'}
+          options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }]}
+          onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
+        />
+      );
+    } else {
+      content = <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />;
+      const addConf: any = {
+        education: { action: () => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' }), has: !!data.education?.length },
+        projects: { action: () => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' }), has: !!data.projects?.length },
+        awards: { action: () => ctx.addEntry('awards', { title: '', year: '', org: '' }), has: !!data.awards?.length },
+        languages: { action: () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }), has: !!data.languages?.length },
+        certifications: { action: () => ctx.addEntry('certifications', { name: '', issuingOrganization: '', issueDate: '', description: '' }), has: !!data.certifications?.length },
+      };
+      if (addConf[key]) addButton = makeAddBtn(key, '+', addConf[key].action, addConf[key].has);
+    }
+
+    return { key, title, content, addButton, styleControls };
+  };
+
+  const allMainSections = mainKeyList.map(makeSection);
+  const sideSections = sideKeys.map(makeSection);
 
   return (
     <DragDropContext
@@ -213,7 +278,7 @@ export function SidebarRightLayout({
         <SidebarRightPage
           isFirst={true}
           mainSections={allMainSections}
-          sideSections={sideSectionNodes}
+          sideSections={sideSections}
           data={data}
           theme={theme}
           fontFamily={fontFamily}

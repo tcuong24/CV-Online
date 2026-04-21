@@ -6,10 +6,10 @@
 -- 1. USERS
 -- =============================================================================
 
-INSERT INTO users (id, email, password_hash, full_name, avatar_url, subscription_type) VALUES
-('user-001', 'nguyenvanan@gmail.com', '$2b$10$hashedpassword1', 'Nguyễn Văn An', 'https://api.dicebear.com/7.x/avataaars/svg?seed=An', 'premium'),
-('user-002', 'tranthib@gmail.com', '$2b$10$hashedpassword2', 'Trần Thị B', 'https://api.dicebear.com/7.x/avataaars/svg?seed=B', 'free'),
-('user-003', 'levanc@gmail.com', '$2b$10$hashedpassword3', 'Lê Văn C', 'https://api.dicebear.com/7.x/avataaars/svg?seed=C', 'pro')
+INSERT INTO users (id, email, password_hash, full_name, avatar_url, subscription_type, created_at, updated_at) VALUES
+('user-001', 'nguyenvanan@gmail.com', '$2b$10$hashedpassword1', 'Nguyễn Văn An', 'https://api.dicebear.com/7.x/avataaars/svg?seed=An', 'premium', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('user-002', 'tranthib@gmail.com', '$2b$10$hashedpassword2', 'Trần Thị B', 'https://api.dicebear.com/7.x/avataaars/svg?seed=B', 'free', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('user-003', 'levanc@gmail.com', '$2b$10$hashedpassword3', 'Lê Văn C', 'https://api.dicebear.com/7.x/avataaars/svg?seed=C', 'pro', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
 -- =============================================================================
@@ -17,12 +17,12 @@ ON CONFLICT (id) DO NOTHING;
 -- =============================================================================
 
 -- Template 1: Modern Blue (Sidebar Left)
-INSERT INTO templates (id, name, description, thumbnail_url, category, layout_type, is_premium, design_config, sections_config) VALUES
+INSERT INTO templates (id, name, description, thumbnail_url, category, layout_type, is_premium, design_config, sections_config, tags, created_at, updated_at) VALUES
 (
   'tmpl-modern-blue',
-  'Modern Blue Professional',
-  'Clean two-column layout with gradient sidebar. Perfect for developers and tech professionals.',
-  'https://placeholder.com/templates/modern-blue-thumb.jpg',
+  'CV Chuyên nghiệp Hiện đại',
+  'Bố cục hai cột sạch sẽ với thanh bên dải màu. Hoàn hảo cho các nhà phát triển và chuyên gia công nghệ.',
+  '/templates/modern-blue.png',
   'professional',
   'sidebar-left',
   false,
@@ -103,14 +103,6 @@ INSERT INTO templates (id, name, description, thumbnail_url, category, layout_ty
         ]
       },
       {
-        "id": "summary",
-        "type": "text",
-        "label": "About Me",
-        "is_required": false,
-        "is_visible_by_default": true,
-        "layout": {"style": "paragraph"}
-      },
-      {
         "id": "contact",
         "type": "contact_list",
         "label": "Contact",
@@ -164,20 +156,33 @@ INSERT INTO templates (id, name, description, thumbnail_url, category, layout_ty
         "layout": {"style": "dots"}
       }
     ],
-    "default_order": ["header", "summary", "experience", "education", "skills", "languages"],
-    "sidebar_sections": ["avatar", "header", "contact", "summary"],
+    "default_order": ["header", "experience", "education", "skills", "languages"],
+    "sidebar_sections": ["avatar", "header", "contact"],
     "main_sections": ["skills", "experience", "education", "languages"]
-  }'
+  }',
+  ARRAY['Chuyên nghiệp', 'Hiện đại', 'Lập trình viên', 'Công nghệ'],
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  thumbnail_url = EXCLUDED.thumbnail_url,
+  category = EXCLUDED.category,
+  layout_type = EXCLUDED.layout_type,
+  is_premium = EXCLUDED.is_premium,
+  design_config = EXCLUDED.design_config,
+  sections_config = EXCLUDED.sections_config,
+  tags = EXCLUDED.tags,
+  updated_at = CURRENT_TIMESTAMP;
 
 -- Template 2: Minimal Black & White
-INSERT INTO templates (id, name, description, thumbnail_url, category, layout_type, is_premium, design_config, sections_config) VALUES
+INSERT INTO templates (id, name, description, thumbnail_url, category, layout_type, is_premium, design_config, sections_config, tags, created_at, updated_at) VALUES
 (
   'tmpl-minimal-bw',
-  'Minimal Black & White',
-  'Clean, ATS-friendly single column design. Perfect for traditional industries.',
-  'https://placeholder.com/templates/minimal-bw-thumb.jpg',
+  'CV Tối giản Đen trắng',
+  'Thiết kế một cột sạch sẽ, thân thiện với ATS. Tốt nhất cho các ngành nghề truyền thống.',
+  '/templates/minimal-bw.png',
   'minimal',
   'single-column',
   false,
@@ -223,22 +228,35 @@ INSERT INTO templates (id, name, description, thumbnail_url, category, layout_ty
   '{
     "available_sections": [
       {"id": "header", "type": "header", "is_required": true, "is_visible_by_default": true},
-      {"id": "summary", "type": "text", "is_required": false, "is_visible_by_default": true},
       {"id": "experience", "type": "timeline", "is_required": false, "is_visible_by_default": true},
       {"id": "education", "type": "timeline", "is_required": false, "is_visible_by_default": true},
       {"id": "skills", "type": "skills", "is_required": false, "is_visible_by_default": true}
     ],
-    "default_order": ["header", "summary", "experience", "education", "skills"]
-  }'
+    "default_order": ["header", "experience", "education", "skills"]
+  }',
+  ARRAY['Tối giản', 'ATS', 'Truyền thống', 'Một cột'],
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  thumbnail_url = EXCLUDED.thumbnail_url,
+  category = EXCLUDED.category,
+  layout_type = EXCLUDED.layout_type,
+  is_premium = EXCLUDED.is_premium,
+  design_config = EXCLUDED.design_config,
+  sections_config = EXCLUDED.sections_config,
+  tags = EXCLUDED.tags,
+  updated_at = CURRENT_TIMESTAMP;
 
 -- =============================================================================
 -- 3. TEMPLATE SAMPLE DATA
 -- =============================================================================
 
-INSERT INTO template_sample_data (template_id, sample_data) VALUES
+INSERT INTO template_sample_data (id, template_id, sample_data, created_at, updated_at) VALUES
 (
+  'sample-data-001',
   'tmpl-modern-blue',
   '{
     "personal_info": {
@@ -284,9 +302,13 @@ INSERT INTO template_sample_data (template_id, sample_data) VALUES
       {"language_name": "Vietnamese", "proficiency_level": "Native"},
       {"language_name": "English", "proficiency_level": "Fluent"}
     ]
-  }'
+  }',
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
 )
-ON CONFLICT (template_id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  sample_data = EXCLUDED.sample_data,
+  updated_at = CURRENT_TIMESTAMP;
 
 -- Verify data
 SELECT 'Users' as table_name, COUNT(*) as count FROM users
@@ -295,12 +317,12 @@ SELECT 'Templates', COUNT(*) FROM templates
 UNION ALL
 SELECT 'Template Sample Data', COUNT(*) FROM template_sample_data;
 
-INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags) VALUES
+INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags, created_at, updated_at) VALUES
 (
   'template-003',
-  'The Executive',
-  'Bold serif typography for senior leadership roles',
-  'https://placeholder.com/templates/executive-thumb.png',
+  'CV Phong thái Lãnh đạo',
+  'Chữ có chân (serif) đậm nét phù hợp cho các vị trí quản lý và lãnh đạo cấp cao.',
+  '/templates/the-executive.png',
   NULL,
   'Professional',
   true,
@@ -310,17 +332,29 @@ INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, ca
   1247,
   '1.0.0',
   '{"colors":{"text":{"body":"#2d2d2d","muted":"#6b6b6b","heading":"#000000"},"accent":"#1a1a1a","primary":"#000000","secondary":"#4a4a4a","background":{"page":"#ffffff","section":"#ffffff","sidebar":"#f5f5f5"}},"layout":{"maxWidth":"210mm","columnRatio":"30:70"},"spacing":{"page":{"margin":"20mm"},"element":{"gap":"16px"},"section":{"marginBottom":"28px"}},"typography":{"fonts":{"body":{"family":"Crimson Pro","weights":[400,500],"googleFont":true},"heading":{"family":"Cormorant Garamond","weights":[600,700],"googleFont":true}},"sizes":{"body":"13px","name":"38px","small":"11px","subsection":"17px","section_title":"24px"},"lineHeights":{"body":1.7,"heading":1.2}}}'::jsonb,
-  '{"default_order":["personalInfo","summary","experiences","education","skills","certifications"],"main_sections":["summary","experiences","education"],"sidebar_sections":["personalInfo","skills","certifications"],"available_sections":[{"id":"personalInfo","icon":"user","type":"personalInfo","label":"Personal Information","layout":{"style":"compact"},"is_required":true,"is_visible_by_default":true},{"id":"summary","icon":"file-text","type":"summary","label":"Executive Summary","layout":{"style":"paragraph"},"is_required":false,"is_visible_by_default":true},{"id":"experiences","icon":"briefcase","type":"experiences","label":"Professional Experience","layout":{"style":"detailed","showDates":true,"dateFormat":"MMMM YYYY","showCompanyLogo":false},"is_required":false,"is_visible_by_default":true},{"id":"education","icon":"graduation-cap","type":"education","label":"Education","layout":{"style":"condensed","showGPA":false},"is_required":false,"is_visible_by_default":true},{"id":"skills","icon":"award","type":"skills","label":"Core Competencies","layout":{"style":"list","columns":2,"showProficiency":false},"is_required":false,"is_visible_by_default":true},{"id":"certifications","icon":"shield-check","type":"certifications","label":"Certifications","layout":{"style":"simple"},"is_required":false,"is_visible_by_default":true}]}'::jsonb,
-  ARRAY['Professional', 'Executive', 'Serif', 'Traditional']
+  '{"default_order":["personalInfo","experiences","education","skills"],"main_sections":["experiences","education"],"sidebar_sections":["personalInfo","skills"],"available_sections":[{"id":"personalInfo","icon":"user","type":"personalInfo","label":"Personal Information","layout":{"style":"compact"},"is_required":true,"is_visible_by_default":true},{"id":"experiences","icon":"briefcase","type":"experiences","label":"Professional Experience","layout":{"style":"detailed","showDates":true,"dateFormat":"MMMM YYYY","showCompanyLogo":false},"is_required":false,"is_visible_by_default":true},{"id":"education","icon":"graduation-cap","type":"education","label":"Education","layout":{"style":"condensed","showGPA":false},"is_required":false,"is_visible_by_default":true},{"id":"skills","icon":"award","type":"skills","label":"Core Competencies","layout":{"style":"list","columns":2,"showProficiency":false},"is_required":false,"is_visible_by_default":true}]}'::jsonb,
+  ARRAY['Chuyên nghiệp', 'Lãnh đạo', 'Quản lý', 'Truyền thống'],
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  thumbnail_url = EXCLUDED.thumbnail_url,
+  category = EXCLUDED.category,
+  layout_type = EXCLUDED.layout_type,
+  is_premium = EXCLUDED.is_premium,
+  design_config = EXCLUDED.design_config,
+  sections_config = EXCLUDED.sections_config,
+  tags = EXCLUDED.tags,
+  updated_at = CURRENT_TIMESTAMP;
 
-INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags) VALUES
+INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags, created_at, updated_at) VALUES
 (
   'template-004',
-  'Creative Pro',
-  'Vibrant design for creative professionals',
-  'https://placeholder.com/templates/creative-pro-thumb.png',
+  'CV Sáng tạo Chuyên nghiệp',
+  'Thiết kế rực rỡ dành cho các chuyên gia sáng tạo.',
+  '/templates/creative-pro.png',
   NULL,
   'Creative',
   false,
@@ -330,17 +364,29 @@ INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, ca
   892,
   '1.0.0',
   '{"colors":{"text":{"body":"#2e3440","muted":"#4c566a","heading":"#2e3440"},"accent":"#88c0d0","primary":"#5e81ac","secondary":"#81a1c1","background":{"page":"#ffffff","section":"#eceff4","sidebar":"#5e81ac"}},"layout":{"maxWidth":"210mm","columnRatio":"40:60"},"spacing":{"page":{"margin":"18mm"},"element":{"gap":"14px"},"section":{"marginBottom":"22px"}},"typography":{"fonts":{"body":{"family":"Raleway","weights":[400,500],"googleFont":true},"heading":{"family":"Montserrat","weights":[600,700,800],"googleFont":true}},"sizes":{"body":"14px","name":"34px","small":"12px","subsection":"16px","section_title":"22px"},"lineHeights":{"body":1.65,"heading":1.25}}}'::jsonb,
-  '{"default_order":["personalInfo","experiences","projects","skills","education","portfolio"],"main_sections":["experiences","projects","education"],"sidebar_sections":["personalInfo","skills","portfolio"],"available_sections":[{"id":"personalInfo","icon":"user","type":"personalInfo","label":"About","layout":{"style":"creative"},"is_required":true,"is_visible_by_default":true},{"id":"experiences","icon":"briefcase","type":"experiences","label":"Experience","layout":{"style":"cards","showDates":true,"dateFormat":"MMM YYYY"},"is_required":false,"is_visible_by_default":true},{"id":"projects","icon":"layers","type":"projects","label":"Featured Projects","layout":{"style":"showcase","showThumbnails":true},"is_required":false,"is_visible_by_default":true},{"id":"skills","icon":"zap","type":"skills","label":"Skills & Tools","layout":{"style":"pills","columns":1,"showProficiency":true,"proficiencyStyle":"circles"},"is_required":false,"is_visible_by_default":true},{"id":"education","icon":"graduation-cap","type":"education","label":"Education","layout":{"style":"simple"},"is_required":false,"is_visible_by_default":true},{"id":"portfolio","icon":"globe","type":"portfolio","label":"Portfolio & Links","layout":{"style":"icons"},"is_required":false,"is_visible_by_default":true}]}'::jsonb,
-  ARRAY['Creative', 'Vibrant', 'Designer', 'Modern']
+  '{"default_order":["personalInfo","experiences","projects","skills","education"],"main_sections":["experiences","projects","education"],"sidebar_sections":["personalInfo","skills"],"available_sections":[{"id":"personalInfo","icon":"user","type":"personalInfo","label":"About","layout":{"style":"creative"},"is_required":true,"is_visible_by_default":true},{"id":"experiences","icon":"briefcase","type":"experiences","label":"Experience","layout":{"style":"cards","showDates":true,"dateFormat":"MMM YYYY"},"is_required":false,"is_visible_by_default":true},{"id":"projects","icon":"layers","type":"projects","label":"Featured Projects","layout":{"style":"showcase","showThumbnails":true},"is_required":false,"is_visible_by_default":true},{"id":"skills","icon":"zap","type":"skills","label":"Skills & Tools","layout":{"style":"pills","columns":1,"showProficiency":true,"proficiencyStyle":"circles"},"is_required":false,"is_visible_by_default":true},{"id":"education","icon":"graduation-cap","type":"education","label":"Education","layout":{"style":"simple"},"is_required":false,"is_visible_by_default":true}]}'::jsonb,
+  ARRAY['Sáng tạo', 'Thiết kế', 'Năng động', 'Hiện đại'],
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  thumbnail_url = EXCLUDED.thumbnail_url,
+  category = EXCLUDED.category,
+  layout_type = EXCLUDED.layout_type,
+  is_premium = EXCLUDED.is_premium,
+  design_config = EXCLUDED.design_config,
+  sections_config = EXCLUDED.sections_config,
+  tags = EXCLUDED.tags,
+  updated_at = CURRENT_TIMESTAMP;
 
-INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags) VALUES
+INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags, created_at, updated_at) VALUES
 (
   'template-005',
-  'ATS Optimized',
-  'Simple format optimized for Applicant Tracking Systems',
-  'https://placeholder.com/templates/ats-optimized-thumb.png',
+  'CV Tối ưu hóa ATS',
+  'Định dạng đơn giản được tối ưu hóa cho Hệ thống Theo dõi Ứng viên (ATS).',
+  '/templates/ats-optimized.png',
   NULL,
   'Simple',
   false,
@@ -350,17 +396,29 @@ INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, ca
   1584,
   '1.0.0',
   '{"colors":{"text":{"body":"#000000","muted":"#333333","heading":"#000000"},"accent":"#000000","primary":"#000000","secondary":"#000000","background":{"page":"#ffffff","section":"#ffffff"}},"layout":{"maxWidth":"210mm"},"spacing":{"page":{"margin":"25mm"},"element":{"gap":"10px"},"section":{"marginBottom":"18px"}},"typography":{"fonts":{"body":{"family":"Arial","weights":[400],"googleFont":false},"heading":{"family":"Arial","weights":[700],"googleFont":false}},"sizes":{"body":"11pt","name":"16pt","small":"10pt","subsection":"12pt","section_title":"14pt"},"lineHeights":{"body":1.5,"heading":1.2}}}'::jsonb,
-  '{"default_order":["personalInfo","summary","experiences","education","skills","certifications"],"available_sections":[{"id":"personalInfo","type":"personalInfo","label":"Contact Information","layout":{"style":"simple"},"is_required":true,"is_visible_by_default":true},{"id":"summary","type":"summary","label":"Professional Summary","layout":{"style":"paragraph"},"is_required":false,"is_visible_by_default":true},{"id":"experiences","type":"experiences","label":"Work Experience","layout":{"style":"bullets","showDates":true,"dateFormat":"MM/YYYY"},"is_required":false,"is_visible_by_default":true},{"id":"education","type":"education","label":"Education","layout":{"style":"simple","showGPA":true},"is_required":false,"is_visible_by_default":true},{"id":"skills","type":"skills","label":"Skills","layout":{"style":"comma-separated","showProficiency":false},"is_required":false,"is_visible_by_default":true},{"id":"certifications","type":"certifications","label":"Certifications","layout":{"style":"list"},"is_required":false,"is_visible_by_default":false}]}'::jsonb,
-  ARRAY['ATS Friendly', 'Simple', 'Standard', 'Minimalist']
+  '{"default_order":["personalInfo","experiences","education","skills","certifications"],"available_sections":[{"id":"personalInfo","type":"personalInfo","label":"Contact Information","layout":{"style":"simple"},"is_required":true,"is_visible_by_default":true},{"id":"experiences","type":"experiences","label":"Work Experience","layout":{"style":"bullets","showDates":true,"dateFormat":"MM/YYYY"},"is_required":false,"is_visible_by_default":true},{"id":"education","type":"education","label":"Education","layout":{"style":"simple","showGPA":true},"is_required":false,"is_visible_by_default":true},{"id":"skills","type":"skills","label":"Skills","layout":{"style":"comma-separated","showProficiency":false},"is_required":false,"is_visible_by_default":true},{"id":"certifications","type":"certifications","label":"Certifications","layout":{"style":"list"},"is_required":false,"is_visible_by_default":false}]}'::jsonb,
+  ARRAY['ATS Friendly', 'Đơn giản', 'Tiêu chuẩn', 'Tối giản'],
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  thumbnail_url = EXCLUDED.thumbnail_url,
+  category = EXCLUDED.category,
+  layout_type = EXCLUDED.layout_type,
+  is_premium = EXCLUDED.is_premium,
+  design_config = EXCLUDED.design_config,
+  sections_config = EXCLUDED.sections_config,
+  tags = EXCLUDED.tags,
+  updated_at = CURRENT_TIMESTAMP;
 
-INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags) VALUES
+INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags, created_at, updated_at) VALUES
 (
   'template-006',
-  'Tech Engineer',
-  'Clean technical resume for software engineers',
-  'https://placeholder.com/templates/tech-engineer-thumb.png',
+  'CV Kỹ sư Công nghệ',
+  'Bản lý lịch kỹ thuật sạch sẽ dành cho các kỹ sư phần mềm.',
+  '/templates/tech-engineer.png',
   NULL,
   'Technical',
   false,
@@ -371,16 +429,28 @@ INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, ca
   '1.0.0',
   '{"colors":{"text":{"body":"#1f2937","muted":"#6b7280","heading":"#111827"},"accent":"#10b981","primary":"#059669","secondary":"#047857","background":{"page":"#ffffff","section":"#f9fafb","sidebar":"#111827"}},"layout":{"maxWidth":"210mm","columnRatio":"33:67"},"spacing":{"page":{"margin":"18mm"},"element":{"gap":"12px"},"section":{"marginBottom":"20px"}},"typography":{"fonts":{"body":{"family":"Roboto Mono","weights":[400,500],"googleFont":true},"heading":{"family":"Fira Code","weights":[600,700],"googleFont":true}},"sizes":{"body":"13px","name":"30px","small":"11px","subsection":"15px","section_title":"19px"},"lineHeights":{"body":1.6,"heading":1.3}}}'::jsonb,
   '{"default_order":["personalInfo","experiences","projects","skills","education","certifications"],"main_sections":["experiences","projects","education"],"sidebar_sections":["personalInfo","skills","certifications"],"available_sections":[{"id":"personalInfo","icon":"terminal","type":"personalInfo","label":"Contact","layout":{"style":"compact"},"is_required":true,"is_visible_by_default":true},{"id":"experiences","icon":"code","type":"experiences","label":"Experience","layout":{"style":"technical","showDates":true,"dateFormat":"MMM YYYY","showTechStack":true},"is_required":false,"is_visible_by_default":true},{"id":"projects","icon":"git-branch","type":"projects","label":"Projects","layout":{"style":"detailed","showLinks":true,"showTechStack":true},"is_required":false,"is_visible_by_default":true},{"id":"skills","icon":"cpu","type":"skills","label":"Technical Skills","layout":{"style":"categorized","categories":["Languages","Frameworks","Tools","Databases"],"showProficiency":false},"is_required":false,"is_visible_by_default":true},{"id":"education","icon":"book-open","type":"education","label":"Education","layout":{"style":"simple","showGPA":true},"is_required":false,"is_visible_by_default":true},{"id":"certifications","icon":"award","type":"certifications","label":"Certifications","layout":{"style":"badges"},"is_required":false,"is_visible_by_default":true}]}'::jsonb,
-  ARRAY['Technical', 'Engineering', 'Developer', 'Clean']
+  ARRAY['Kỹ thuật', 'Kỹ sư', 'Lập trình viên', 'Sạch sẽ'],
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  thumbnail_url = EXCLUDED.thumbnail_url,
+  category = EXCLUDED.category,
+  layout_type = EXCLUDED.layout_type,
+  is_premium = EXCLUDED.is_premium,
+  design_config = EXCLUDED.design_config,
+  sections_config = EXCLUDED.sections_config,
+  tags = EXCLUDED.tags,
+  updated_at = CURRENT_TIMESTAMP;
 
-INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags) VALUES
+INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags, created_at, updated_at) VALUES
 (
   'template-007',
-  'Academic Scholar',
-  'Traditional academic CV format',
-  'https://placeholder.com/templates/academic-thumb.png',
+  'CV Học giả Hàn lâm',
+  'Định dạng CV học thuật truyền thống.',
+  '/templates/academic-scholar.png',
   NULL,
   'Academic',
   true,
@@ -391,16 +461,28 @@ INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, ca
   '1.0.0',
   '{"colors":{"text":{"body":"#1a1a1a","muted":"#4a4a4a","heading":"#000000"},"accent":"#8b4513","primary":"#000000","secondary":"#2d2d2d","background":{"page":"#ffffff","section":"#ffffff"}},"layout":{"maxWidth":"210mm"},"spacing":{"page":{"margin":"25mm"},"element":{"gap":"14px"},"section":{"marginBottom":"24px"}},"typography":{"fonts":{"body":{"family":"Merriweather","weights":[400],"googleFont":true},"heading":{"family":"Merriweather","weights":[700,900],"googleFont":true}},"sizes":{"body":"12pt","name":"20pt","small":"10pt","subsection":"14pt","section_title":"16pt"},"lineHeights":{"body":1.8,"heading":1.3}}}'::jsonb,
   '{"default_order":["personalInfo","education","research","publications","teaching","awards","conferences","references"],"available_sections":[{"id":"personalInfo","type":"personalInfo","label":"Personal Information","layout":{"style":"centered"},"is_required":true,"is_visible_by_default":true},{"id":"education","type":"education","label":"Education","layout":{"style":"detailed","showThesis":true,"showAdvisor":true},"is_required":false,"is_visible_by_default":true},{"id":"research","type":"research","label":"Research Experience","layout":{"style":"detailed"},"is_required":false,"is_visible_by_default":true},{"id":"publications","type":"publications","label":"Publications","layout":{"style":"apa","showDOI":true},"is_required":false,"is_visible_by_default":true},{"id":"teaching","type":"teaching","label":"Teaching Experience","layout":{"style":"detailed"},"is_required":false,"is_visible_by_default":true},{"id":"awards","type":"awards","label":"Honors & Awards","layout":{"style":"chronological"},"is_required":false,"is_visible_by_default":true},{"id":"conferences","type":"conferences","label":"Conferences & Presentations","layout":{"style":"detailed"},"is_required":false,"is_visible_by_default":false},{"id":"references","type":"references","label":"References","layout":{"style":"full-contact"},"is_required":false,"is_visible_by_default":true}]}'::jsonb,
-  ARRAY['Academic', 'Traditional', 'Scholar']
+  ARRAY['Học thuật', 'Truyền thống', 'Nghiên cứu', 'Học giả'],
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  thumbnail_url = EXCLUDED.thumbnail_url,
+  category = EXCLUDED.category,
+  layout_type = EXCLUDED.layout_type,
+  is_premium = EXCLUDED.is_premium,
+  design_config = EXCLUDED.design_config,
+  sections_config = EXCLUDED.sections_config,
+  tags = EXCLUDED.tags,
+  updated_at = CURRENT_TIMESTAMP;
 
-INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags) VALUES
+INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, category, is_premium, is_published, layout_type, popularity_score, usage_count, version, design_config, sections_config, tags, created_at, updated_at) VALUES
 (
   'template-008',
-  'Startup Founder',
-  'Dynamic template for entrepreneurs and startup founders',
-  'https://placeholder.com/templates/startup-founder-thumb.png',
+  'CV Nhà sáng lập Startup',
+  'Mẫu CV năng động dành cho các doanh nhân và nhà sáng lập startup.',
+  '/templates/startup-founder.png',
   NULL,
   'Modern',
   true,
@@ -410,7 +492,19 @@ INSERT INTO templates (id, name, description, thumbnail_url, preview_pdf_url, ca
   678,
   '1.0.0',
   '{"colors":{"text":{"body":"#1e293b","muted":"#64748b","heading":"#0f172a"},"accent":"#f59e0b","primary":"#ea580c","secondary":"#dc2626","background":{"page":"#ffffff","section":"#fef3c7","sidebar":"#0f172a"}},"layout":{"maxWidth":"210mm","columnRatio":"35:65"},"spacing":{"page":{"margin":"18mm"},"element":{"gap":"14px"},"section":{"marginBottom":"24px"}},"typography":{"fonts":{"body":{"family":"DM Sans","weights":[400,500],"googleFont":true},"heading":{"family":"DM Sans","weights":[700,900],"googleFont":true}},"sizes":{"body":"14px","name":"36px","small":"12px","subsection":"18px","section_title":"22px"},"lineHeights":{"body":1.65,"heading":1.2}}}'::jsonb,
-  '{"default_order":["personalInfo","summary","ventures","experiences","achievements","skills","education"],"main_sections":["summary","ventures","experiences","achievements"],"sidebar_sections":["personalInfo","skills","education"],"available_sections":[{"id":"personalInfo","icon":"rocket","type":"personalInfo","label":"Profile","layout":{"style":"bold"},"is_required":true,"is_visible_by_default":true},{"id":"summary","icon":"target","type":"summary","label":"Vision","layout":{"style":"bold-intro"},"is_required":false,"is_visible_by_default":true},{"id":"ventures","icon":"trending-up","type":"ventures","label":"Ventures & Companies","layout":{"style":"impact","showMetrics":true,"showFunding":true},"is_required":false,"is_visible_by_default":true},{"id":"experiences","icon":"briefcase","type":"experiences","label":"Leadership Roles","layout":{"style":"impact","showDates":true,"dateFormat":"YYYY"},"is_required":false,"is_visible_by_default":true},{"id":"achievements","icon":"trophy","type":"achievements","label":"Key Achievements","layout":{"style":"metrics"},"is_required":false,"is_visible_by_default":true},{"id":"skills","icon":"lightbulb","type":"skills","label":"Expertise","layout":{"style":"tags","showProficiency":false},"is_required":false,"is_visible_by_default":true},{"id":"education","icon":"graduation-cap","type":"education","label":"Education","layout":{"style":"compact"},"is_required":false,"is_visible_by_default":true}]}'::jsonb,
-  ARRAY['Modern', 'Startup', 'Dynamic', 'Entrepreneur']
+  '{"default_order":["personalInfo","experiences","achievements","skills","education"],"main_sections":["experiences","achievements"],"sidebar_sections":["personalInfo","skills","education"],"available_sections":[{"id":"personalInfo","icon":"rocket","type":"personalInfo","label":"Profile","layout":{"style":"bold"},"is_required":true,"is_visible_by_default":true},{"id":"experiences","icon":"briefcase","type":"experiences","label":"Leadership Roles","layout":{"style":"impact","showDates":true,"dateFormat":"YYYY"},"is_required":false,"is_visible_by_default":true},{"id":"achievements","icon":"trophy","type":"achievements","label":"Key Achievements","layout":{"style":"metrics"},"is_required":false,"is_visible_by_default":true},{"id":"skills","icon":"lightbulb","type":"skills","label":"Expertise","layout":{"style":"tags","showProficiency":false},"is_required":false,"is_visible_by_default":true},{"id":"education","icon":"graduation-cap","type":"education","label":"Education","layout":{"style":"compact"},"is_required":false,"is_visible_by_default":true}]}'::jsonb,
+  ARRAY['Hiện đại', 'Startup', 'Năng động', 'Doanh nhân'],
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  thumbnail_url = EXCLUDED.thumbnail_url,
+  category = EXCLUDED.category,
+  layout_type = EXCLUDED.layout_type,
+  is_premium = EXCLUDED.is_premium,
+  design_config = EXCLUDED.design_config,
+  sections_config = EXCLUDED.sections_config,
+  tags = EXCLUDED.tags,
+  updated_at = CURRENT_TIMESTAMP;

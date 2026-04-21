@@ -4,11 +4,32 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axios";
 import Link from "next/link";
+import ConfirmDialog from "@/components/utils/ConfirmDialog";
+import { EditableText } from "@/components/utils/EditableText";
 
 export default function DashboardClient() {
   const { data: session } = useSession();
   const [cvs, setCvs] = useState<any[]>([]);
-  
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [cvIdToDelete, setCvIdToDelete] = useState<string | null>(null);
+  const handleDeleteCv = async (id: string) => {
+    try {
+      await axiosInstance.delete(`/cvs/${id}`);
+      getCvs();
+    } catch (error) {
+      console.error(error);
+    }
+    setOpenDeleteDialog(false);
+    setCvIdToDelete(null);
+  }
+  const handleChangeName = async (id: string, title: string) => {
+    try {
+      await axiosInstance.put(`/cvs/${id}`, { title });
+      getCvs();
+    } catch (error) {
+      console.error(error);
+    }
+  }
   const getCvs = async () => {
     try {
       const res = await axiosInstance.get("/cvs");
@@ -21,19 +42,28 @@ export default function DashboardClient() {
   useEffect(() => {
     getCvs();
   }, []);
-
+  const getTimeLable = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      return "Chào buổi sáng";
+    } else if (hour < 18) {
+      return "Chào buổi chiều";
+    } else {
+      return "Chào buổi tối";
+    }
+  }
   return (
     <main className="flex-grow w-full max-w-7xl mx-auto px-6 pt-32 pb-12">
       {/* Welcome Section */}
       <section className="mb-12" data-purpose="hero-section">
-        <p className="text-lg font-normal mb-1">Good afternoon, {session?.user?.name}</p>
-        <h1 className="text-6xl font-headline italic mb-8 text-foreground">Your CVs are looking sharp.</h1>
+        <p className="text-lg font-normal mb-1">{getTimeLable()}, {session?.user?.name}</p>
+        <h1 className="text-6xl font-headline italic mb-8 text-foreground">Những bản CV của bạn trông thật chuyên nghiệp.</h1>
         <Link href="/cvs/create">
           <button className="flex items-center space-x-2 border border-[#1e3a3a] text-[#1e3a3a] px-5 py-2.5 rounded-sm hover:bg-gray-200 transition-colors text-sm font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 4.5v15m7.5-7.5h-15" strokeLinecap="round" strokeLinejoin="round"></path>
             </svg>
-            <span>Create New CV</span>
+            <span>Tạo CV mới</span>
           </button>
         </Link>
       </section>
@@ -42,19 +72,19 @@ export default function DashboardClient() {
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12" data-purpose="statistics-grid">
         {/* Total CVs */}
         <div className="border border-gray-200 bg-white p-6 rounded-sm">
-          <p className="text-sm font-medium text-gray-500 mb-2">Total CVs</p>
+          <p className="text-sm font-medium text-gray-500 mb-2">Tổng số CV</p>
           <p className="text-4xl font-normal text-foreground">{cvs.length}</p>
         </div>
         {/* Downloads */}
         <div className="border border-gray-200 bg-white p-6 rounded-sm">
-          <p className="text-sm font-medium text-gray-500 mb-2">Downloads</p>
+          <p className="text-sm font-medium text-gray-500 mb-2">Lượt tải</p>
           <p className="text-4xl font-normal text-foreground">142</p>
         </div>
         {/* Top Template */}
         <div className="border border-gray-200 bg-white p-6 rounded-sm flex flex-col justify-between">
-          <p className="text-sm font-medium text-gray-500 mb-2">Top Template</p>
+          <p className="text-sm font-medium text-gray-500 mb-2">Mẫu phổ biến</p>
           <div className="flex items-center justify-between mt-4">
-            <p className="text-3xl font-medium text-gray-900">Modern Professional</p>
+            <p className="text-3xl font-medium text-gray-900">Chuyên nghiệp hiện đại</p>
             <button className="p-1 text-gray-700 hover:text-black">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" strokeLinecap="round" strokeLinejoin="round"></path>
@@ -66,19 +96,19 @@ export default function DashboardClient() {
 
       {/* Recent CVs Section */}
       <section data-purpose="recent-cvs-section">
-        <h2 className="text-xl font-medium mb-6 text-foreground">Recent CVs</h2>
+        <h2 className="text-xl font-medium mb-6 text-foreground">CV gần đây</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {cvs.length === 0 ? (
-            <p className="text-sm text-gray-500">You haven't created any CVs yet.</p>
+            <p className="text-sm text-gray-500">Bạn chưa tạo bản CV nào.</p>
           ) : (
             cvs.map((cv) => (
               <div key={cv.id} className="group" data-purpose="cv-item">
                 <Link href={`/cvs/${cv.id}/edit`}>
                   <div className="bg-[#e5e7eb] aspect-[1/1.1] p-0 rounded-sm mb-4 flex items-center justify-center overflow-hidden border border-gray-200 relative hover:border-gray-400 transition-colors cursor-pointer">
                     {cv.thumbnailUrl ? (
-                      <img 
-                        src={cv.thumbnailUrl} 
-                        alt={cv.title || "CV Thumbnail"} 
+                      <img
+                        src={cv.thumbnailUrl}
+                        alt={cv.title || "CV Thumbnail"}
                         className="w-full h-full object-cover object-top"
                       />
                     ) : (
@@ -104,10 +134,10 @@ export default function DashboardClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-sm font-semibold text-foreground truncate max-w-[200px]">
-                      {cv.title || "Untitled CV"}
+                      <EditableText value={cv.title || "CV chưa đặt tên"} onChange={(value) => handleChangeName(cv.id, value)} />
                     </h3>
                     <p className="text-xs text-gray-500 mt-1">
-                      Modified {new Date(cv.updatedAt || cv.createdAt).toLocaleDateString('vi-VN')}
+                      Sửa đổi lúc {new Date(cv.updatedAt || cv.createdAt).toLocaleDateString('vi-VN')}
                     </p>
                   </div>
                   <div className="flex items-center space-x-3 text-gray-800">
@@ -118,13 +148,9 @@ export default function DashboardClient() {
                         </svg>
                       </button>
                     </Link>
-                    <button className="hover:text-black" onClick={async () => {
-                      if (confirm('Are you sure you want to delete this CV?')) {
-                        try {
-                          await axiosInstance.delete(`/cvs/${cv.id}`);
-                          getCvs();
-                        } catch(e) { console.error('Delete error', e); }
-                      }
+                    <button className="hover:text-black cursor-pointer" onClick={() => {
+                      setCvIdToDelete(cv.id);
+                      setOpenDeleteDialog(true);
                     }}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -142,6 +168,17 @@ export default function DashboardClient() {
           )}
         </div>
       </section>
+      <ConfirmDialog
+        open={openDeleteDialog}
+        onOpenChange={setOpenDeleteDialog}
+        onConfirm={() => cvIdToDelete && handleDeleteCv(cvIdToDelete)}
+        onCancel={() => { setOpenDeleteDialog(false); setCvIdToDelete(null) }}
+        title="Xóa CV?"
+        description="Bạn có chắc chắn muốn xóa CV này không?"
+        confirmText="Xóa"
+        cancelText="Hủy"
+        variant="default"
+      />
     </main>
   );
 }

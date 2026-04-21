@@ -343,8 +343,8 @@ export default function ProfilePage() {
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-          <Link href="/" className="font-bold text-[#3b5bdb] text-lg tracking-tight">
-            CVOnline
+          <Link href={session?.user ? "/dashboard" : "/"} className="font-headline text-2xl font-black tracking-tighter text-foreground">
+            CVision
           </Link>
           <Badge variant="secondary" className="text-xs">
             Public profile

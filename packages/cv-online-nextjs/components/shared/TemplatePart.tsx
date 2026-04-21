@@ -5,10 +5,17 @@ interface SideSectionProps {
   title: string;
   children: React.ReactNode;
   addButton?: React.ReactNode;
+  dragHandleProps?: any;
+  titleColor?: string;
+  borderColor?: string;
+  styleControls?: React.ReactNode;
 }
 
-export function SideSection({ title, children, addButton }: SideSectionProps) {
+export function SideSection({ title, children, addButton, dragHandleProps, titleColor, borderColor, styleControls }: SideSectionProps) {
   const [hovered, setHovered] = useState(false);
+  const finalTitleColor = titleColor || 'rgba(255,255,255,0.5)';
+  const finalBorderColor = borderColor || 'rgba(255,255,255,0.15)';
+
   return (
     <div
       style={{ marginBottom: 20 }}
@@ -16,6 +23,7 @@ export function SideSection({ title, children, addButton }: SideSectionProps) {
       onMouseLeave={() => setHovered(false)}
     >
       <div
+        {...dragHandleProps}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -24,18 +32,26 @@ export function SideSection({ title, children, addButton }: SideSectionProps) {
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '0.12em',
-          color: 'rgba(255,255,255,0.5)',
+          color: finalTitleColor,
           marginBottom: 8,
           paddingBottom: 5,
-          borderBottom: '1px solid rgba(255,255,255,0.15)',
+          borderBottom: `1px solid ${finalBorderColor}`,
+          cursor: dragHandleProps ? 'grab' : 'default',
         }}
       >
         <span>{title}</span>
-        {addButton && (
-          <span style={{ opacity: hovered ? 1 : 0, transition: 'opacity 0.15s', pointerEvents: hovered ? 'auto' : 'none' }}>
-            {addButton}
-          </span>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {styleControls && (
+             <div style={{ opacity: hovered ? 1 : 0, transition: 'opacity 0.15s' }}>
+               {styleControls}
+             </div>
+          )}
+          {addButton && (
+            <span style={{ opacity: hovered ? 1 : 0, transition: 'opacity 0.15s', pointerEvents: hovered ? 'auto' : 'none' }}>
+              {addButton}
+            </span>
+          )}
+        </div>
       </div>
       {children}
     </div>

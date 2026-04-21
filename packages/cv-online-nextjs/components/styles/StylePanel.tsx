@@ -26,6 +26,8 @@ import { useStore } from 'zustand';
 import { useCvEditorStore } from '@/stores/useCvEditor';
 import { ArrowLeft, ArrowRight, Redo, Undo } from 'lucide-react';
 
+import { resolveTheme } from '@/lib/mappers/templateMapper';
+
 const LINE_HEIGHT_OPTIONS = [
   { id: 'tight', label: 'Chặt', val: 1.4 },
   { id: 'normal', label: 'Vừa', val: 1.65 },
@@ -47,7 +49,7 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
   const set = (k: keyof StyleConfig, v: string | number) =>
     onChange({ ...style, [k]: v });
 
-  const theme = COLOR_THEMES.find((t) => t.id === style.themeId) ?? COLOR_THEMES[0];
+  const theme = resolveTheme(style);
   const font = FONT_OPTIONS.find((f) => f.id === style.fontId) ?? FONT_OPTIONS[0];
   const { undo, redo, pastStates, futureStates } = useStore(useCvEditorStore.temporal, (state) => state);
   const [savedThemeId, setSavedThemeId] = useState(style.themeId);
@@ -338,13 +340,31 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
           <MdFormatAlignRight size={18} />
         </Button>
 
+        <div style={{ width: 1, height: 18, background: '#e5e7eb', margin: '0 4px' }} />
+        
+        {/* ── Section Title Alignment ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', opacity: 0.8 }} title="Căn lề tiêu đề mục">
+          <Button
+            onClick={() => set('sectionTitleAlign', 'left')}
+            style={{ padding: '4px', cursor: 'pointer', borderRadius: 4, border: 'none', background: style.sectionTitleAlign === 'left' ? '#f0f9ff' : 'transparent', color: style.sectionTitleAlign === 'left' ? '#0369a1' : '#94a3b8' }}
+          >
+            <MdFormatAlignLeft size={16} />
+          </Button>
+          <Button
+            onClick={() => set('sectionTitleAlign', 'center')}
+            style={{ padding: '4px', cursor: 'pointer', borderRadius: 4, border: 'none', background: style.sectionTitleAlign === 'center' ? '#f0f9ff' : 'transparent', color: style.sectionTitleAlign === 'center' ? '#0369a1' : '#94a3b8' }}
+          >
+            <MdFormatAlignCenter size={16} />
+          </Button>
+        </div>
+
         {/* ── List format buttons ── */}
         <div style={{ width: 1, height: 18, background: '#e5e7eb', margin: '0 2px' }} />
         <Button
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => applyListFormat('bullet')}
           disabled={!isInDescField}
-          title={isInDescField ? (activeListType === 'bullet' ? 'Bỏ bullet list' : 'Bullet list') : 'Click vào phần mô tả để dùng'}
+          title={isInDescField ? (activeListType === 'bullet' ? 'Bỏ danh sách dấu chấm' : 'Danh sách dấu chấm') : 'Click vào phần mô tả để dùng'}
           style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             padding: '4px 6px', borderRadius: 6, border: 'none', gap: 1,
@@ -361,7 +381,7 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => applyListFormat('numbered')}
           disabled={!isInDescField}
-          title={isInDescField ? (activeListType === 'numbered' ? 'Bỏ numbered list' : 'Numbered list') : 'Click vào phần mô tả để dùng'}
+          title={isInDescField ? (activeListType === 'numbered' ? 'Bỏ danh sách số' : 'Danh sách số') : 'Click vào phần mô tả để dùng'}
           style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             padding: '4px 6px', borderRadius: 6, border: 'none', gap: 1,
@@ -449,7 +469,7 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
             disabled={isSaving}
             title={
               isSaving ? 'Đang lưu...'
-                : 'Lưu CV & Preview'
+                : 'Lưu CV'
             }
             style={{
               display: 'flex', alignItems: 'center', gap: 5,

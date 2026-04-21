@@ -264,7 +264,8 @@ export function SidebarLeftLayout({
 }) {
   const accentColor = theme.primary;
   const scale = zoom / 100;
-  const mainKeyList = order.filter((k) => k !== 'personal' && !sideKeys.includes(k));
+  const isPersonal = (k: string) => k === 'personal' || k === 'personalInfo';
+  const mainKeyList = order.filter((k) => !isPersonal(k) && !sideKeys.includes(k));
 
   // Helpers for add button and style switcher
   const makeAddBtn = (key: string, label: string, action: () => void, hasData: boolean) =>
@@ -313,7 +314,7 @@ export function SidebarLeftLayout({
       allMainSections.push({
         key,
         title: 'Kỹ năng',
-        content: <SkillsBlock data={data} ctx={ctx} dark={false} />,
+        content: <SkillsBlock data={data} ctx={ctx} dark={true} />,
         addButton: makeAddBtn(key, '+ Kỹ năng', () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' }), !!data.skills?.length),
         styleControls: (
           <StylePicker
@@ -329,14 +330,19 @@ export function SidebarLeftLayout({
     const titles: Record<string, string> = {
       education: 'Học vấn',
       projects: 'Dự án',
-      awards: 'Chứng chỉ & Giải thưởng',
+      awards: 'Giải thưởng',
       languages: 'Ngoại ngữ',
+      certifications: 'Chứng chỉ',
+      references: 'Tham chiếu',
+      interests: 'Sở thích',
+      activities: 'Hoạt động',
     };
     const addActions: Record<string, { label: string; action: () => void; hasData: boolean }> = {
       education: { label: '+ Học vấn', action: () => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' }), hasData: !!data.education?.length },
       projects:  { label: '+ Dự án',   action: () => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' }), hasData: !!data.projects?.length },
       awards:    { label: '+ Giải thưởng', action: () => ctx.addEntry('awards', { title: '', year: '', org: '' }), hasData: !!data.awards?.length },
       languages: { label: '+ Ngôn ngữ', action: () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }), hasData: !!data.languages?.length },
+      certifications: { label: '+ Chứng chỉ', action: () => ctx.addEntry('certifications', { name: '', issuingOrganization: '', issueDate: '', description: '' }), hasData: !!data.certifications?.length },
     };
     const title = titles[key];
     if (!title) return;

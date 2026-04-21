@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { MdDragIndicator } from 'react-icons/md';
 import { Palette } from 'lucide-react';
 import { LH_MAP } from '@/constants/cvEditor';
-import { CvData, SectionLayoutConfig, SkillEntry, StyleConfig, ExperienceEntry, EducationEntry, ProjectEntry, AwardEntry, LanguageEntry } from '@/types/cvEditor';
+import { CvData, SectionLayoutConfig, SkillEntry, StyleConfig, ExperienceEntry, EducationEntry, ProjectEntry, AwardEntry, LanguageEntry, LayoutType } from '@/types/cvEditor';
 import { resolveFontFamily, resolveTheme } from '@/lib/mappers/templateMapper';
 import { useCvEditorStore } from '@/stores/useCvEditor';
 import { EditableText } from '../shared/EditableText';
@@ -16,6 +16,7 @@ import { ExecutiveCenteredLayout } from './ExecutiveCentered';
 import { TechTimelineLayout } from './TechTimeline';
 import { AsymmetricLayout } from './AsymmetricLayout';
 import { TwoColumnLayout } from './TwoColumnLayout';
+import { BlackWhiteLayout } from './BlackWhiteLayout';
 
 export const PAGE_HEIGHT_PX = 1123; // full A4 height at 96dpi
 
@@ -52,7 +53,7 @@ export interface CVTemplateProps {
   data: CvData;
   order: string[];
   style: StyleConfig;
-  layoutType?: 'single-column' | 'sidebar-left' | 'sidebar-right' | 'two-column';
+  layoutType?: LayoutType;
   sideKeys?: string[];
   sectionLayout?: SectionLayoutConfig;
   zoom?: number; // percentage, default 100
@@ -421,7 +422,7 @@ export function ExperienceSection({
                               <EditableText value={e.to} onChange={(v) => ctx.updateEntry('experiences', e.id, { to: v })} placeholder="Đến" />)
                             </span>
                           </div>
-                          <div style={{ fontSize: fs * 0.9, color: '#57534e', lineHeight: lh, mt: 2 }}>
+                          <div style={{ fontSize: fs * 0.9, color: '#57534e', lineHeight: lh, marginTop: 2 }}>
                             <EditableText value={e.desc} onChange={(v) => ctx.updateEntry('experiences', e.id, { desc: v })} placeholder="Mô tả công việc" multiline />
                           </div>
                         </div>
@@ -491,7 +492,15 @@ export function SkillsBlock({
             <div style={{ fontSize: fs * 0.9, color: textColor, marginBottom: 3 }}>
               <EditableText value={s.name} onChange={(v) => ctx.updateSkill(s.id, { name: v })} placeholder="Kỹ năng" />
             </div>
-            <div style={{ height: dark ? 3 : 4, background: trackBg, borderRadius: 2 }}>
+            <div 
+              style={{ height: dark ? 3 : 4, background: trackBg, borderRadius: 2, cursor: 'pointer', position: 'relative' }}
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const newPerc = Math.min(100, Math.max(0, Math.round((x / rect.width) * 100)));
+                ctx.updateSkill(s.id, { proficiencyPercentage: newPerc });
+              }}
+            >
               <div style={{ width: `${s.proficiencyPercentage || 70}%`, height: '100%', background: fillBg, borderRadius: 2 }} />
             </div>
             <button onClick={() => ctx.removeSkill(s.id)} className="absolute top-1/2 -translate-y-1/2 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
@@ -752,6 +761,52 @@ export function MainSectionBlocks({
                           ))}
                         </div>
                         <button onClick={() => ctx.removeEntry('languages', l.id)} className="ml-1 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+                      </div>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    );
+  }
+
+  if (sectionKey === 'certifications') {
+    if (!data.certifications?.length) {
+      return (
+        <div className="flex h-6 flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('certifications', { name: '', issuingOrganization: '', issueDate: '', expiryDate: '', credentialId: '', credentialUrl: '', description: '' })}>
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <button className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium border border-blue-200 pointer-events-none shadow-sm">+ Thêm chứng chỉ</button>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <DragDropContext onDragEnd={(result: DropResult) => {
+        if (!result.destination || result.destination.index === result.source.index) return;
+        ctx.reorderEntry('certifications', result.source.index, result.destination.index);
+      }}>
+        <Droppable droppableId="certifications">
+          {(provided) => (
+            <div ref={provided.innerRef} {...provided.droppableProps} className="flex flex-col gap-2 relative group pb-4">
+              {data.certifications.map((e, index) => (
+                <Draggable key={e.id} draggableId={e.id} index={index}>
+                  {(dp, snap) => (
+                    <div ref={dp.innerRef} {...dp.draggableProps} style={{ ...dp.draggableProps.style, opacity: snap.isDragging ? 0.7 : 1 }}>
+                      <div style={entryStyle} className="group/item relative flex">
+                        <span {...dp.dragHandleProps} className="shrink-0 mt-1 mr-1 cursor-grab opacity-0 group-hover/item:opacity-40 hover:opacity-100 transition-opacity text-gray-400 select-none" title="Kéo thả">⠿</span>
+                        <div className="flex-1">
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 2 }}>
+                            <span style={titleStyle}><EditableText value={e.name} onChange={(v) => ctx.updateEntry('certifications', e.id, { name: v })} placeholder="Tên chứng chỉ" /></span>
+                            <span style={dateStyle}><EditableText value={e.issueDate} onChange={(v) => ctx.updateEntry('certifications', e.id, { issueDate: v })} placeholder="Ngày cấp" /></span>
+                          </div>
+                          <div style={subStyle}><EditableText value={e.issuingOrganization} onChange={(v) => ctx.updateEntry('certifications', e.id, { issuingOrganization: v })} placeholder="Tổ chức cấp" /></div>
+                          <div style={descStyle}><EditableText value={e.description} onChange={(v) => ctx.updateEntry('certifications', e.id, { description: v })} placeholder="Mô tả" multiline /></div>
+                        </div>
+                        <button onClick={() => ctx.removeEntry('certifications', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
                       </div>
                     </div>
                   )}
@@ -1032,7 +1087,7 @@ export function CVTemplate({
   const sectionLayout = Object.keys(sectionLayoutStore).length > 0 ? sectionLayoutStore : sectionLayoutProp;
 
   const personalStyle = sectionLayout.personal?.style ?? 'default';
-  const align = personalStyle === 'centered' ? 'center' : (style.nameAlign || 'left');
+  const align = style.nameAlign || 'left';
   const accentColor = theme.primary;
 
   const updatePersonalInfo = useCvEditorStore(s => s.updatePersonalInfo);
@@ -1073,6 +1128,8 @@ export function CVTemplate({
       return <AsymmetricLayout {...layoutProps} sideKeys={sideKeys} />;
     case 'two-column':
       return <TwoColumnLayout {...layoutProps} sideKeys={sideKeys} />;
+    case 'black-white':
+      return <BlackWhiteLayout {...layoutProps} />;
     case 'single-column':
     default:
       return <SingleColumnLayout {...layoutProps} />;

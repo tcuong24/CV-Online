@@ -158,6 +158,7 @@ interface CvEditorState {
   reorderSideKey: (fromKey: string, toKey: string) => void;
   moveSectionToZone: (key: string, toSidebar: boolean) => void;
   resetDrag: () => void;
+  resetCV: () => void;
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -208,7 +209,13 @@ export const useCvEditorStore = create<CvEditorState>()(
                 const { order, sideKeys } = parseSectionsConfig(tpl['sectionsConfig']);
                 s.order = order;
                 s.sideKeys = sideKeys;
-                s.sectionLayout = parseSectionLayouts(tpl['sectionsConfig']);
+                const layouts = parseSectionLayouts(tpl['sectionsConfig']);
+                s.sectionLayout = layouts;
+
+                // Sync nameAlign if section says centered but designConfig was silent
+                if (layouts.personal?.style === 'centered' && (!tpl['designConfig'] || !(tpl['designConfig'] as any).layout?.nameAlign)) {
+                  s.style.nameAlign = 'center';
+                }
               }
 
               // Template application is NOT a dirty change — it's config, not user data
@@ -220,12 +227,21 @@ export const useCvEditorStore = create<CvEditorState>()(
         },
         switchTemplate: (template: TemplateInfo) => {
           const { order, sideKeys } = parseSectionsConfig(template.sectionsConfig);
+          const layouts = parseSectionLayouts(template.sectionsConfig);
+          const style = parseDesignConfig(template.designConfig);
+          
+          // Sync nameAlign if section says centered
+          if (layouts.personal?.style === 'centered' && !(template.designConfig as any)?.layout?.nameAlign) {
+            style.nameAlign = 'center';
+          }
+
           set(state => ({
             ...state,
             layoutType: template.layoutType,
             order,
             sideKeys,
-            style: parseDesignConfig(template.designConfig),
+            style,
+            sectionLayout: layouts,
             isDirty: true,
           }));
         },
@@ -675,6 +691,29 @@ export const useCvEditorStore = create<CvEditorState>()(
               // local UI only — không đánh dấu isDirty
             })
           ),
+
+        resetCV: () => {
+          set({
+            data: DEFAULT_DATA,
+            order: DEFAULT_ORDER,
+            style: DEFAULT_STYLE,
+            sectionLayout: {},
+            sideKeys: [],
+            visibility: {},
+            layoutType: 'single-column',
+            templateId: null,
+            cvId: null,
+            isDirty: false,
+            isSaving: false,
+            lastSavedAt: null,
+            activeTab: 'content',
+            openSections: { personal: true },
+            draggingKey: null,
+            dragOverKey: null,
+          });
+          // Clear history
+          setTimeout(() => useCvEditorStore.temporal.getState().clear(), 0);
+        },
 
         resetDrag: () => set({ draggingKey: null, dragOverKey: null }),
       }),
