@@ -5,17 +5,17 @@ import { SectionLayoutConfig, StyleConfig } from '@/types/cvEditor';
 
 /** Maps DB sectionsConfig keys → editor CvData keys */
 export const DB_KEY_MAP: Record<string, string> = {
-  personalInfo:    'personal',
-  experiences:     'experiences',
-  education:       'education',
-  skills:          'skills',
-  projects:        'projects',
-  awards:          'awards',
-  languages:       'languages',
-  certifications:  'certifications',
-  references:      'references',
-  interests:       'interests',
-  activities:      'activities',
+  personalInfo: 'personal',
+  experiences: 'experiences',
+  education: 'education',
+  skills: 'skills',
+  projects: 'projects',
+  awards: 'awards',
+  languages: 'languages',
+  certifications: 'certifications',
+  references: 'references',
+  interests: 'interests',
+  activities: 'activities',
 };
 
 // ─── Design config parser ────────────────────────────────────────────────────
@@ -56,14 +56,15 @@ function normalizeAvailableSections(
 }
 export function parseDesignConfig(designConfig: unknown): StyleConfig {
   const cfg = (designConfig ?? {}) as Record<string, unknown>;
-  const colors    = (cfg['colors']     ?? {}) as Record<string, unknown>;
-  const typo      = (cfg['typography'] ?? {}) as Record<string, unknown>;
-  const layout    = (cfg['layout']     ?? {}) as Record<string, unknown>;
-  const fonts     = (typo['fonts']       ?? {}) as Record<string, unknown>;
-  const sizes     = (typo['sizes']       ?? {}) as Record<string, unknown>;
-  const lhMap     = (typo['lineHeights'] ?? {}) as Record<string, unknown>;
-  const bodyFont  = (fonts['body'] ?? {}) as Record<string, unknown>;
-  const bg        = (colors['background'] ?? {}) as Record<string, unknown>;
+  const colors = (cfg['colors'] ?? {}) as Record<string, unknown>;
+  const typo = (cfg['typography'] ?? {}) as Record<string, unknown>;
+  const layout = (cfg['layout'] ?? {}) as Record<string, unknown>;
+  const fonts = (typo['fonts'] ?? {}) as Record<string, unknown>;
+  const sizes = (typo['sizes'] ?? {}) as Record<string, unknown>;
+  const lhMap = (typo['lineHeights'] ?? {}) as Record<string, unknown>;
+  const bodyFont = (fonts['body'] ?? {}) as Record<string, unknown>;
+  const bg = (colors['background'] ?? {}) as Record<string, unknown>;
+  const textColors = (colors['text'] ?? {}) as Record<string, unknown>;
 
   // ── Color ──
   const primaryHex = (colors['primary'] as string | undefined) ?? '';
@@ -78,8 +79,9 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
     themeId = '_custom';
     customColor = {
       primary: primaryHex || '#0f766e',
-      dark:    ((colors['secondary'] as string | undefined) ?? primaryHex) || '#0f766e',
-      light:   (bg['light'] as string | undefined) ?? (primaryHex ? `${primaryHex}20` : '#f0fdf4'),
+      dark: ((colors['secondary'] as string | undefined) ?? primaryHex) || '#0f766e',
+      light: (bg['light'] as string | undefined) ?? (primaryHex ? `${primaryHex}20` : '#f0fdf4'),
+      sidebar: (bg['sidebar'] as string | undefined) || primaryHex || '#0f766e',
     };
   }
 
@@ -87,7 +89,7 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
   const dbFamily = (bodyFont['family'] as string | undefined) ?? '';
   const presetFont = FONT_OPTIONS.find(
     (f) => f.family.toLowerCase().includes(dbFamily.toLowerCase()) ||
-           dbFamily.toLowerCase().includes(f.label.toLowerCase())
+      dbFamily.toLowerCase().includes(f.label.toLowerCase())
   );
 
   let fontId: string;
@@ -110,12 +112,12 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
   // Map number → tight/normal/loose by finding closest LH_MAP value
   const lineHeight = Object.entries(LH_MAP).reduce((best, [key, val]) =>
     Math.abs(val - lhNum) < Math.abs(LH_MAP[best] - lhNum) ? key : best
-  , 'normal');
+    , 'normal');
 
   // ── Alignment ──
   const nameAlign = (layout['nameAlign'] as string | undefined) ?? 'left';
   const sectionTitleAlign = layout['sectionTitleAlign'] as 'left' | 'center' | 'right' | undefined;
-  const sectionTitleBorder = layout['sectionTitleBorder'] as 'bottom' | 'none' | 'left' | undefined;
+  const sectionTitleBorder = layout['sectionTitleBorder'] as 'bottom' | 'none' | 'left' | 'top' | undefined;
 
   // ── New Layout Props ──
   const headerStyle = layout['headerStyle'] as 'default' | 'centered' | 'floating' | undefined;
@@ -139,6 +141,11 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
     borderStyle,
     contentAlignment,
     columnRatio,
+    textColor: {
+      body: (textColors['body'] as string | undefined) || '#333333',
+      muted: (textColors['muted'] as string | undefined) || '#666666',
+      heading: (textColors['heading'] as string | undefined) || '#000000',
+    },
   };
 }
 
@@ -160,7 +167,7 @@ export function parseSectionsConfig(
   sectionsConfig: unknown
 ): { order: string[]; sideKeys: string[] } {
   const cfg = (sectionsConfig ?? {}) as Record<string, unknown>;
-  const defaultOrder    = (cfg['default_order']    ?? []) as string[];
+  const defaultOrder = (cfg['default_order'] ?? []) as string[];
   const sidebarSections = (cfg['sidebar_sections'] ?? []) as string[];
 
   // FIX: dùng normalizeAvailableSections thay vì cast thẳng
@@ -193,27 +200,27 @@ export function parseSectionLayouts(sectionsConfig: unknown): SectionLayoutConfi
   const result: SectionLayoutConfig = {};
 
   for (const [dbKey, secDef] of Object.entries(available)) {
-    const layout    = (secDef['layout'] ?? {}) as Record<string, unknown>;
+    const layout = (secDef['layout'] ?? {}) as Record<string, unknown>;
     const editorKey = DB_KEY_MAP[dbKey] ?? dbKey;
 
     if (editorKey === 'experiences') {
       result.experiences = {
-        style:      (layout['style'] as any) ?? 'timeline',
-        showDates:  (layout['showDates'] as boolean | undefined) ?? true,
+        style: (layout['style'] as any) ?? 'timeline',
+        showDates: (layout['showDates'] as boolean | undefined) ?? true,
         dateFormat: (layout['dateFormat'] as string | undefined),
       };
     } else if (editorKey === 'education') {
       result.education = {
-        style:   (layout['style'] as any) ?? 'timeline',
+        style: (layout['style'] as any) ?? 'timeline',
         showGPA: (layout['showGPA'] as boolean | undefined) ?? false,
       };
     } else if (editorKey === 'skills') {
       // FIX: tách layout style ('grid'|'list'|'comma-separated') khỏi proficiency style ('bars'|'dots'|'tags')
       result.skills = {
-        style:            (layout['style'] as any) ?? 'grid',
-        columns:          layout['columns'] as number | undefined,
-        showProficiency:  (layout['showProficiency'] as boolean | undefined) ?? false,
-        proficiencyStyle: (layout['proficiencyStyle'] as 'bars' | 'dots' | 'tags' | undefined) ?? 'bars',
+        style: (layout['style'] as any) ?? 'grid',
+        columns: layout['columns'] as number | undefined,
+        showProficiency: (layout['showProficiency'] as boolean | undefined) ?? false,
+        proficiencyStyle: (layout['proficiencyStyle'] || secDef['proficiencyStyle'] || 'bars') as any,
       };
     } else if (editorKey === 'awards') {
       result.awards = {
@@ -225,7 +232,7 @@ export function parseSectionLayouts(sectionsConfig: unknown): SectionLayoutConfi
       };
     } else if (editorKey === 'global') {
       result.global = {
-        headerAlign:  layout['headerAlign'] as any,
+        headerAlign: layout['headerAlign'] as any,
         headerBorder: layout['headerBorder'] as any,
       };
     }

@@ -212,8 +212,9 @@ export const useCvEditorStore = create<CvEditorState>()(
                 const layouts = parseSectionLayouts(tpl['sectionsConfig']);
                 s.sectionLayout = layouts;
 
-                // Sync nameAlign if section says centered but designConfig was silent
-                if (layouts.personal?.style === 'centered' && (!tpl['designConfig'] || !(tpl['designConfig'] as any).layout?.nameAlign)) {
+                // Sync nameAlign if section says centered or layout is black-white
+                const isCenteredLayout = tpl['layoutType'] === 'black-white' || tpl['layoutType'] === 'executive-centered';
+                if ((layouts.personal?.style === 'centered' || isCenteredLayout) && (!tpl['designConfig'] || !(tpl['designConfig'] as any).layout?.nameAlign)) {
                   s.style.nameAlign = 'center';
                 }
               }
@@ -230,8 +231,9 @@ export const useCvEditorStore = create<CvEditorState>()(
           const layouts = parseSectionLayouts(template.sectionsConfig);
           const style = parseDesignConfig(template.designConfig);
           
-          // Sync nameAlign if section says centered
-          if (layouts.personal?.style === 'centered' && !(template.designConfig as any)?.layout?.nameAlign) {
+          // Sync nameAlign if section says centered or layout is black-white
+          const isCenteredLayout = template.layoutType === 'black-white' || template.layoutType === 'executive-centered';
+          if ((layouts.personal?.style === 'centered' || isCenteredLayout) && !(template.designConfig as any)?.layout?.nameAlign) {
             style.nameAlign = 'center';
           }
 
@@ -650,7 +652,16 @@ export const useCvEditorStore = create<CvEditorState>()(
             })
           ),
 
-        setLayoutType: (layout) => set({ layoutType: layout }),
+        setLayoutType: (layout) =>
+          set(
+            produce((s: CvEditorState) => {
+              s.layoutType = layout;
+              // Sync nameAlign if layout is centered by design
+              if (layout === 'black-white' || layout === 'executive-centered') {
+                s.style.nameAlign = 'center';
+              }
+            })
+          ),
 
         setDragging: (key) => set({ draggingKey: key }),
 

@@ -63,6 +63,7 @@ export interface RenderCtx {
   fs: number;
   lh: number;
   accentColor: string;
+  textColor?: { body: string; muted: string; heading: string };
   sectionLayout: SectionLayoutConfig;
   updatePersonalInfo: (patch: Partial<CvData['personal']>) => void;
   updateEntry: (key: string, id: string, patch: Record<string, unknown>) => void;
@@ -231,9 +232,11 @@ export function SectionShell({
           display: 'flex',
           alignItems: 'center',
           justifyContent: align === 'center' ? 'center' : 'space-between',
+          borderTop: borderStyle === 'top' ? `1px solid ${borderColor}` : 'none',
+          paddingTop: borderStyle === 'top' ? 15 : 0,
           borderBottom: borderStyle === 'bottom' ? `2px solid ${borderColor}` : 'none',
-          paddingBottom: borderStyle !== 'none' ? 5 : 0,
-          marginBottom: borderStyle !== 'none' ? 12 : 6,
+          paddingBottom: borderStyle !== 'none' ? 2 : 0,
+          marginBottom: borderStyle !== 'none' ? 2 : 6,
           borderLeft: borderStyle === 'left' ? `4px solid ${borderColor}` : 'none',
           paddingLeft: borderStyle === 'left' ? 8 : 0,
         }}
@@ -477,13 +480,11 @@ export function SkillsBlock({
   dark?: boolean;
 }) {
   const skillStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
-  const { fs, accentColor } = ctx;
-  const textColor = dark ? 'rgba(255,255,255,0.85)' : '#44403c';
+  const { fs, accentColor, textColor: dbText } = ctx;
+  const textColor = dark ? 'rgba(255,255,255,0.85)' : (dbText?.body || '#44403c');
   const trackBg = dark ? 'rgba(255,255,255,0.2)' : `${accentColor}20`;
   const fillBg = dark ? 'rgba(255,255,255,0.8)' : accentColor;
   const newSkill = () => ({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' });
-
-
   if (skillStyle === 'bars') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }} className="relative group pb-4">
@@ -516,6 +517,20 @@ export function SkillsBlock({
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }} className="relative group pb-6">
         {data.skills.map((s) => (
           <span key={s.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs * 0.88, color: textColor }} className="group/item relative pr-5">
+            <span style={{ width: dark ? 5 : 6, height: dark ? 5 : 6, borderRadius: '50%', background: fillBg, flexShrink: 0 }} />
+            <EditableText value={s.name} onChange={(v) => ctx.updateSkill(s.id, { name: v })} placeholder="Kỹ năng" />
+            <button onClick={() => ctx.removeSkill(s.id)} className="absolute top-1/2 -translate-y-1/2 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
+          </span>
+        ))}
+        
+      </div>
+    );
+  }
+  if (skillStyle === 'none') {
+    return (
+      <div style={{ gap: 8 }} className="relative group pb-6">
+        {data.skills.map((s) => (
+          <span key={s.id} style={{  gap: 5, fontSize: fs * 0.88, color: textColor }} className="group/item relative pr-5">
             <span style={{ width: dark ? 5 : 6, height: dark ? 5 : 6, borderRadius: '50%', background: fillBg, flexShrink: 0 }} />
             <EditableText value={s.name} onChange={(v) => ctx.updateSkill(s.id, { name: v })} placeholder="Kỹ năng" />
             <button onClick={() => ctx.removeSkill(s.id)} className="absolute top-1/2 -translate-y-1/2 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
@@ -1105,14 +1120,14 @@ export function CVTemplate({
   const patchSectionLayout = useCvEditorStore(s => s.patchSectionLayout);
 
   const ctx: RenderCtx = {
-    fs, lh, accentColor, sectionLayout,
+    fs, lh, accentColor, textColor: style.textColor, sectionLayout,
     updatePersonalInfo, updateEntry, addEntry, removeEntry,
     addSkill, removeSkill, updateSkill, reorderEntry, reorderSkills,
     reorderSection, reorderSideKey, moveSectionToZone, patchSectionLayout,
   };
 
   const layoutProps = {
-    data, order, ctx, theme, fontFamily, align, fs, lh, zoom,
+    data, order, ctx, theme, fontFamily, align, fs, lh, zoom, textColor: style.textColor,
   };
 
   switch (layoutType) {

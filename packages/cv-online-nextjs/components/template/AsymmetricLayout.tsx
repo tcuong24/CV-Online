@@ -34,7 +34,7 @@ export function AsymmetricPage({
   rightSections: any[];
   isFirst: boolean;
   data: CvData;
-  theme: any;
+  theme: { primary: string; dark: string; light: string; sidebar?: string };
   fontFamily: string;
   align: string;
   fs: number;
@@ -128,7 +128,7 @@ export function AsymmetricLayout({
   data: CvData;
   order: string[];
   ctx: RenderCtx;
-  theme: any;
+  theme: { primary: string; dark: string; light: string; sidebar?: string };
   fontFamily: string;
   align: string;
   fs: number;
@@ -136,7 +136,7 @@ export function AsymmetricLayout({
   sideKeys: string[];
   zoom?: number;
 }) {
-  const accentColor = theme.primary;
+  const accentColor = theme.sidebar || theme.primary;
   const scale = zoom / 100;
   const headerStyle = ctx.sectionLayout.global?.headerStyle as any || 'default';
 

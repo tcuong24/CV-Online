@@ -132,6 +132,7 @@ export interface StyleConfig {
     primary: string; // colors.primary hex from DB
     dark: string;    // colors.secondary from DB, or primary as fallback
     light: string;   // colors.background.light from DB, or primary+'20'
+    sidebar?: string; // colors.background.sidebar from DB
   };
   /** Preset font id (e.g. 'jakarta') OR '_custom' when DB font has no preset match */
   fontId: string;
@@ -141,18 +142,23 @@ export interface StyleConfig {
   fontSize: number;
   lineHeight: string;
   sectionTitleAlign?: 'left' | 'center' | 'right';
-  sectionTitleBorder?: 'bottom' | 'none' | 'left';
+  sectionTitleBorder?: 'bottom' | 'none' | 'left' | 'top';
   headerStyle?: 'default' | 'centered' | 'floating';
   headerBgColor?: string;
   borderStyle?: 'minimal' | 'bold' | 'none';
   contentAlignment?: 'left' | 'justified';
   columnRatio?: string;
+  textColor?: {
+    body: string;
+    muted: string;
+    heading: string;
+  };
 }
 
 export interface SectionLayoutConfig {
   experiences?: { style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines'; showDates: boolean; dateFormat?: string; };
   education?: { style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines'; showGPA: boolean };
-  skills?: { style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags'; };
+  skills?: { style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags' | 'none'; };
   awards?: { style: 'compact' | 'detailed' };
   personal?: { style: 'default' | 'centered' };
   global?: { headerAlign?: 'left' | 'center' | 'right'; headerBorder?: 'bottom' | 'none' | 'left'; };

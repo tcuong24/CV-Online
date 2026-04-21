@@ -56,7 +56,7 @@ export function BlackWhitePage({
 
   const globalStyle = useCvEditorStore.getState().style;
   const titleAlign = globalStyle?.sectionTitleAlign || ctx.sectionLayout.global?.headerAlign || 'left';
-  const borderStyle = globalStyle?.sectionTitleBorder || ctx.sectionLayout.global?.headerBorder || 'bottom';
+  const borderStyle = globalStyle?.sectionTitleBorder || ctx.sectionLayout.global?.headerBorder || 'top';
 
   return (
     <div className="cv-paper" style={{ fontFamily, fontSize: fs, lineHeight: lh, width: 794 }}>
@@ -66,13 +66,13 @@ export function BlackWhitePage({
           style={{
             padding: '36px 44px 28px',
             color: '#000',
-            textAlign: align as React.CSSProperties['textAlign'],
+            textAlign: (align || 'center') as React.CSSProperties['textAlign'],
           }}
         >
           <div style={{ fontFamily, fontSize: fs * 2.2, fontWeight: 700, letterSpacing: '-0.5px', marginBottom: 4, lineHeight: 1.2 }}>
             <EditableText value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="Họ và tên của bạn" />
           </div>
-          <div style={{ fontSize: fs, color: '#666464', marginBottom: 14 }}>
+          <div style={{ fontSize: fs, color: '#2e2c2c', marginBottom: 14 }}>
             <EditableText value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 18px', justifyContent: justifyContact }}>
@@ -85,7 +85,7 @@ export function BlackWhitePage({
             <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
               <MdLocationOn size={11} /><EditableText value={data.personal.location || ''} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
             </span>
-            <span style={{ fontSize: fs, color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
               <MdLink size={11} /><EditableText value={data.personal.website || ''} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
             </span>
           </div>
@@ -93,16 +93,16 @@ export function BlackWhitePage({
       )}
 
       {/* Body */}
-      <div style={{ padding: isFirst ? '28px 44px 44px' : '44px 44px 44px' }}>
+      <div style={{ padding: isFirst ? '0px 44px 44px' : '44px 44px 44px' }}>
         {isFirst && (
-          <div style={{ marginBottom: 24 }}>
+          <div style={{ marginBottom: 12 }}>
             <div
               style={{
                 fontSize: fs * 0.84, fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.1em', color: accentColor,
                 textAlign: titleAlign === 'center' ? 'center' : 'left',
-                borderBottom: borderStyle === 'bottom' ? `2px solid ${accentColor}` : 'none',
-                paddingBottom: borderStyle !== 'none' ? 5 : 0,
+                borderTop: borderStyle === 'top' ? `1px solid ${accentColor}` : 'none',
+                paddingTop: borderStyle !== 'none' ? 15 : 0,
                 marginBottom: borderStyle !== 'none' ? 12 : 6,
                 borderLeft: borderStyle === 'left' ? `4px solid ${accentColor}` : 'none',
                 paddingLeft: borderStyle === 'left' ? 8 : 0,
@@ -163,8 +163,6 @@ export function BlackWhitePage({
               </button>
             );
           };
-
-          // Helper: build style switcher controls per section
           const makeStyleControls = (sectionKey: string): React.ReactNode => {
             if (sectionKey === 'experiences') {
               const cur = ctx.sectionLayout.experiences?.style ?? 'timeline';
