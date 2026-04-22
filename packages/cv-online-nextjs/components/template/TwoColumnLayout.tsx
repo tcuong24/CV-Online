@@ -88,11 +88,13 @@ export function TwoColumnPage({
         background: pageBg,
       }}
     >
+      {/* Sidebar Decorator */}
+      <div style={{ height: 12, position: 'absolute', top: 0, left: 0, right: 0, padding: '0 36px' }} className='flex justify-between ' >
+        <div className='w-40 h-full bg-[#40403E] z-1' />
+        <div className='w-40 h-full bg-[#40403E]' />
+      </div>
+
       {/* Sidebar */}
-        <div style={{ height: 12, position: 'absolute', top: 0, left: 0, right: 0, padding: '0 36px' }} className='flex justify-between ' >
-          <div className='w-40 h-full bg-[#40403E] z-1' />
-          <div className='w-40 h-full bg-[#40403E]' />
-        </div>
       <div style={{ background: sidebarBg, padding: sidebarPadding, color: textColor.body, position: 'relative' }}>
         {isFirst && (
           <>
@@ -227,8 +229,8 @@ export function TwoColumnPage({
               </div>
             )}
           </div>
-
         )}
+
         <Droppable droppableId="sections-main">
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
