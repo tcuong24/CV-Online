@@ -23,7 +23,7 @@ export function DefaultHeader({ data, ctx, theme, fontFamily, align, fs }: Heade
     <div
       style={{
         padding: '36px 44px 28px',
-        background: theme.dark,
+        background: ctx.style?.backgroundImage ? `${theme.dark}e6` : theme.dark, // 90% opacity if has bg
         color: '#fff',
         textAlign: align as React.CSSProperties['textAlign'],
       }}
@@ -51,7 +51,7 @@ export function CenteredHeader({ data, ctx, theme, fontFamily, fs }: HeaderProps
       style={{
         padding: '44px 44px 32px',
         textAlign: 'center',
-        background: '#fff',
+        background: ctx.style?.backgroundImage ? 'rgba(255, 255, 255, 0.8)' : '#fff',
         borderBottom: `1px solid #eee`,
       }}
     >
@@ -78,7 +78,7 @@ export function FloatingHeader({ data, ctx, theme, fontFamily, fs }: HeaderProps
       <div
         style={{
           padding: '30px',
-          background: '#fff',
+          background: ctx.style?.backgroundImage ? 'rgba(255, 255, 255, 0.95)' : '#fff',
           borderRadius: '12px',
           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
           border: `1px solid ${theme.primary}15`,

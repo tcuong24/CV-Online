@@ -9,7 +9,7 @@ export interface PersonalInfo {
   location: string;
   website: string;
   summary: string;
-  avatarUrl?: string  | null;
+  avatarUrl?: string | null;
   linkedinUrl?: string | null;
   githubUrl?: string | null;
   portfolioUrl?: string | null;
@@ -195,6 +195,12 @@ export interface StyleConfig {
     body: string;
     muted: string;
     heading: string;
+  };
+  backgroundImage?: string; // URL ảnh nền
+  backgroundOptions?: {
+    opacity?: number;
+    size?: 'cover' | 'contain' | 'auto';
+    position?: string;
   };
 }
 

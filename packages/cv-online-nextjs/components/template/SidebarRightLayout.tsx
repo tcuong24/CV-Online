@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { CvData, LayoutType } from '@/types/cvEditor';
+import React, { useRef, useState } from 'react';
+import { CvData, LayoutType, StyleConfig } from '@/types/cvEditor';
 import { Droppable, Draggable, DragDropContext, type DropResult } from '@hello-pangea/dnd';
 import {
   RenderCtx,
@@ -15,6 +15,9 @@ import {
 import { DefaultHeader, CenteredHeader, FloatingHeader } from './parts/Headers';
 import { SideSection } from '../shared/TemplatePart';
 import { EditableText } from '../shared/EditableText';
+import Image from 'next/image';
+import { MdEmail, MdPhone, MdLocationOn, MdLink } from 'react-icons/md';
+import { FaLinkedin, FaGithub, FaGlobe } from 'react-icons/fa';
 
 export function SidebarRightPage({
   mainSections,
@@ -29,6 +32,7 @@ export function SidebarRightPage({
   accentColor,
   ctx,
   scale,
+  style,
   headerStyle = 'default',
 }: {
   mainSections: any[];
@@ -43,25 +47,151 @@ export function SidebarRightPage({
   accentColor: string;
   ctx: RenderCtx;
   scale: number;
+  style: StyleConfig;
   headerStyle?: 'default' | 'centered' | 'floating';
 }) {
+  const [isAvatarHovered, setIsAvatarHovered] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      ctx.updatePersonalInfo({ avatarUrl: base64 });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const headerProps = { data, ctx, theme, fontFamily, align, fs };
+  const columnRatio = style?.layout?.columnRatio || '220px 1fr';
+  // If ratio is '35:65', convert to '35% 65%' for grid
+  const gridTemplateColumns = columnRatio.includes(':')
+    ? columnRatio.split(':').map((v: string) => `${v}%`).join(' ')
+    : columnRatio;
+
+  const sidebarBg = style?.colors?.background.sidebar || theme.sidebar || theme.primary;
+  const sidebarPadding = style?.spacing?.page.sidebarPadding || '28px 18px';
 
   return (
-    <div className="cv-paper" style={{ fontFamily, fontSize: fs, lineHeight: lh }}>
+    <div className="cv-paper" style={{
+      fontFamily, fontSize: fs, lineHeight: lh,
+      position: 'relative',
+      backgroundColor: style?.backgroundImage ? 'transparent' : '#ffffff',
+      backgroundImage: style?.backgroundImage ? `url(${style?.backgroundImage})` : 'none',
+      backgroundSize: style?.backgroundOptions?.size || 'cover',
+      backgroundPosition: style?.backgroundOptions?.position || 'center',
+      backgroundRepeat: 'no-repeat',
+      zIndex: 0,
+    }}>
+      {/* Background Opacity Overlay */}
+      {style?.backgroundImage && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, bottom: 0,
+            zIndex: -1,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
       {/* Header logic */}
       {isFirst && (
         <>
-          {headerStyle === 'centered' && <CenteredHeader {...headerProps} />}
-          {headerStyle === 'floating' && <FloatingHeader {...headerProps} />}
-          {headerStyle === 'default' && <DefaultHeader {...headerProps} />}
+          <div
+            style={{
+              padding: '47px 44px 32px',
+              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              marginRight:'14px',
+              marginLeft:'61px',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div>
+
+              <div style={{ fontFamily, fontSize: fs * 2.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: '#111', marginBottom: 6 }}>
+                <EditableText value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="HỌ VÀ TÊN" />
+              </div>
+              <div style={{ fontSize: fs * 1.1, color: theme.primary, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 20 }}>
+                <EditableText value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="VỊ TRÍ ỨNG TUYỂN" />
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', justifyContent: 'center', fontSize: fs * 0.9, color: '#666' }}>
+                {/* personal phone mail github linkedin linkedinurl website */}
+                
+              </div>
+            </div>
+            <div
+              style={{
+                cursor: 'pointer',
+                position: 'relative',
+                width: 173,
+                height: 173,
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: `2px solid ${theme.primary}20`,
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={() => setIsAvatarHovered(true)}
+              onMouseLeave={() => setIsAvatarHovered(false)}
+              onClick={handleAvatarClick}
+              title="Nhấp để tải ảnh lên"
+            >
+              <Image
+                src={data.personal.avatarUrl || "/images/avatar.png"}
+                alt="Avatar"
+                fill
+                sizes="173px"
+                style={{
+                  objectFit: 'cover',
+                  transform: isAvatarHovered ? 'scale(1.05)' : 'scale(1)',
+                  transition: 'transform 0.3s ease',
+                }}
+                loading='eager'
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: fs * 0.8,
+                  fontWeight: 600,
+                  textAlign: 'center',
+                  padding: '12px',
+                  opacity: isAvatarHovered ? 1 : 0,
+                  transition: 'opacity 0.2s ease',
+                  pointerEvents: 'none',
+                }}
+              >
+                Nhấn để thay đổi ảnh
+              </div>
+              <input
+                type="file"
+                ref={avatarInputRef}
+                style={{ display: 'none' }}
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </div>
+          </div>
         </>
       )}
 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 190px', // Right Sidebar
+          gridTemplateColumns,
           minHeight: isFirst ? 'calc(100% - 200px)' : '100%',
         }}
       >
@@ -91,6 +221,7 @@ export function SidebarRightPage({
                           fs={fs}
                           addButton={addButton}
                           styleControls={styleControls}
+                          style={style}
                         >
                           {content}
                         </SectionShell>
@@ -105,7 +236,7 @@ export function SidebarRightPage({
         </div>
 
         {/* Sidebar (Right) */}
-        <div style={{ background: `${accentColor}08`, borderLeft: `1px solid ${accentColor}15`, padding: '28px 18px' }}>
+        <div style={{ background: `${style.colors?.background.sidebar}`,borderRadius:20 , padding: '28px 18px',width:'95%' }}>
           <Droppable droppableId="sections-sidebar">
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
@@ -123,17 +254,18 @@ export function SidebarRightPage({
                         )}
                         className="group/sidesec"
                       >
-                         <SideSection 
-                           title={title} 
-                           fontSize={fs * 0.75}
-                           addButton={addButton} 
-                           styleControls={styleControls}
-                           dragHandleProps={dp.dragHandleProps}
-                           titleColor={accentColor}
-                           borderColor={`${accentColor}30`}
-                         >
-                           {content}
-                         </SideSection>
+                        <SideSection
+                          title={title}
+                          fontSize={fs * 1.2}
+                          addButton={addButton}
+                          styleControls={styleControls}
+                          dragHandleProps={dp.dragHandleProps}
+                          titleColor={accentColor}
+                          borderColor={`${accentColor}30`}
+                          sectionTitleBorder={style?.sectionTitleBorder}
+                        >
+                          {content}
+                        </SideSection>
                       </div>
                     )}
                   </Draggable>
@@ -158,6 +290,7 @@ export function SidebarRightLayout({
   fs,
   lh,
   sideKeys,
+  style,
   zoom = 100,
 }: {
   data: CvData;
@@ -169,19 +302,21 @@ export function SidebarRightLayout({
   fs: number;
   lh: number;
   sideKeys: string[];
+  style: StyleConfig;
   zoom?: number;
 }) {
   const accentColor = theme.sidebar || theme.primary;
   const scale = zoom / 100;
-  const headerStyle = ctx.sectionLayout.global?.headerStyle as any || 'default';
-  
+  const headerStyle = style?.headerStyle || 'default';
+
   // Normalize IDs: use both 'personal' and 'personalInfo' to check for summary section
   const isPersonal = (k: string) => k === 'personal' || k === 'personalInfo';
-  const mainKeyList = order.filter((k) => !isPersonal(k) && !sideKeys.includes(k));
+  const mainKeyList = order.filter((k) => !sideKeys.includes(k));
 
   const titles: Record<string, string> = {
     personal: 'Giới thiệu',
     personalInfo: 'Giới thiệu',
+    contact: 'Liên hệ',
     experiences: 'Kinh nghiệm',
     education: 'Học vấn',
     skills: 'Kỹ năng',
@@ -216,6 +351,47 @@ export function SidebarRightLayout({
       content = (
         <div style={{ color: '#57534e', lineHeight: lh }}>
           <EditableText multiline value={data.personal.summary || ''} onChange={v => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." />
+        </div>
+      );
+    } else if (key === 'contact') {
+      const p = data.personal;
+      content = (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: fs * 0.9 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <MdPhone size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
+            <EditableText className={`text-[${style.colors?.text.heading}]`}
+ value={p.phone || ''} onChange={v => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <MdEmail size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
+            <EditableText value={p.email || ''} onChange={v => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <MdLocationOn size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
+            <EditableText value={p.location || ''} onChange={v => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
+          </div>
+          {(p.website || p.linkedinUrl || p.githubUrl) && (
+            <>
+              {p.website && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <FaGlobe size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
+                  <EditableText value={p.website} onChange={v => ctx.updatePersonalInfo({ website: v })} placeholder="Website" />
+                </div>
+              )}
+              {p.linkedinUrl && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <FaLinkedin size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
+                  <EditableText value={p.linkedinUrl} onChange={v => ctx.updatePersonalInfo({ linkedinUrl: v })} placeholder="LinkedIn" />
+                </div>
+              )}
+              {p.githubUrl && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <FaGithub size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
+                  <EditableText value={p.githubUrl} onChange={v => ctx.updatePersonalInfo({ githubUrl: v })} placeholder="Github" />
+                </div>
+              )}
+            </>
+          )}
         </div>
       );
     } else if (key === 'experiences') {
@@ -286,9 +462,10 @@ export function SidebarRightLayout({
           align={align}
           fs={fs}
           lh={lh}
-          accentColor={accentColor}
+          accentColor={style.colors?.text.heading || theme.primary}
           ctx={ctx}
           scale={scale}
+          style={style}
           headerStyle={headerStyle}
         />
       </div>

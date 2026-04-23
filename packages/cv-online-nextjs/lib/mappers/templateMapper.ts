@@ -197,8 +197,8 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
     nameAlign: layoutCfg['nameAlign'] || 'left',
     fontSize,
     lineHeight,
-    sectionTitleAlign: layoutCfg['sectionTitleAlign'],
-    sectionTitleBorder: layoutCfg['sectionTitleBorder'],
+    sectionTitleAlign: layoutCfg['sectionTitleAlign'] || cfg['sectionTitleAlign'],
+    sectionTitleBorder: layoutCfg['sectionTitleBorder'] || cfg['sectionTitleBorder'],
     headerStyle: layoutCfg['headerStyle'],
     headerBgColor: layoutCfg['headerBgColor'],
     borderStyle: layoutCfg['borderStyle'],
@@ -214,7 +214,9 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
       columnRatio: layoutCfg['columnRatio'] || '220px 1fr'
     },
     // Compatibility fields
-    textColor: colors.text
+    textColor: colors.text,
+    backgroundImage: cfg['backgroundImage'],
+    backgroundOptions: cfg['backgroundOptions'],
   };
 }
 

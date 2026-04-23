@@ -10,13 +10,14 @@ interface SideSectionProps {
   titleColor?: string;
   borderColor?: string;
   styleControls?: React.ReactNode;
+  sectionTitleBorder?: string;
 }
 
-export function SideSection({ title, children, fontSize, addButton, dragHandleProps, titleColor, borderColor, styleControls }: SideSectionProps) {
+export function SideSection({ title, children, fontSize, addButton, dragHandleProps, titleColor, borderColor, styleControls, sectionTitleBorder }: SideSectionProps) {
   const [hovered, setHovered] = useState(false);
   const finalTitleColor = titleColor || 'rgba(255,255,255,0.5)';
   const finalBorderColor = borderColor || 'rgba(255,255,255,0.15)';
-
+  const borderStyle = sectionTitleBorder || 'bottom';
   return (
     <div
       style={{ marginBottom: 20 }}
@@ -35,17 +36,21 @@ export function SideSection({ title, children, fontSize, addButton, dragHandlePr
           letterSpacing: '0.12em',
           color: finalTitleColor,
           marginBottom: 8,
-          paddingBottom: 5,
-          borderBottom: `1px solid ${finalBorderColor}`,
+          borderTop: borderStyle === 'top' ? `1px solid ${borderColor}` : 'none',
+          paddingTop: borderStyle === 'top' ? 15 : 0,
+          borderBottom: borderStyle === 'bottom' ? `1px solid ${borderColor}` : 'none',
+          paddingBottom: borderStyle !== 'none' ? 2 : 0,
+          borderLeft: borderStyle === 'left' ? `4px solid ${borderColor}` : 'none',
+          paddingLeft: borderStyle === 'left' ? 8 : 0,
           cursor: dragHandleProps ? 'grab' : 'default',
         }}
       >
         <span>{title}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {styleControls && (
-             <div style={{ opacity: hovered ? 1 : 0, transition: 'opacity 0.15s' }}>
-               {styleControls}
-             </div>
+            <div style={{ opacity: hovered ? 1 : 0, transition: 'opacity 0.15s' }}>
+              {styleControls}
+            </div>
           )}
           {addButton && (
             <span style={{ opacity: hovered ? 1 : 0, transition: 'opacity 0.15s', pointerEvents: hovered ? 'auto' : 'none' }}>

@@ -193,6 +193,7 @@ export function SectionShell({
   dark = false,
   addButton,
   styleControls,
+  style: localStyle,
 }: {
   children: React.ReactNode;
   dragHandleProps?: React.HTMLAttributes<HTMLElement> | null;
@@ -203,15 +204,16 @@ export function SectionShell({
   dark?: boolean;
   addButton?: React.ReactNode;
   styleControls?: React.ReactNode;
+  style?: StyleConfig;
 }) {
   const [hovered, setHovered] = useState(false);
   const titleColor = dark ? 'rgba(255,255,255,0.9)' : accentColor;
   const borderColor = dark ? 'rgba(255,255,255,0.3)' : accentColor;
   const globalStyle = useCvEditorStore(s => s.style);
-  
-  const align = globalStyle?.sectionTitleAlign || 'left';
-  const borderStyle = globalStyle?.sectionTitleBorder || 'bottom';
+  const style = localStyle || globalStyle;
 
+  const align = style?.sectionTitleAlign || 'left';
+  const borderStyle = style?.sectionTitleBorder || 'bottom';
   return (
     <div
       onMouseEnter={() => setHovered(true)}
@@ -340,7 +342,8 @@ export function ExperienceSection({
       </div>
     );
   }
-  
+  console.log(expStyle, 'expStyle');
+
   return (
     <DragDropContext onDragEnd={(result: DropResult) => {
       if (!result.destination || result.destination.index === result.source.index) return;
@@ -487,22 +490,20 @@ export function SkillsBlock({
   const skillStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
   const { fs, accentColor, textColor: dbText } = ctx;
   const textColor = dark ? 'rgba(255,255,255,0.85)' : (dbText?.body || '#44403c');
-  const { fs, accentColor, textColor: dbText } = ctx;
-  const textColor = dark ? 'rgba(255,255,255,0.85)' : (dbText?.body || '#44403c');
   const trackBg = dark ? 'rgba(255,255,255,0.2)' : `${accentColor}20`;
   const fillBg = dark ? 'rgba(255,255,255,0.8)' : accentColor;
   const newSkill = () => ({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' });
   if (skillStyle === 'none') {
     return (
-      <div style={{  gap: 8 }} className="relative group pb-6">
+      <div style={{ gap: 8 }} className="relative group pb-6">
         {data.skills.map((s) => (
-          <span key={s.id} style={{display:'block',  gap: 5, fontSize: fs * 0.88, color: textColor }} className="group/item relative pr-5">
+          <span key={s.id} style={{ display: 'block', gap: 5, fontSize: fs * 0.88, color: textColor }} className="group/item relative pr-5">
             <span style={{ width: dark ? 5 : 6, height: dark ? 5 : 6, borderRadius: '50%', background: fillBg, flexShrink: 0 }} />
             <EditableText value={s.name} onChange={(v) => ctx.updateSkill(s.id, { name: v })} placeholder="Kỹ năng" />
             <button onClick={() => ctx.removeSkill(s.id)} className="absolute top-1/2 -translate-y-1/2 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
           </span>
         ))}
-        
+
       </div>
     );
   }
@@ -514,7 +515,7 @@ export function SkillsBlock({
             <div style={{ fontSize: fs * 0.9, color: textColor, marginBottom: 3 }}>
               <EditableText value={s.name} onChange={(v) => ctx.updateSkill(s.id, { name: v })} placeholder="Kỹ năng" />
             </div>
-            <div 
+            <div
               style={{ height: dark ? 3 : 4, background: trackBg, borderRadius: 2, cursor: 'pointer', position: 'relative' }}
               onClick={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
@@ -528,7 +529,7 @@ export function SkillsBlock({
             <button onClick={() => ctx.removeSkill(s.id)} className="absolute top-1/2 -translate-y-1/2 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
           </div>
         ))}
-        
+
       </div>
     );
   }
@@ -543,21 +544,7 @@ export function SkillsBlock({
             <button onClick={() => ctx.removeSkill(s.id)} className="absolute top-1/2 -translate-y-1/2 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
           </span>
         ))}
-        
-      </div>
-    );
-  }
-  if (skillStyle === 'none') {
-    return (
-      <div style={{ gap: 8 }} className="relative group pb-6">
-        {data.skills.map((s) => (
-          <span key={s.id} style={{  gap: 5, fontSize: fs * 0.88, color: textColor }} className="group/item relative pr-5">
-            <span style={{ width: dark ? 5 : 6, height: dark ? 5 : 6, borderRadius: '50%', background: fillBg, flexShrink: 0 }} />
-            <EditableText value={s.name} onChange={(v) => ctx.updateSkill(s.id, { name: v })} placeholder="Kỹ năng" />
-            <button onClick={() => ctx.removeSkill(s.id)} className="absolute top-1/2 -translate-y-1/2 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
-          </span>
-        ))}
-        
+
       </div>
     );
   }
@@ -593,7 +580,7 @@ export function SkillsBlock({
           <button onClick={() => ctx.removeSkill(s.id)} className="absolute right-1 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
         </span>
       ))}
-    
+
     </div>
   );
 }
@@ -669,7 +656,7 @@ export function MainSectionBlocks({
   if (sectionKey === 'projects') {
     if (!data.projects?.length) {
       return (
-        <div className="flex h-6 flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' })}>         
+        <div className="flex h-6 flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' })}>
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <button className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium border border-blue-200 pointer-events-none shadow-sm">+ Thêm dự án</button>
           </div>

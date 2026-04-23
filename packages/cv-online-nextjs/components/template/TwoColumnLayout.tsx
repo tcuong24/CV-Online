@@ -60,14 +60,14 @@ export function TwoColumnPage({
 }) {
   const columnRatio = style?.layout?.columnRatio || '220px 1fr';
   // If ratio is '35:65', convert to '35% 65%' for grid
-  const gridTemplateColumns = columnRatio.includes(':') 
+  const gridTemplateColumns = columnRatio.includes(':')
     ? columnRatio.split(':').map((v: string) => `${v}%`).join(' ')
     : columnRatio;
 
   const sidebarBg = style?.colors?.background.sidebar || theme.sidebar || theme.primary;
-  const pageBg    = style?.colors?.background.page || '#ffffff';
+  const pageBg = style?.colors?.background.page || '#ffffff';
   const sidebarPadding = style?.spacing?.page.sidebarPadding || '28px 18px';
-  const mainPadding    = style?.spacing?.page.mainPadding || '28px 26px'; 
+  const mainPadding = style?.spacing?.page.mainPadding || '28px 26px';
   const initials = (data.personal.name || '??')
     .split(' ')
     .slice(-2)
@@ -338,7 +338,7 @@ export function TwoColumnLayout({
           <StylePicker
             fs={fs}
             value={expStyle}
-            options={[{ value: 'timeline', label: 'Timeline' }, { value: 'simple', label: 'Simple' },{ value: 'cards', label: 'Cards' },{ value: 'bullets', label: 'Bullets' },{ value: 'compact', label: 'Compact' },{ value: 'minimal-lines', label: 'Minimal-lines' },{ value: 'detailed', label: 'Detailed' }]}
+            options={[{ value: 'timeline', label: 'Timeline' }, { value: 'simple', label: 'Simple' }, { value: 'cards', label: 'Cards' }, { value: 'bullets', label: 'Bullets' }, { value: 'compact', label: 'Compact' }, { value: 'minimal-lines', label: 'Minimal-lines' }, { value: 'detailed', label: 'Detailed' }]}
             onChange={(v) => ctx.patchSectionLayout('experiences', { style: v })}
           />
         ),
@@ -417,7 +417,7 @@ export function TwoColumnLayout({
 
   // Build sidebar sections list
   const sideSectionNodes: SidebarSection[] = sideKeys.flatMap((key) => {
-    
+
     if (key === 'skills') {
       const addBtn = (
         <button style={sideBtnStyle} onClick={() => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' })}>
