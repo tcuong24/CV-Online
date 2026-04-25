@@ -124,7 +124,7 @@ export function AuthForm() {
   // ── Register → auto login ─────────────────────────────────────────────────
   const handleRegister = async () => {
     // 1. Gọi API tạo tài khoản
-    const res = await fetch('/api/auth/register', {
+    const res = await fetch('/api/register', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
@@ -154,7 +154,7 @@ export function AuthForm() {
       return;
     }
 
-    router.push('/cvs');
+    router.push('/dashboard');
     router.refresh();
   };
 

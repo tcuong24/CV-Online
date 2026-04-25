@@ -58,6 +58,25 @@ export function TwoColumnPage({
   ctx: RenderCtx;
   scale: number;
 }) {
+  const [isAvatarHovered, setIsAvatarHovered] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      ctx.updatePersonalInfo({ avatarUrl: base64 });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const columnRatio = style?.layout?.columnRatio || '220px 1fr';
   // If ratio is '35:65', convert to '35% 65%' for grid
   const gridTemplateColumns = columnRatio.includes(':')
@@ -98,33 +117,84 @@ export function TwoColumnPage({
       <div style={{ background: sidebarBg, padding: sidebarPadding, color: textColor.body, position: 'relative' }}>
         {isFirst && (
           <>
-            {data.personal.avatarUrl ? (
-              <img
-                src={data.personal.avatarUrl}
-                alt={data.personal.name}
-                style={{
-                  width: 130, height: 150,
-                  objectFit: 'cover',
-                  margin: 'auto',
-                  display: 'block',
-                  marginBottom: 14,
-                  marginTop: 14,
-                }}
-              />
-            ) : (
+            <div
+              style={{
+                cursor: 'pointer',
+                position: 'relative',
+                width: 130,
+                height: 150,
+                margin: 'auto',
+                display: 'block',
+                marginBottom: 14,
+                marginTop: 14,
+                overflow: 'hidden',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={() => setIsAvatarHovered(true)}
+              onMouseLeave={() => setIsAvatarHovered(false)}
+              onClick={handleAvatarClick}
+              title="Nhấp để tải ảnh lên"
+            >
+              {data.personal.avatarUrl ? (
+                <img
+                  src={data.personal.avatarUrl}
+                  alt={data.personal.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transform: isAvatarHovered ? 'scale(1.05)' : 'scale(1)',
+                    transition: 'transform 0.3s ease',
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'rgba(255,255,255,0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 24,
+                    fontWeight: 700,
+                    border: '3px solid rgba(255,255,255,0.3)',
+                    alignSelf: 'center',
+                    transform: isAvatarHovered ? 'scale(1.05)' : 'scale(1)',
+                    transition: 'transform 0.3s ease',
+                  }}
+                >
+                  {initials}
+                </div>
+              )}
               <div
                 style={{
-                  width: 64, height: 64,
-                  background: 'rgba(255,255,255,0.2)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 24, fontWeight: 700,
-                  border: '3px solid rgba(255,255,255,0.3)',
-                  margin: avatarMargin,
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  textAlign: 'center',
+                  padding: '8px',
+                  opacity: isAvatarHovered ? 1 : 0,
+                  transition: 'opacity 0.2s ease',
+                  pointerEvents: 'none',
                 }}
               >
-                {initials}
+                Nhấn để thay đổi ảnh
               </div>
-            )}
+              <input
+                type="file"
+                ref={avatarInputRef}
+                style={{ display: 'none' }}
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </div>
             <div style={{ marginBottom: 22 }}>
               <div
                 style={{

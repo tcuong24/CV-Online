@@ -98,7 +98,7 @@ export function BlackWhitePage({
           <div style={{ marginBottom: 12 }}>
             <div
               style={{
-                fontSize: fs * 0.84, fontWeight: 700, textTransform: 'uppercase',
+                fontSize: fs * 1.2, fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.1em', color: accentColor,
                 textAlign: titleAlign === 'center' ? 'center' : 'left',
                 borderTop: borderStyle === 'top' ? `1px solid ${accentColor}` : 'none',

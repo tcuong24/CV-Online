@@ -64,7 +64,8 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const focusedDescElRef = useRef<HTMLElement | null>(null);
-
+  console.log(pastStates,futureStates);
+  
   const setData = useCvEditorStore((s) => s.setData);
   const setOrder = useCvEditorStore((s) => s.setOrder);
 
@@ -610,52 +611,46 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
           <div style={{ width: 1, height: 24, background: '#e5e7eb' }} />
           <Button
             onClick={() => onSave?.({ captureThumbnail: true })}
-            disabled={isSaving}
-            title={
-              isSaving ? 'Đang lưu...'
-                : 'Lưu CV'
-            }
+            disabled={isSaving || !isDirty}
+            title={isSaving ? 'Đang lưu...' : !isDirty ? 'Không có thay đổi' : 'Lưu CV'}
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
               padding: '7px 13px', borderRadius: 8, fontFamily: 'inherit',
               fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap',
-              cursor: isSaving ? 'default' : 'pointer',
+              cursor: (isSaving || !isDirty) ? 'default' : 'pointer',
               transition: 'background 0.15s, transform 0.1s',
-              border: '1px solid #2563eb',
-              background: isSaving
-                ? '#eff6ff'
-                : '#eff6ff',
-              color: isSaving
-                ? '#93c5fd'
-                : '#2563eb',
+              border: !isDirty ? '1px solid #bbf7d0' : '1px solid #2563eb',
+              background: !isDirty ? '#f0fdf4' : '#eff6ff',
+              color: isSaving ? '#93c5fd' : !isDirty ? '#16a34a' : '#2563eb',
               opacity: isSaving ? 0.7 : 1,
             }}
             onMouseEnter={e => {
-              if (!isSaving)
+              if (!isSaving && isDirty)
                 e.currentTarget.style.background = '#dbeafe';
             }}
             onMouseLeave={e => {
-              if (!isSaving)
+              if (!isSaving && isDirty)
                 e.currentTarget.style.background = '#eff6ff';
             }}
           >
             {isSaving ? (
-              // Spinner đơn giản không cần thư viện
               <span style={{
                 display: 'inline-block', width: 14, height: 14,
                 border: '2px solid #93c5fd', borderTopColor: '#2563eb',
                 borderRadius: '50%', animation: 'spin 0.7s linear infinite',
               }} />
+            ) : !isDirty ? (
+              <span style={{ fontSize: 14 }}>✓</span>
             ) : (
               <MdSave size={15} />
             )}
-            {isSaving ? 'Đang lưu...' : 'Lưu CV'}
+            {isSaving ? 'Đang lưu...' : !isDirty ? 'Đã lưu' : 'Lưu CV'}
           </Button>
           {/* CSS cho spinner */}
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </>
       )}
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         <Button
           onClick={() => undo()}
           disabled={
@@ -673,6 +668,15 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
         >
           <Redo size={16} className='text-black ' />
         </Button>
+        {pastStates.length === 0 && futureStates.length === 0 && (
+          <span style={{
+            fontSize: 11, fontWeight: 600, color: '#16a34a',
+            background: '#f0fdf4', border: '1px solid #bbf7d0',
+            borderRadius: 6, padding: '2px 8px', whiteSpace: 'nowrap',
+          }}>
+            ✓ Đã lưu
+          </span>
+        )}
       </div>
     </div>
   );

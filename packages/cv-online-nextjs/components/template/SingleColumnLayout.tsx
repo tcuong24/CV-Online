@@ -65,28 +65,27 @@ export function SingleColumnPage({
         <div
           style={{
             padding: '36px 44px 28px',
-            background: theme.dark,
-            color: '#fff',
-            textAlign: align as React.CSSProperties['textAlign'],
+            color: '#000',
+            textAlign: 'center' as React.CSSProperties['textAlign'],
           }}
         >
           <div style={{ fontFamily, fontSize: fs * 2.2, fontWeight: 700, letterSpacing: '-0.5px', marginBottom: 4, lineHeight: 1.2 }}>
             <EditableText value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="Họ và tên của bạn" />
           </div>
-          <div style={{ fontSize: fs, color: 'rgba(255,255,255,0.65)', marginBottom: 14 }}>
+          <div style={{ fontSize: fs, color: '#2e2c2c', marginBottom: 14 }}>
             <EditableText value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 18px', justifyContent: justifyContact }}>
-            <span style={{ fontSize: fs * 0.88, color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 18px', justifyContent: 'center' }}>
+            <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
               <MdEmail size={11} /><EditableText value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
             </span>
-            <span style={{ fontSize: fs * 0.88, color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
               <MdPhone size={11} /><EditableText value={data.personal.phone || ''} onChange={(v) => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
             </span>
-            <span style={{ fontSize: fs * 0.88, color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
               <MdLocationOn size={11} /><EditableText value={data.personal.location || ''} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
             </span>
-            <span style={{ fontSize: fs * 0.88, color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
               <MdLink size={11} /><EditableText value={data.personal.website || ''} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
             </span>
           </div>
@@ -99,10 +98,10 @@ export function SingleColumnPage({
           <div style={{ marginBottom: 24 }}>
             <div
               style={{
-                fontSize: fs * 0.84, fontWeight: 700, textTransform: 'uppercase',
+                fontSize: fs * 1.2, fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.1em', color: accentColor,
                 textAlign: titleAlign === 'center' ? 'center' : 'left',
-                borderBottom: borderStyle === 'bottom' ? `2px solid ${accentColor}` : 'none',
+                borderBottom: borderStyle === 'bottom' ? `1px solid ${accentColor}` : 'none',
                 paddingBottom: borderStyle !== 'none' ? 5 : 0,
                 marginBottom: borderStyle !== 'none' ? 12 : 6,
                 borderLeft: borderStyle === 'left' ? `4px solid ${accentColor}` : 'none',

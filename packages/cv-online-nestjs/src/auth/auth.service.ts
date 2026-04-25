@@ -41,7 +41,7 @@ export class AuthService {
     });
 
     // Tạo JWT token
-    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+    const token = this.jwtService.sign({ sub: user.id, email: user.email, role: (user as any).role ?? 'user' });
 
     return { user, access_token: token };
   }
@@ -68,7 +68,7 @@ export class AuthService {
     });
 
     // Tạo JWT token
-    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+    const token = this.jwtService.sign({ sub: user.id, email: user.email, role: user.role });
 
     return {
       user: {
@@ -76,6 +76,7 @@ export class AuthService {
         email: user.email,
         fullName: user.fullName,
         avatarUrl: user.avatarUrl,
+        role: user.role,
         subscriptionType: user.subscriptionType,
       },
       access_token: token,

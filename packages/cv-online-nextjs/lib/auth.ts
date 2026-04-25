@@ -11,6 +11,7 @@ interface NestLoginResponse {
     fullName:         string;
     avatarUrl:        string | null;
     subscriptionType: string;
+    role:             string;
   };
 }
 
@@ -58,6 +59,7 @@ export const authOptions: NextAuthOptions = {
             image:            data.user.avatarUrl ?? undefined,
             accessToken:      data.access_token,
             subscriptionType: data.user.subscriptionType,
+            role:             data.user.role,
           };
         } catch {
           // NestJS down hoặc network error
@@ -75,6 +77,7 @@ export const authOptions: NextAuthOptions = {
         token.userId           = user.id;
         token.accessToken      = (user as any).accessToken;
         token.subscriptionType = (user as any).subscriptionType;
+        token.role             = (user as any).role;
       }
 
       // Google OAuth: gọi NestJS để đổi id_token → access_token của hệ thống
@@ -93,6 +96,7 @@ export const authOptions: NextAuthOptions = {
             token.userId           = data.user.id;
             token.accessToken      = data.access_token;
             token.subscriptionType = data.user.subscriptionType;
+            token.role             = data.user.role;
           }
         } catch {
           // Google OAuth lỗi — giữ token Google mặc định
@@ -110,6 +114,7 @@ export const authOptions: NextAuthOptions = {
       session.user.id               = token.userId          as string;
       session.user.accessToken      = token.accessToken     as string;
       session.user.subscriptionType = token.subscriptionType as string;
+      (session.user as any).role    = token.role             as string;
       if (token.image) {
         session.user.image = token.image as string;
       }

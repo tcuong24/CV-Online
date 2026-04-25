@@ -110,8 +110,8 @@ export function SidebarRightPage({
               textAlign: 'center',
               display: 'flex',
               alignItems: 'center',
-              marginRight:'14px',
-              marginLeft:'61px',
+              marginRight: '14px',
+              marginLeft: '61px',
               justifyContent: 'space-between',
             }}
           >
@@ -125,7 +125,7 @@ export function SidebarRightPage({
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', justifyContent: 'center', fontSize: fs * 0.9, color: '#666' }}>
                 {/* personal phone mail github linkedin linkedinurl website */}
-                
+
               </div>
             </div>
             <div
@@ -239,7 +239,7 @@ export function SidebarRightPage({
         </div>
 
         {/* Sidebar (Right) */}
-        <div style={{ background: `${style.colors?.background.sidebar}`,borderRadius:20 , padding: '28px 18px',width:'95%' }}>
+        <div style={{ background: `${style.colors?.background.sidebar}`, borderRadius: 20, padding: '28px 18px', width: '95%' }}>
           <Droppable droppableId="sections-sidebar">
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
@@ -363,7 +363,7 @@ export function SidebarRightLayout({
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <MdPhone size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
             <EditableText className={`text-[${style.colors?.text.heading}]`}
- value={p.phone || ''} onChange={v => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
+              value={p.phone || ''} onChange={v => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <MdEmail size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
