@@ -66,7 +66,6 @@ export class CvParserService {
       IMPORTANT: You MUST return a JSON object that matches the following EXACT structure:
       {
         "personal": { "name": "", "role": "", "email": "", "phone": "", "address": "", "links": [], "summary": "" },
-        "summary": "",
         "experiences": [{ "title": "", "company": "", "location": "", "from": "", "to": "", "desc": "" }],
         "educations": [{ "degree": "", "school": "", "location": "", "from": "", "to": "", "desc": "" }],
         "skills": [],
@@ -113,7 +112,6 @@ export class CvParserService {
       IMPORTANT: You MUST return a JSON object that matches the following EXACT structure:
       {
         "personal": { "name": "","role":"", "email": "", "phone": "", "address": "", "links": [], "summary": "" },
-        "summary": "",
         "experiences": [{ "title": "", "company": "", "location": "", "from": "", "to": "", "desc": "" }],
         "educations": [{ "degree": "", "school": "", "location": "", "from": "", "to": "", "desc": "" }],
         "skills": [],

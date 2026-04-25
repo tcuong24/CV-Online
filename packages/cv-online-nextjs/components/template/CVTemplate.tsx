@@ -342,8 +342,6 @@ export function ExperienceSection({
       </div>
     );
   }
-  console.log(expStyle, 'expStyle');
-
   return (
     <DragDropContext onDragEnd={(result: DropResult) => {
       if (!result.destination || result.destination.index === result.source.index) return;
@@ -488,6 +486,8 @@ export function SkillsBlock({
   dark?: boolean;
 }) {
   const skillStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
+  console.log(skillStyle);
+  
   const { fs, accentColor, textColor: dbText } = ctx;
   const textColor = dark ? 'rgba(255,255,255,0.85)' : (dbText?.body || '#44403c');
   const trackBg = dark ? 'rgba(255,255,255,0.2)' : `${accentColor}20`;

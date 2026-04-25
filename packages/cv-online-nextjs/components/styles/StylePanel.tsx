@@ -42,13 +42,15 @@ interface StylePanelProps {
   onChange: (v: StyleConfig) => void;
   sidebarOpen?: boolean;
   onToggleSidebar?: () => void;
+  aiPanelOpen?: boolean;
+  onToggleAiPanel?: () => void;
   onSave?: (opts?: { captureThumbnail?: boolean }) => Promise<string | null>;
   isSaving?: boolean;
   isDirty?: boolean;
   lastSavedAt?: number | null;
 }
 
-export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSave, isSaving, isDirty, lastSavedAt }: StylePanelProps) {
+export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPanelOpen, onToggleAiPanel, onSave, isSaving, isDirty, lastSavedAt }: StylePanelProps) {
   const set = (k: keyof StyleConfig, v: string | number) =>
     onChange({ ...style, [k]: v });
 
@@ -282,6 +284,25 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, onSa
             }}
           >
             <MdViewSidebar size={20} />
+          </Button>
+          <div style={{ width: 1, height: 24, background: '#e5e7eb' }} />
+        </>
+      )}
+      {onToggleAiPanel && (
+        <>
+          <Button
+            onClick={onToggleAiPanel}
+            title={aiPanelOpen ? 'Ẩn AI panel' : 'Hiện AI panel'}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 32, height: 32, borderRadius: 8, border: 'none', cursor: 'pointer',
+              background: aiPanelOpen ? '#ede9fe' : 'transparent',
+              color: aiPanelOpen ? '#7c3aed' : '#9ca3af',
+              transition: 'background 0.15s, color 0.15s',
+              flexShrink: 0,
+            }}
+          >
+            <MdAutoFixHigh size={20} />
           </Button>
           <div style={{ width: 1, height: 24, background: '#e5e7eb' }} />
         </>

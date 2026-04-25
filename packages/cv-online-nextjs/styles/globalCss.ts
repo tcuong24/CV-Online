@@ -2,7 +2,12 @@ import { GFONTS } from '@/constants/cvEditor';
 
 export const globalCss = `
 ${GFONTS}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; color: var(--ink); }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+}
 :root {
   --bg: #f0ede8; --surface: #fff; --border: #e2ddd8;
   --ink: #1c1917; --muted: #78716c; --subtle: #a8a29e;
@@ -10,9 +15,6 @@ ${GFONTS}
   --danger: #dc2626; --radius: 10px;
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
 }
-body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; color: var(--ink); }
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 .app { display: flex; height: 100vh; overflow: hidden; }
 
 /* ── Sidebar ── */

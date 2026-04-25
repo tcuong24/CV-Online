@@ -192,26 +192,29 @@ export function SidebarRightPage({
         style={{
           display: 'grid',
           gridTemplateColumns,
-          minHeight: isFirst ? 'calc(100% - 200px)' : '100%',
+          minHeight: isFirst ? 'calc(100% - 250px)' : '100%',
         }}
       >
         {/* Main content (Left) */}
         <div style={{ padding: '28px 26px' }}>
-          <Droppable droppableId="sections-main">
+          <Droppable droppableId="sections-main" >
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
                 {mainSections.map(({ key, title, content, addButton, styleControls }, idx) => (
-                  <Draggable key={key} draggableId={`section-${key}`} index={idx}>
+                  <Draggable key={key} draggableId={`section-${key}`} index={idx} >
                     {(dp, snap) => (
                       <div
                         ref={dp.innerRef}
                         {...dp.draggableProps}
-                        style={getScaledDragStyle(
-                          dp.draggableProps.style,
-                          snap.isDragging,
-                          scale,
-                          552,
-                        )}
+                        style={{
+                          ...getScaledDragStyle(
+                            dp.draggableProps.style,
+                            snap.isDragging,
+                            scale,
+                            552
+                          ),
+                          marginBottom: '20px',
+                        }}
                       >
                         <SectionShell
                           dragHandleProps={dp.dragHandleProps}
