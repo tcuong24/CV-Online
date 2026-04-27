@@ -6,7 +6,9 @@ import { EditableText } from '../shared/EditableText';
 import {
   RenderCtx,
   SectionShell,
-  StylePicker,
+  CustomSection,
+} from './parts/SharedTemplateComponents';
+import {
   ExperienceSection,
   SkillsBlock,
   MainSectionBlocks,
@@ -14,6 +16,7 @@ import {
   RenderUnit,
   getScaledDragStyle,
   PAGE_HEIGHT_PX,
+  StylePicker,
 } from './CVTemplate';
 import { useCvEditorStore } from '@/stores/useCvEditor';
 
@@ -66,7 +69,7 @@ export function BlackWhitePage({
           style={{
             padding: '36px 44px 28px',
             color: '#000',
-            textAlign: (align || 'center') as React.CSSProperties['textAlign'],
+            textAlign: ('center') as React.CSSProperties['textAlign'],
           }}
         >
           <div style={{ fontFamily, fontSize: fs * 2.2, fontWeight: 700, letterSpacing: '-0.5px', marginBottom: 4, lineHeight: 1.2 }}>
@@ -75,18 +78,18 @@ export function BlackWhitePage({
           <div style={{ fontSize: fs, color: '#2e2c2c', marginBottom: 14 }}>
             <EditableText value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 18px', justifyContent: justifyContact }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 18px', justifyContent: 'center' }}>
             <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <MdEmail size={11} /><EditableText value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
-            </span>
+              <EditableText value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
+            </span>|
             <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <MdPhone size={11} /><EditableText value={data.personal.phone || ''} onChange={(v) => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
-            </span>
+              <EditableText value={data.personal.phone || ''} onChange={(v) => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
+            </span>|
             <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <MdLocationOn size={11} /><EditableText value={data.personal.location || ''} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
-            </span>
+              <EditableText value={data.personal.location || ''} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
+            </span>|
             <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <MdLink size={11} /><EditableText value={data.personal.website || ''} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
+              <EditableText value={data.personal.website || ''} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
             </span>
           </div>
         </div>
@@ -120,6 +123,7 @@ export function BlackWhitePage({
             education: () => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' }),
             projects: () => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' }),
             awards: () => ctx.addEntry('awards', { title: '', year: '', org: '' }),
+            certifications: () => ctx.addEntry('certifications', { name: '', issuingOrganization: '', issueDate: '', expiryDate: '', credentialId: '', credentialUrl: '', description: '' }),
             languages: () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }),
           };
           const ADD_LABELS: Record<string, string> = {
@@ -128,6 +132,7 @@ export function BlackWhitePage({
             projects: '+ Dự án',
             awards: '+ Giải thưởng',
             languages: '+ Ngôn ngữ',
+            certifications: '+ Chứng chỉ',
             skills: '+ Kỹ năng',
           };
           const HAS_DATA: Record<string, boolean> = {
@@ -135,6 +140,7 @@ export function BlackWhitePage({
             education: !!data.education?.length,
             projects: !!data.projects?.length,
             awards: !!data.awards?.length,
+            certifications: !!data.certifications?.length,
             languages: !!data.languages?.length,
             skills: !!data.skills?.length,
           };
@@ -196,15 +202,15 @@ export function BlackWhitePage({
             return undefined;
           };
 
-          const groups: { sectionKey: string; title: string; items: React.ReactNode[] }[] = [];
+          const groups: { sectionKey: string; title: string; onTitleChange?: (v: string) => void; items: React.ReactNode[] }[] = [];
           sections.forEach(u => {
             if (u.kind === 'section-header') {
-              groups.push({ sectionKey: u.sectionKey, title: u.title, items: [] });
+              groups.push({ sectionKey: u.sectionKey, title: u.title, onTitleChange: (u as any).onTitleChange, items: [] });
             } else if (groups.length > 0) {
               groups[groups.length - 1].items.push(u.node);
             }
           });
-          return groups.map(({ sectionKey, title, items }, localIdx) => (
+          return groups.map(({ sectionKey, title, onTitleChange, items }, localIdx) => (
             <Draggable key={sectionKey} draggableId={`section-${sectionKey}`} index={startIndex + localIdx}>
               {(dp, snap) => (
                 <div
@@ -222,6 +228,7 @@ export function BlackWhitePage({
                     isDragging={snap.isDragging}
                     accentColor={accentColor}
                     title={title}
+                    onTitleChange={onTitleChange}
                     fs={fs}
                     addButton={makeAddBtn(sectionKey)}
                     styleControls={makeStyleControls(sectionKey)}
@@ -275,15 +282,32 @@ export function BlackWhiteLayout({
       projects: 'Dự án',
       awards: 'Chứng chỉ & Giải thưởng',
       languages: 'Ngoại ngữ',
+      certifications: 'Chứng chỉ',
+      references: 'Tham chiếu',
+      interests: 'Sở thích',
+      activities: 'Hoạt động',
     };
-    const title = sectionTitles[key];
-    if (!title) return;
+    const displayTitle = ctx.sectionLayout[key]?.title || sectionTitles[key] || key;
+    let onTitleChange: ((v: string) => void) | undefined = (v) => ctx.patchSectionLayout(key, { title: v });
+    
     // One unit per section — the section component handles item-level DnD internally
-    units.push({ kind: 'section-header', sectionKey: key, title });
+    units.push({ kind: 'section-header', sectionKey: key, title: displayTitle, onTitleChange } as any);
+    
     if (key === 'experiences') {
       units.push({ kind: 'item', sectionKey: key, node: <ExperienceSection data={data} ctx={ctx} variant="main" /> });
     } else if (key === 'skills') {
       units.push({ kind: 'item', sectionKey: key, node: <SkillsBlock data={data} ctx={ctx} dark={false} /> });
+    } else if (key.startsWith('custom-')) {
+      const customSection = data.customSections?.find(cs => cs.id === key);
+      if (customSection) {
+        units.push({ kind: 'item', sectionKey: key, node: <CustomSection section={customSection} ctx={ctx} /> });
+        // Update title and onTitleChange for custom section
+        const header = units[units.length - 2] as any;
+        if (header) {
+          header.title = customSection.sectionTitle || 'Custom Section';
+          header.onTitleChange = (v: string) => ctx.updateCustomSection(customSection.id, { sectionTitle: v });
+        }
+      }
     } else {
       units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
     }

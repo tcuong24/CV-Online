@@ -145,6 +145,41 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
     description: (a['description'] as string | undefined) ?? '',
     open: false,
   }));
+  
+  // ── Custom Sections ──
+  const blockedTitles = [
+    'summary', 'tóm tắt', 'giới thiệu', 'profile',
+    'education', 'educations', 'học vấn', 'trình độ học vấn',
+    'experience', 'experiences', 'kinh nghiệm', 'kinh nghiệm làm việc',
+    'skills', 'kỹ năng',
+    'projects', 'dự án',
+    'awards', 'giải thưởng',
+    'certifications', 'chứng chỉ',
+    'languages', 'ngoại ngữ', 'ngôn ngữ'
+  ];
+
+  const customSections = ((dbCv['customSections'] ?? []) as Record<string, unknown>[])
+    .filter(cs => {
+      const title = ((cs['sectionTitle'] as string) || '').toLowerCase().trim();
+      return !blockedTitles.includes(title);
+    })
+    .map((cs) => {
+      const content = cs['content'] as any;
+      const items = Array.isArray(content) ? content : (content?.items ?? []);
+      const fieldConfig = Array.isArray(content) ? undefined : content?.fieldConfig;
+
+      return {
+        id:           (cs['id']           as string | undefined) ?? uid(),
+        _dbId:        cs['id'] as string,
+        sectionTitle: (cs['sectionTitle'] as string | undefined) ?? '',
+        sectionType:  ((cs['sectionType'] as string) || 'list') as 'list' | 'timeline' | 'tags' | 'text' | 'grid',
+        items:        items.map((item: any) => ({
+          ...item,
+          open: false,
+        })),
+        fieldConfig:  fieldConfig,
+      };
+    });
 
   return {
     personal: {
@@ -178,5 +213,6 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
     references,
     interests,
     activities,
+    customSections,
   };
 }

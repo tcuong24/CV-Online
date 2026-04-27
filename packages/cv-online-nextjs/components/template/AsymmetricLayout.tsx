@@ -6,6 +6,9 @@ import { Droppable, Draggable, DragDropContext, type DropResult } from '@hello-p
 import {
   RenderCtx,
   SectionShell,
+  CustomSection,
+} from './parts/SharedTemplateComponents';
+import {
   ExperienceSection,
   SkillsBlock,
   MainSectionBlocks,
@@ -71,6 +74,7 @@ export function AsymmetricPage({
                           isDragging={snap.isDragging}
                           accentColor={accentColor}
                           title={title}
+                          onTitleChange={onTitleChange}
                           fs={fs}
                           addButton={addButton}
                           styleControls={styleControls}
@@ -92,11 +96,18 @@ export function AsymmetricPage({
           <Droppable droppableId="sections-main">
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                {rightSections.map(({ key, title, content }, idx) => (
+                {rightSections.map(({ key, title, content, onTitleChange }, idx) => (
                   <Draggable key={key} draggableId={`section-${key}`} index={idx}>
                     {(dp, snap) => (
                       <div ref={dp.innerRef} {...dp.draggableProps} style={getScaledDragStyle(dp.draggableProps.style, snap.isDragging, scale, 420)}>
-                        <SectionShell dragHandleProps={dp.dragHandleProps} isDragging={snap.isDragging} accentColor={accentColor} title={title} fs={fs}>
+                        <SectionShell 
+                          dragHandleProps={dp.dragHandleProps} 
+                          isDragging={snap.isDragging} 
+                          accentColor={accentColor} 
+                          title={title} 
+                          onTitleChange={onTitleChange}
+                          fs={fs}
+                        >
                           {content}
                         </SectionShell>
                       </div>
@@ -171,10 +182,11 @@ export function AsymmetricLayout({
     ) : undefined;
 
   const makeSection = (key: string) => {
-    const title = titles[key] || key;
+    let displayTitle = ctx.sectionLayout[key]?.title || titles[key] || key;
     let content: React.ReactNode = null;
     let addButton: React.ReactNode = undefined;
     let styleControls: React.ReactNode = undefined;
+    let onTitleChange: ((v: string) => void) | undefined = (v) => ctx.patchSectionLayout(key, { title: v });
 
     if (isPersonal(key)) {
       content = (
@@ -187,6 +199,7 @@ export function AsymmetricLayout({
           />
         </div>
       );
+      onTitleChange = undefined;
     } else if (key === 'experiences') {
       const expStyle = ctx.sectionLayout.experiences?.style ?? 'timeline';
       content = <ExperienceSection data={data} ctx={ctx} variant="main" />;
@@ -211,6 +224,13 @@ export function AsymmetricLayout({
           onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
         />
       );
+    } else if (key.startsWith('custom-')) {
+      const customSection = data.customSections?.find(cs => cs.id === key);
+      if (customSection) {
+        displayTitle = customSection.sectionTitle || 'Custom Section';
+        content = <CustomSection section={customSection} ctx={ctx} />;
+        onTitleChange = (v) => ctx.updateCustomSection(customSection.id, { sectionTitle: v });
+      }
     } else {
       content = <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />;
       const addActions: Record<string, { label: string; action: () => void; hasData: boolean }> = {
@@ -224,7 +244,7 @@ export function AsymmetricLayout({
       if (add) addButton = makeAddBtn(key, add.label, add.action, add.hasData);
     }
 
-    return { key, title, content, addButton, styleControls };
+    return { key, title: displayTitle, content, addButton, styleControls, onTitleChange };
   };
 
   const leftSections = leftKeys.map(makeSection);

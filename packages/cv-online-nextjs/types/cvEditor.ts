@@ -110,6 +110,27 @@ export interface ActivityEntry {
   open: boolean;
 }
 
+export interface CustomSectionItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  dateRange: string;
+  description: string;
+  open: boolean;
+}
+
+export interface CustomSectionEntry {
+  id: string;
+  sectionTitle: string;
+  sectionType?: 'list' | 'timeline' | 'tags' | 'text' | 'grid';
+  items: CustomSectionItem[];
+  fieldConfig?: {
+    showSubtitle: boolean;
+    showDateRange: boolean;
+    showDescription: boolean;
+  };
+}
+
 export interface CvData {
   personal: PersonalInfo;
   experiences: ExperienceEntry[];
@@ -122,6 +143,7 @@ export interface CvData {
   references: ReferenceEntry[];
   interests: InterestEntry[];
   activities: ActivityEntry[];
+  customSections: CustomSectionEntry[];
 }
 
 export interface StyleColors {
@@ -205,11 +227,16 @@ export interface StyleConfig {
 }
 
 export interface SectionLayoutConfig {
-  experiences?: { style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showDates: boolean; dateFormat?: string; };
-  education?: { style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showGPA: boolean };
-  skills?: { style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags' | 'none'; };
-  awards?: { style: 'compact' | 'detailed' };
-  personal?: { style: 'default' | 'centered' };
+  [key: string]: {
+    title?: string;
+    style?: string;
+    [key: string]: any;
+  } | undefined;
+  experiences?: { title?: string; style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showDates: boolean; dateFormat?: string; };
+  education?: { title?: string; style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showGPA: boolean };
+  skills?: { title?: string; style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags' | 'none'; };
+  awards?: { title?: string; style: 'compact' | 'detailed' };
+  personal?: { title?: string; style: 'default' | 'centered' };
   global?: { headerAlign?: 'left' | 'center' | 'right'; headerBorder?: 'bottom' | 'none' | 'left'; };
 }
 

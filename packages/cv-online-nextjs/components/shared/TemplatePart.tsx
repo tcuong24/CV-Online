@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { EditableText } from './EditableText';
 
 // ─── SideSection (for Modern template sidebar) ───
 interface SideSectionProps {
@@ -11,9 +12,21 @@ interface SideSectionProps {
   borderColor?: string;
   styleControls?: React.ReactNode;
   sectionTitleBorder?: string;
+  onTitleChange?: (v: string) => void;
 }
 
-export function SideSection({ title, children, fontSize, addButton, dragHandleProps, titleColor, borderColor, styleControls, sectionTitleBorder }: SideSectionProps) {
+export function SideSection({
+  title,
+  children,
+  fontSize,
+  addButton,
+  dragHandleProps,
+  titleColor,
+  borderColor,
+  styleControls,
+  sectionTitleBorder,
+  onTitleChange,
+}: SideSectionProps) {
   const [hovered, setHovered] = useState(false);
   const finalTitleColor = titleColor || 'rgba(255,255,255,0.5)';
   const finalBorderColor = borderColor || 'rgba(255,255,255,0.15)';
@@ -45,7 +58,14 @@ export function SideSection({ title, children, fontSize, addButton, dragHandlePr
           cursor: dragHandleProps ? 'grab' : 'default',
         }}
       >
-        <span>{title}</span>
+        <span>
+          <EditableText 
+            value={title} 
+            onChange={onTitleChange} 
+            placeholder="Tiêu đề" 
+            className="hover:bg-white/10 rounded px-0.5 transition-colors"
+          />
+        </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {styleControls && (
             <div style={{ opacity: hovered ? 1 : 0, transition: 'opacity 0.15s' }}>

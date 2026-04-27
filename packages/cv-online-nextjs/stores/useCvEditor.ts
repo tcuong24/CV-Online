@@ -137,6 +137,14 @@ interface CvEditorState {
 
   /** Toggle section visibility (true → false, false → true) */
   toggleVisibility: (key: string) => void;
+  
+  /** Custom Sections Actions */
+  addCustomSection: (title: string, config?: CvData['customSections'][0]['fieldConfig'], sectionType?: CvData['customSections'][0]['sectionType']) => void;
+  removeCustomSection: (id: string) => void;
+  updateCustomSection: (id: string, patch: Partial<CvData['customSections'][0]>) => void;
+  addCustomSectionItem: (sectionId: string) => void;
+  updateCustomSectionItem: (sectionId: string, itemId: string, patch: Record<string, unknown>) => void;
+  removeCustomSectionItem: (sectionId: string, itemId: string) => void;
 
   // ── Actions: Sync ────────────────────────────────────────────────────────────
   /**
@@ -168,7 +176,9 @@ export const useCvEditorStore = create<CvEditorState>()(
     persist(
       (set, get) => ({
         // ── Initial state ────────────────────────────────────────────────────────
-        data: {},
+        data: {
+          customSections: [],
+        },
         order: DEFAULT_ORDER,
         style: DEFAULT_STYLE,
         sectionLayout: {},
@@ -432,8 +442,97 @@ export const useCvEditorStore = create<CvEditorState>()(
                 s.visibility[key] = false;  // hide: store explicit false
               } else {
                 delete s.visibility[key];   // show: remove → implicit true
+                // Fix: Ensure the section is actually in the order array when unhidden
+                if (!s.order.includes(key) && !s.sideKeys.includes(key)) {
+                  s.order.push(key);
+                }
               }
               s.isDirty = true;
+            })
+          ),
+
+        addCustomSection: (title, config, sectionType) =>
+          set(
+            produce((s: CvEditorState) => {
+              const id = `custom-${crypto.randomUUID()}`;
+              if (!s.data.customSections) s.data.customSections = [];
+              s.data.customSections.push({
+                id,
+                sectionTitle: title,
+                sectionType: sectionType || 'list',
+                items: [],
+                fieldConfig: config || {
+                  showSubtitle: true,
+                  showDateRange: true,
+                  showDescription: true,
+                },
+              });
+              s.order.push(id);
+              s.isDirty = true;
+            })
+          ),
+
+        removeCustomSection: (id) =>
+          set(
+            produce((s: CvEditorState) => {
+              if (!s.data.customSections) return;
+              s.data.customSections = s.data.customSections.filter((cs) => cs.id !== id);
+              s.order = s.order.filter((o) => o !== id);
+              s.isDirty = true;
+            })
+          ),
+
+        updateCustomSection: (id, patch) =>
+          set(
+            produce((s: CvEditorState) => {
+              if (!s.data.customSections) return;
+              const section = s.data.customSections.find((cs) => cs.id === id);
+              if (section) Object.assign(section, patch);
+              s.isDirty = true;
+            })
+          ),
+
+        addCustomSectionItem: (sectionId) =>
+          set(
+            produce((s: CvEditorState) => {
+              if (!s.data.customSections) return;
+              const section = s.data.customSections.find((cs) => cs.id === sectionId);
+              if (section) {
+                section.items.push({
+                  id: crypto.randomUUID(),
+                  title: 'Tiêu đề mới',
+                  subtitle: 'Tổ chức/Công ty',
+                  dateRange: '2024 - Hiện tại',
+                  description: 'Mô tả chi tiết nội dung...',
+                  open: true,
+                });
+                s.isDirty = true;
+              }
+            })
+          ),
+
+        updateCustomSectionItem: (sectionId, itemId, patch) =>
+          set(
+            produce((s: CvEditorState) => {
+              if (!s.data.customSections) return;
+              const section = s.data.customSections.find((cs) => cs.id === sectionId);
+              if (section) {
+                const item = section.items.find((i) => i.id === itemId);
+                if (item) Object.assign(item, patch);
+                s.isDirty = true;
+              }
+            })
+          ),
+
+        removeCustomSectionItem: (sectionId, itemId) =>
+          set(
+            produce((s: CvEditorState) => {
+              if (!s.data.customSections) return;
+              const section = s.data.customSections.find((cs) => cs.id === sectionId);
+              if (section) {
+                section.items = section.items.filter((i) => i.id !== itemId);
+                s.isDirty = true;
+              }
             })
           ),
 
@@ -625,6 +724,40 @@ export const useCvEditorStore = create<CvEditorState>()(
                             (e: Record<string, unknown>) => e['id'] === item['id']
                           );
                           if (entry) entry['_dbId'] = dbId;
+                        }));
+                      }
+                    })
+                  );
+                }
+              });
+            }
+
+            // ── 4. Custom Sections ────────────────────────────────────────────────
+            const customSections = s.data.customSections;
+            if (Array.isArray(customSections)) {
+              customSections.forEach((section, index) => {
+                const payload = {
+                  sectionTitle: section.sectionTitle,
+                  sectionType: section.sectionType,
+                  content: { 
+                    items: section.items,
+                    fieldConfig: section.fieldConfig 
+                  }, // Stores the items and config in Json
+                  displayOrder: index,
+                };
+
+                if (section['_dbId']) {
+                  sectionCalls.push(
+                    axiosInstance.put(`/cvs/${cvId}/custom-sections/${section['_dbId']}`, payload)
+                  );
+                } else {
+                  sectionCalls.push(
+                    axiosInstance.post(`/cvs/${cvId}/custom-sections`, payload).then((res) => {
+                      const dbId = res.data?.id as string | undefined;
+                      if (dbId) {
+                        set(produce((draft: CvEditorState) => {
+                          const cs = draft.data.customSections?.find(c => c.id === section.id);
+                          if (cs) cs['_dbId'] = dbId;
                         }));
                       }
                     })

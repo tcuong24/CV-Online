@@ -235,4 +235,29 @@ export class CvSectionsController {
   async deleteReference(@Param('id') id: string) {
     return this.cvSectionsService.deleteReference(id);
   }
+
+  // =============================================================================
+  // CUSTOM SECTIONS
+  // =============================================================================
+
+  @Post('custom-sections')
+  async createCustomSection(
+    @Param('cvId') cvId: string,
+    @Body() data: any,
+  ) {
+    return this.cvSectionsService.createCustomSection(cvId, data);
+  }
+
+  @Put('custom-sections/:id')
+  async updateCustomSection(
+    @Param('id') id: string,
+    @Body() data: any,
+  ) {
+    return this.cvSectionsService.updateCustomSection(id, data);
+  }
+
+  @Delete('custom-sections/:id')
+  async deleteCustomSection(@Param('id') id: string) {
+    return this.cvSectionsService.deleteCustomSection(id);
+  }
 }

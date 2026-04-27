@@ -6,14 +6,17 @@ import { EditableText } from '../shared/EditableText';
 import {
   RenderCtx,
   SectionShell,
+  CustomSection,
+  getScaledDragStyle,
+  PAGE_HEIGHT_PX,
+} from './parts/SharedTemplateComponents';
+import {
   StylePicker,
   ExperienceSection,
   SkillsBlock,
   MainSectionBlocks,
   paginateUnits,
   RenderUnit,
-  getScaledDragStyle,
-  PAGE_HEIGHT_PX,
 } from './CVTemplate';
 import { useCvEditorStore } from '@/stores/useCvEditor';
 
@@ -227,6 +230,13 @@ export function SingleColumnPage({
                     fs={fs}
                     addButton={makeAddBtn(sectionKey)}
                     styleControls={makeStyleControls(sectionKey)}
+                    onTitleChange={(newTitle) => {
+                      if (sectionKey.startsWith('custom-')) {
+                        ctx.updateCustomSection(sectionKey, { sectionTitle: newTitle });
+                      } else {
+                        ctx.patchSectionLayout(sectionKey, { title: newTitle });
+                      }
+                    }}
                   >
                     {items}
                   </SectionShell>
@@ -278,17 +288,33 @@ export function SingleColumnLayout({
       projects: 'Dự án',
       awards: 'Chứng chỉ & Giải thưởng',
       languages: 'Ngoại ngữ',
+      references: 'Người tham chiếu',
+      certifications: 'Chứng chỉ',
+      interests: 'Sở thích',
+      activities: 'Hoạt động',
     };
-    const title = sectionTitles[key];
-    if (!title) return;
-    // One unit per section — the section component handles item-level DnD internally
-    units.push({ kind: 'section-header', sectionKey: key, title });
-    if (key === 'experiences') {
-      units.push({ kind: 'item', sectionKey: key, node: <ExperienceSection data={data} ctx={ctx} variant="main" /> });
-    } else if (key === 'skills') {
-      units.push({ kind: 'item', sectionKey: key, node: <SkillsBlock data={data} ctx={ctx} dark={false} /> });
-    } else {
-      units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
+    
+    // Resolve display title: Custom title from DB/Store > Default title
+    const displayTitle = ctx.sectionLayout[key]?.title || sectionTitles[key] || key;
+    
+    // Handle Built-in Sections
+    if (sectionTitles[key]) {
+      units.push({ kind: 'section-header', sectionKey: key, title: displayTitle });
+      if (key === 'experiences') {
+        units.push({ kind: 'item', sectionKey: key, node: <ExperienceSection data={data} ctx={ctx} variant="main" /> });
+      } else if (key === 'skills') {
+        units.push({ kind: 'item', sectionKey: key, node: <SkillsBlock data={data} ctx={ctx} dark={false} /> });
+      } else {
+        units.push({ kind: 'item', sectionKey: key, node: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} /> });
+      }
+    } 
+    // Handle Custom Sections
+    else if (key.startsWith('custom-')) {
+      const customSection = data.customSections?.find(cs => cs.id === key);
+      if (customSection) {
+        units.push({ kind: 'section-header', sectionKey: key, title: customSection.sectionTitle });
+        units.push({ kind: 'item', sectionKey: key, node: <CustomSection section={customSection} ctx={ctx} /> });
+      }
     }
   });
 

@@ -1,3 +1,4 @@
+import { Trash2 } from 'lucide-react';
 import React from 'react';
 import {
   MdCode,
@@ -48,6 +49,8 @@ interface SectionCardProps {
   onDragOver:  (e: React.DragEvent) => void;
   onDrop: () => void;
   onDragEnd: () => void;
+  onDelete?: () => void;
+  customTitle?: string;
 }
 
 export function SectionCard({
@@ -61,8 +64,14 @@ export function SectionCard({
   onDragOver,
   onDrop,
   onDragEnd,
+  onDelete,
+  customTitle,
 }: SectionCardProps) {
-  const meta = SECTION_META[sectionKey];
+  const isCustom = sectionKey.startsWith('custom-');
+  const meta = isCustom 
+    ? { label: customTitle || 'Mục tùy chỉnh', icon: <MdStar />, color: '#fff1f2', iconColor: '#e11d48' }
+    : SECTION_META[sectionKey];
+
   if (!meta) return null;
 
   return (
@@ -81,17 +90,28 @@ export function SectionCard({
       <div className="sc-icon" style={{ background: meta.color, color: meta.iconColor }}>
         {meta.icon}
       </div>
-      <span className="sc-label">{meta.label}</span>
-      {/* Fix #7 — hide button not shown for required sections */}
-      {!isRequired && (
-        <button
-          className="sc-hide"
-          title="Ẩn mục này"
-          onClick={(e) => { e.stopPropagation(); onHide(); }}
-        >
-          <MdVisibilityOff size={14} />
-        </button>
-      )}
+      <span className="sc-label" title={meta.label}>{meta.label}</span>
+      
+      <div className="flex gap-1 ml-auto">
+        {isCustom && onDelete && (
+          <button
+            className="sc-hide hover:text-red-500"
+            title="Xóa mục tùy chỉnh"
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          >
+            <Trash2 size={14}  /> 
+          </button>
+        )}
+        {!isRequired && (
+          <button
+            className="sc-hide"
+            title="Ẩn mục này"
+            onClick={(e) => { e.stopPropagation(); onHide(); }}
+          >
+            <MdVisibilityOff size={14} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -230,4 +230,30 @@ export class CvSectionsService {
       where: { id },
     });
   }
+
+  // =============================================================================
+  // CUSTOM SECTIONS
+  // =============================================================================
+
+  async createCustomSection(cvId: string, data: any) {
+    return this.prisma.cVCustomSection.create({
+      data: {
+        cvId,
+        ...data,
+      },
+    });
+  }
+
+  async updateCustomSection(id: string, data: any) {
+    return this.prisma.cVCustomSection.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async deleteCustomSection(id: string) {
+    return this.prisma.cVCustomSection.delete({
+      where: { id },
+    });
+  }
 }

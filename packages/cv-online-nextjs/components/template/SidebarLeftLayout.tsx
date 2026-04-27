@@ -10,13 +10,16 @@ import { SideSection } from '../shared/TemplatePart';
 import {
   RenderCtx,
   SectionShell,
+  CustomSection,
+  getScaledDragStyle,
+  PAGE_HEIGHT_PX,
+} from './parts/SharedTemplateComponents';
+import {
   StylePicker,
   ExperienceSection,
   SkillsBlock,
   MainSectionBlocks,
   paginateSections,
-  getScaledDragStyle,
-  PAGE_HEIGHT_PX,
 } from './CVTemplate';
 
 
@@ -202,7 +205,7 @@ export function SidebarLeftPage({
         <Droppable droppableId="sections-main">
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
-              {mainSections.map(({ key, title, content, addButton, styleControls }, idx) => (
+              {mainSections.map(({ key, title, content, addButton, styleControls, onTitleChange }, idx) => (
                 <Draggable key={key} draggableId={`section-${key}`} index={idx}>
                   {(dp, snap) => (
                     <div
@@ -220,6 +223,7 @@ export function SidebarLeftPage({
                         isDragging={snap.isDragging}
                         accentColor={accentColor}
                         title={title}
+                        onTitleChange={onTitleChange}
                         fs={fs}
                         addButton={addButton}
                         styleControls={styleControls}
@@ -289,13 +293,31 @@ export function SidebarLeftLayout({
     ) : undefined;
 
   // Build main sections list
-  const allMainSections: { key: string; title: string; content: React.ReactNode; addButton?: React.ReactNode; styleControls?: React.ReactNode }[] = [];
+  const allMainSections: { key: string; title: string; content: React.ReactNode; addButton?: React.ReactNode; styleControls?: React.ReactNode; onTitleChange?: (v: string) => void }[] = [];
   mainKeyList.forEach((key) => {
+    const titles: Record<string, string> = {
+      experiences: 'Kinh nghiệm',
+      skills: 'Kỹ năng',
+      education: 'Học vấn',
+      projects: 'Dự án',
+      awards: 'Giải thưởng',
+      languages: 'Ngoại ngữ',
+      certifications: 'Chứng chỉ',
+      references: 'Tham chiếu',
+      interests: 'Sở thích',
+      activities: 'Hoạt động',
+    };
+    
+    // Resolve display title: Custom title from DB/Store > Default title
+    const displayTitle = ctx.sectionLayout[key]?.title || titles[key] || key;
+    const onTitleChange = (v: string) => ctx.patchSectionLayout(key, { title: v });
+
     if (key === 'experiences') {
       const expStyle = ctx.sectionLayout.experiences?.style ?? 'timeline';
       allMainSections.push({
         key,
-        title: 'Kinh nghiệm',
+        title: displayTitle,
+        onTitleChange,
         content: <ExperienceSection data={data} ctx={ctx} variant="main" />,
         addButton: makeAddBtn(key, '+ Kinh nghiệm', () => ctx.addEntry('experiences', { title: '', company: '', from: '', to: '', location: '', desc: '' }), !!data.experiences?.length),
         styleControls: (
@@ -313,7 +335,8 @@ export function SidebarLeftLayout({
       const profStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
       allMainSections.push({
         key,
-        title: 'Kỹ năng',
+        title: displayTitle,
+        onTitleChange,
         content: <SkillsBlock data={data} ctx={ctx} dark={true} />,
         addButton: makeAddBtn(key, '+ Kỹ năng', () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' }), !!data.skills?.length),
         styleControls: (
@@ -327,32 +350,38 @@ export function SidebarLeftLayout({
       });
       return;
     }
-    const titles: Record<string, string> = {
-      education: 'Học vấn',
-      projects: 'Dự án',
-      awards: 'Giải thưởng',
-      languages: 'Ngoại ngữ',
-      certifications: 'Chứng chỉ',
-      references: 'Tham chiếu',
-      interests: 'Sở thích',
-      activities: 'Hoạt động',
-    };
-    const addActions: Record<string, { label: string; action: () => void; hasData: boolean }> = {
-      education: { label: '+ Học vấn', action: () => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' }), hasData: !!data.education?.length },
-      projects:  { label: '+ Dự án',   action: () => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' }), hasData: !!data.projects?.length },
-      awards:    { label: '+ Giải thưởng', action: () => ctx.addEntry('awards', { title: '', year: '', org: '' }), hasData: !!data.awards?.length },
-      languages: { label: '+ Ngôn ngữ', action: () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }), hasData: !!data.languages?.length },
-      certifications: { label: '+ Chứng chỉ', action: () => ctx.addEntry('certifications', { name: '', issuingOrganization: '', issueDate: '', description: '' }), hasData: !!data.certifications?.length },
-    };
-    const title = titles[key];
-    if (!title) return;
-    const add = addActions[key];
-    allMainSections.push({
-      key,
-      title,
-      content: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />,
-      addButton: add ? makeAddBtn(key, add.label, add.action, add.hasData) : undefined,
-    });
+    
+    // Handle Built-in Sections
+    if (titles[key]) {
+      const addActions: Record<string, { label: string; action: () => void; hasData: boolean }> = {
+        education: { label: '+ Học vấn', action: () => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' }), hasData: !!data.education?.length },
+        projects:  { label: '+ Dự án',   action: () => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' }), hasData: !!data.projects?.length },
+        awards:    { label: '+ Giải thưởng', action: () => ctx.addEntry('awards', { title: '', year: '', org: '' }), hasData: !!data.awards?.length },
+        languages: { label: '+ Ngôn ngữ', action: () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }), hasData: !!data.languages?.length },
+        certifications: { label: '+ Chứng chỉ', action: () => ctx.addEntry('certifications', { name: '', issuingOrganization: '', issueDate: '', description: '' }), hasData: !!data.certifications?.length },
+      };
+      const add = addActions[key];
+      allMainSections.push({
+        key,
+        title: displayTitle,
+        onTitleChange,
+        content: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />,
+        addButton: add ? makeAddBtn(key, add.label, add.action, add.hasData) : undefined,
+      });
+    }
+    // Handle Custom Sections in Main
+    else if (key.startsWith('custom-')) {
+      const customSection = data.customSections?.find(cs => cs.id === key);
+      if (customSection) {
+        allMainSections.push({
+          key,
+          title: customSection.sectionTitle,
+          onTitleChange: (v) => ctx.updateCustomSection(customSection.id, { sectionTitle: v }),
+          content: <CustomSection section={customSection} ctx={ctx} />,
+          addButton: makeAddBtn(key, '+ Thêm', () => ctx.addCustomSectionItem(customSection.id), true),
+        });
+      }
+    }
   });
 
   // ── Shared sidebar button style ──────────────────────────────────────────
@@ -378,16 +407,64 @@ export function SidebarLeftLayout({
     lineHeight: 1,
     fontFamily: 'inherit',
   };
-
   // Build sidebar sections list
   const sideSectionNodes: SidebarSection[] = sideKeys.flatMap((key) => {
+    if (key.startsWith('custom-')) {
+      const customSection = data.customSections?.find(cs => cs.id === key);
+      if (customSection) {
+        const addBtn = (
+          <button style={sideBtnStyle} onClick={() => ctx.addCustomSectionItem(customSection.id)}>
+            + Thêm
+          </button>
+        );
+        return [{
+          key,
+          content: (
+            <SideSection
+              key={key}
+              title={customSection.sectionTitle}
+              fontSize={fs * 0.75}
+              addButton={addBtn}
+              onTitleChange={(v) => ctx.updateCustomSection(customSection.id, { sectionTitle: v })}
+            >
+              <CustomSection section={customSection} ctx={ctx} />
+            </SideSection>
+          )
+        }];
+      }
+    }
+
+    // Built-in sections in sidebar
+    const titles: Record<string, string> = {
+      skills: 'Kỹ năng',
+      languages: 'Ngoại ngữ',
+      awards: 'Chứng chỉ',
+      education: 'Học vấn',
+      projects: 'Dự án',
+      experiences: 'Kinh nghiệm',
+    };
+    const displayTitle = ctx.sectionLayout[key]?.title || titles[key];
+
     if (key === 'skills') {
       const addBtn = (
         <button style={sideBtnStyle} onClick={() => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' })}>
           + Thêm
         </button>
       );
-      return [{ key, content: <SideSection key={key} title="Kỹ năng" fontSize={fs * 0.75} addButton={addBtn}><SkillsBlock data={data} ctx={ctx} dark={true} /></SideSection> }];
+      return [{
+        key,
+        content: (
+          <SideSection
+            key={key}
+            title={displayTitle}
+            fontSize={fs * 0.75}
+            addButton={addBtn}
+            onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
+          >
+            <SkillsBlock data={data} ctx={ctx} dark={true} />
+          </SideSection>
+        )
+      }];
     }
 
     if (key === 'languages') {
@@ -398,7 +475,13 @@ export function SidebarLeftLayout({
       );
       return [{
         key, content: (
-          <SideSection key={key} title="Ngoại ngữ" fontSize={fs * 0.75} addButton={addBtn}>
+          <SideSection
+            key={key}
+            title={displayTitle}
+            fontSize={fs * 0.75}
+            addButton={addBtn}
+            onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
+          >
             {data.languages?.map((l) => (
               <div key={l.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 6 }}>
                 <div style={{ flex: 1 }}>
@@ -425,7 +508,13 @@ export function SidebarLeftLayout({
       );
       return [{
         key, content: (
-          <SideSection key={key} title="Chứng chỉ" fontSize={fs * 0.75} addButton={addBtn}>
+          <SideSection
+            key={key}
+            title={displayTitle}
+            fontSize={fs * 0.75}
+            addButton={addBtn}
+            onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
+          >
             {data.awards?.map((e) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 6 }}>
                 <div style={{ flex: 1 }}>
@@ -448,7 +537,13 @@ export function SidebarLeftLayout({
       );
       return [{
         key, content: (
-          <SideSection key={key} title="Học vấn" addButton={addBtn}>
+          <SideSection
+            key={key}
+            title={displayTitle}
+            addButton={addBtn}
+            fontSize={fs * 0.75}
+            onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
+          >
             {data.education?.map((e) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
                 <div style={{ flex: 1 }}>
@@ -472,7 +567,13 @@ export function SidebarLeftLayout({
       );
       return [{
         key, content: (
-          <SideSection key={key} title="Dự án" addButton={addBtn}>
+          <SideSection
+            key={key}
+            title={displayTitle}
+            addButton={addBtn}
+            fontSize={fs * 0.75}
+            onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
+          >
             {data.projects?.map((e) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
                 <div style={{ flex: 1 }}>
@@ -495,7 +596,13 @@ export function SidebarLeftLayout({
       );
       return [{
         key, content: (
-          <SideSection key={key} title="Kinh nghiệm" addButton={addBtn}>
+          <SideSection
+            key={key}
+            title={displayTitle}
+            addButton={addBtn}
+            fontSize={fs * 0.75}
+            onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
+          >
             {data.experiences?.map((e) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
                 <div style={{ flex: 1 }}>

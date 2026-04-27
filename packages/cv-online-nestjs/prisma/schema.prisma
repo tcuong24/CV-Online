@@ -105,6 +105,7 @@ model CV {
   customStyles       Json?    @map("custom_styles")
   sectionsVisibility Json?    @map("sections_visibility")
   sectionsOrder      Json?    @map("sections_order")
+  sectionsLayout     Json?    @map("sections_layout")
   viewCount          Int      @default(0) @map("view_count")
   downloadCount      Int      @default(0) @map("download_count")
   createdAt          DateTime @default(now()) @map("created_at")

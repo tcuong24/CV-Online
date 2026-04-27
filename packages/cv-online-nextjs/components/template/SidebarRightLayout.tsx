@@ -6,11 +6,14 @@ import { Droppable, Draggable, DragDropContext, type DropResult } from '@hello-p
 import {
   RenderCtx,
   SectionShell,
-  StylePicker,
+  CustomSection,
+} from './parts/SharedTemplateComponents';
+import {
   ExperienceSection,
   SkillsBlock,
   MainSectionBlocks,
   getScaledDragStyle,
+  StylePicker,
 } from './CVTemplate';
 import { DefaultHeader, CenteredHeader, FloatingHeader } from './parts/Headers';
 import { SideSection } from '../shared/TemplatePart';
@@ -200,7 +203,7 @@ export function SidebarRightPage({
           <Droppable droppableId="sections-main" >
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                {mainSections.map(({ key, title, content, addButton, styleControls }, idx) => (
+                {mainSections.map(({ key, title, content, addButton, styleControls, onTitleChange }, idx) => (
                   <Draggable key={key} draggableId={`section-${key}`} index={idx} >
                     {(dp, snap) => (
                       <div
@@ -221,6 +224,7 @@ export function SidebarRightPage({
                           isDragging={snap.isDragging}
                           accentColor={accentColor}
                           title={title}
+                          onTitleChange={onTitleChange}
                           fs={fs}
                           addButton={addButton}
                           styleControls={styleControls}
@@ -243,7 +247,7 @@ export function SidebarRightPage({
           <Droppable droppableId="sections-sidebar">
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                {sideSections.map(({ key, title, content, addButton, styleControls }, idx) => (
+                {sideSections.map(({ key, title, content, addButton, styleControls, onTitleChange }, idx) => (
                   <Draggable key={key} draggableId={`section-${key}`} index={idx}>
                     {(dp, snap) => (
                       <div
@@ -259,6 +263,7 @@ export function SidebarRightPage({
                       >
                         <SideSection
                           title={title}
+                          onTitleChange={onTitleChange}
                           fontSize={fs * 1.2}
                           addButton={addButton}
                           styleControls={styleControls}
@@ -345,10 +350,11 @@ export function SidebarRightLayout({
     ) : undefined;
 
   const makeSection = (key: string) => {
-    const title = titles[key] || key;
+    let displayTitle = ctx.sectionLayout[key]?.title || titles[key] || key;
     let content: React.ReactNode = null;
     let addButton: React.ReactNode = undefined;
     let styleControls: React.ReactNode = undefined;
+    let onTitleChange: ((v: string) => void) | undefined = (v) => ctx.patchSectionLayout(key, { title: v });
 
     if (isPersonal(key)) {
       content = (
@@ -356,6 +362,7 @@ export function SidebarRightLayout({
           <EditableText multiline value={data.personal.summary || ''} onChange={v => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." />
         </div>
       );
+      onTitleChange = undefined;
     } else if (key === 'contact') {
       const p = data.personal;
       content = (
@@ -419,6 +426,13 @@ export function SidebarRightLayout({
           onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
         />
       );
+    } else if (key.startsWith('custom-')) {
+      const customSection = data.customSections?.find(cs => cs.id === key);
+      if (customSection) {
+        displayTitle = customSection.sectionTitle || 'Custom Section';
+        content = <CustomSection section={customSection} ctx={ctx} />;
+        onTitleChange = (v) => ctx.updateCustomSection(customSection.id, { sectionTitle: v });
+      }
     } else {
       content = <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />;
       const addConf: any = {
@@ -431,7 +445,7 @@ export function SidebarRightLayout({
       if (addConf[key]) addButton = makeAddBtn(key, '+', addConf[key].action, addConf[key].has);
     }
 
-    return { key, title, content, addButton, styleControls };
+    return { key, title: displayTitle, content, addButton, styleControls, onTitleChange };
   };
 
   const allMainSections = mainKeyList.map(makeSection);

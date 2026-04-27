@@ -189,6 +189,10 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
       
       const currentData = useCvEditorStore.getState().data;
       
+      const eduData = importedData.educations || importedData.education || [];
+      const expData = importedData.experiences || importedData.experience || [];
+      const projData = importedData.projects || [];
+
       // Inject unique IDs for Draggable components
       const formattedData = {
         ...importedData,
@@ -199,21 +203,21 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
           summary: importedData.summary || importedData.personal?.summary || currentData.personal?.summary || '', 
           role: importedData.personal?.role || currentData.personal?.role || '',
         },
-        experiences: (importedData.experiences || []).map((item: any) => ({ 
+        experiences: expData.map((item: any) => ({ 
           ...item, 
           id: crypto.randomUUID(),
           from: item.from || '',
           to: item.to || '',
           desc: item.desc || item.description || ''
         })),
-        education: (importedData.educations || []).map((item: any) => ({ 
+        education: eduData.map((item: any) => ({ 
           ...item, 
           id: crypto.randomUUID(),
           from: item.from || '',
           to: item.to || '',
           desc: item.desc || item.description || ''
         })),
-        projects: (importedData.projects || []).map((item: any) => ({ 
+        projects: projData.map((item: any) => ({ 
           ...item, 
           id: crypto.randomUUID(),
           name: item.name || item.title || '',
@@ -230,6 +234,11 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
         skills: (importedData.skills || []).map((skillName: string) => ({ id: crypto.randomUUID(), name: skillName })),
       };
 
+      // Clean up raw parser keys to avoid polluting state & order
+      delete (formattedData as any).educations;
+      delete (formattedData as any).summary;
+      delete (formattedData as any).experience;
+
       // Update store with formatted data
       setData(formattedData as any);
       
@@ -242,7 +251,7 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
       );
       
       if (activeSections.length > 0) {
-        setOrder(['personal', 'summary', ...activeSections]);
+        setOrder(['personal', ...activeSections]);
       }
 
       toast.success('Đã nhập dữ liệu thành công!', { id: toastId });
@@ -668,15 +677,6 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
         >
           <Redo size={16} className='text-black ' />
         </Button>
-        {pastStates.length === 0 && futureStates.length === 0 && (
-          <span style={{
-            fontSize: 11, fontWeight: 600, color: '#16a34a',
-            background: '#f0fdf4', border: '1px solid #bbf7d0',
-            borderRadius: 6, padding: '2px 8px', whiteSpace: 'nowrap',
-          }}>
-            ✓ Đã lưu
-          </span>
-        )}
       </div>
     </div>
   );

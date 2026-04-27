@@ -79,6 +79,12 @@ export interface RenderCtx {
   reorderSideKey: (fromKey: string, toKey: string) => void;
   moveSectionToZone: (key: string, toSidebar: boolean) => void;
   patchSectionLayout: (key: string, patch: Record<string, unknown>) => void;
+  addCustomSection: (title: string, config?: CvData['customSections'][0]['fieldConfig']) => void;
+  removeCustomSection: (id: string) => void;
+  updateCustomSection: (id: string, patch: Partial<CvData['customSections'][0]>) => void;
+  addCustomSectionItem: (sectionId: string) => void;
+  updateCustomSectionItem: (sectionId: string, itemId: string, patch: Record<string, unknown>) => void;
+  removeCustomSectionItem: (sectionId: string, itemId: string) => void;
 }
 
 // ─── StylePicker — Palette icon + hover dropdown to switch section display style ──
@@ -194,6 +200,7 @@ export function SectionShell({
   addButton,
   styleControls,
   style: localStyle,
+  onTitleChange,
 }: {
   children: React.ReactNode;
   dragHandleProps?: React.HTMLAttributes<HTMLElement> | null;
@@ -205,6 +212,7 @@ export function SectionShell({
   addButton?: React.ReactNode;
   styleControls?: React.ReactNode;
   style?: StyleConfig;
+  onTitleChange?: (v: string) => void;
 }) {
   const [hovered, setHovered] = useState(false);
   const titleColor = dark ? 'rgba(255,255,255,0.9)' : accentColor;
@@ -272,7 +280,7 @@ export function SectionShell({
               color: titleColor,
             }}
           >
-            {title}
+            <EditableText value={title} onChange={onTitleChange} placeholder="Tiêu đề section" />
           </span>
         </div>
         {/* Right: style picker + add button — visible only on hover */}
@@ -1128,12 +1136,20 @@ export function CVTemplate({
   const reorderSideKey = useCvEditorStore(s => s.reorderSideKey);
   const moveSectionToZone = useCvEditorStore(s => s.moveSectionToZone);
   const patchSectionLayout = useCvEditorStore(s => s.patchSectionLayout);
+  const addCustomSection = useCvEditorStore(s => s.addCustomSection);
+  const removeCustomSection = useCvEditorStore(s => s.removeCustomSection);
+  const updateCustomSection = useCvEditorStore(s => s.updateCustomSection);
+  const addCustomSectionItem = useCvEditorStore(s => s.addCustomSectionItem);
+  const updateCustomSectionItem = useCvEditorStore(s => s.updateCustomSectionItem);
+  const removeCustomSectionItem = useCvEditorStore(s => s.removeCustomSectionItem);
 
   const ctx: RenderCtx = {
     style, fs, lh, accentColor, textColor: style.textColor, sectionLayout,
     updatePersonalInfo, updateEntry, addEntry, removeEntry,
     addSkill, removeSkill, updateSkill, reorderEntry, reorderSkills,
     reorderSection, reorderSideKey, moveSectionToZone, patchSectionLayout,
+    addCustomSection, removeCustomSection, updateCustomSection,
+    addCustomSectionItem, updateCustomSectionItem, removeCustomSectionItem,
   };
 
   const layoutProps = {

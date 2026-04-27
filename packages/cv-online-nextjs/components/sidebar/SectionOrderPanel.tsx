@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import { MdVisibility } from 'react-icons/md';
+import { MdStar, MdVisibility } from 'react-icons/md';
 import { useCvEditorStore } from '@/stores/useCvEditor';
 import { SectionCard, SECTION_META, REQUIRED_SECTIONS } from './SecionCard';
+import { Calendar, Grid2X2, Newspaper, Plus, ScrollText, Tag } from 'lucide-react';
 
 // All known section keys across all templates
 const ALL_KEYS = Object.keys(SECTION_META);
@@ -22,6 +23,9 @@ export function SectionOrderPanel() {
   const setDragging      = useCvEditorStore(s => s.setDragging);
   const setDragOver      = useCvEditorStore(s => s.setDragOver);
   const resetDrag        = useCvEditorStore(s => s.resetDrag);
+  const data             = useCvEditorStore(s => s.data);
+  const addCustomSection = useCvEditorStore(s => s.addCustomSection);
+  const removeCustomSection = useCvEditorStore(s => s.removeCustomSection);
 
   const isSidebarLayout = layoutType === 'sidebar-left' || layoutType === 'sidebar-right' || layoutType === 'two-column';
   console.log("abc",isSidebarLayout);
@@ -37,11 +41,13 @@ export function SectionOrderPanel() {
     if (!draggingKey) setDropZoneActive(null);
   }, [draggingKey]);
 
-  // ── Derived state ─────────────────────────────────────────────────────────────
+  // Derived state
   const isVisible = (key: string) => visibility[key] !== false;
 
-  // Fix #2: use ALL_KEYS so sections hidden by default (not in order) also appear
-  const hiddenKeys  = ALL_KEYS.filter(k => !isVisible(k));
+  const customKeys = (data.customSections || []).map(cs => cs.id);
+  const allCurrentKeys = [...new Set([...ALL_KEYS, ...order, ...customKeys])];
+
+  const hiddenKeys  = allCurrentKeys.filter(k => !isVisible(k) && (ALL_KEYS.includes(k) || customKeys.includes(k)));
   const visibleKeys = order.filter(k => isVisible(k));
 
   // Fix #5: guard sideKeys against stale localStorage values
@@ -132,21 +138,26 @@ export function SectionOrderPanel() {
       onDragOver={e => { e.preventDefault(); setDropZoneActive(zone); }}
       onDrop={() => onDropToGrid(zone)}
     >
-      {keys.map(key => (
-        <SectionCard
-          key={key}
-          sectionKey={key}
-          isDragging={draggingKey === key}
-          isDragOver={dragOverKey === key && draggingKey !== key}
-          isRequired={REQUIRED_SECTIONS.includes(key)}
-          onHide={() => toggleVisibility(key)}
-          onDragStart={e => onDragStart(e, key)}
-          onDragEnter={e => onDragEnter(e, key)}
-          onDragOver={onDragOver}
-          onDrop={() => onDropToGrid(zone)}
-          onDragEnd={handleReset}
-        />
-      ))}
+      {keys.map(key => {
+        const customSec = data.customSections?.find(cs => cs.id === key);
+        return (
+          <SectionCard
+            key={key}
+            sectionKey={key}
+            isDragging={draggingKey === key}
+            isDragOver={dragOverKey === key && draggingKey !== key}
+            isRequired={REQUIRED_SECTIONS.includes(key)}
+            customTitle={customSec?.sectionTitle}
+            onHide={() => toggleVisibility(key)}
+            onDelete={() => removeCustomSection(key)}
+            onDragStart={e => onDragStart(e, key)}
+            onDragEnter={e => onDragEnter(e, key)}
+            onDragOver={onDragOver}
+            onDrop={() => onDropToGrid(zone)}
+            onDragEnd={handleReset}
+          />
+        );
+      })}
     </div>
   );
 
@@ -204,7 +215,11 @@ export function SectionOrderPanel() {
         {hiddenKeys.length > 0 && (
           <div className="sc-hidden-chips">
             {hiddenKeys.map(key => {
-              const meta = SECTION_META[key];
+              const customSec = data.customSections?.find(cs => cs.id === key);
+              const meta = key.startsWith('custom-')
+                ? { label: customSec?.sectionTitle || 'Mục tùy chỉnh', icon: <MdStar />, color: '#fff1f2', iconColor: '#e11d48' }
+                : SECTION_META[key];
+                
               if (!meta) return null;
               return (
                 <button
@@ -230,6 +245,71 @@ export function SectionOrderPanel() {
             })}
           </div>
         )}
+      </div>
+
+      <div className="mt-6">
+        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">Thêm mục tùy chỉnh</div>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            className="sc-card flex-col justify-center"
+            onClick={() => addCustomSection('Kinh nghiệm', { showSubtitle: true, showDateRange: true, showDescription: true }, 'timeline')}
+          >
+            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center mb-2 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+              <span className="text-lg"><Calendar /></span>
+            </div>
+            <span className="sc-label">Timeline</span>
+          </button>
+
+          <button
+            className="sc-card flex-col justify-center"
+            onClick={() => addCustomSection('Dự án', { showSubtitle: true, showDateRange: false, showDescription: true }, 'list')}
+          >
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center mb-2 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+              <ScrollText className='text-lg' />
+            </div>
+            <span className="sc-label">Danh sách</span>
+          </button>
+
+          <button
+            className="sc-card flex-col justify-center"
+            onClick={() => addCustomSection('Kỹ năng', { showSubtitle: false, showDateRange: false, showDescription: false }, 'tags')}
+          >
+            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center mb-2 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+              <Tag className='text-lg' />
+            </div>
+            <span className="sc-label">Thẻ / Tags</span>
+          </button>
+
+          <button
+            className="sc-card flex-col justify-center"
+            onClick={() => addCustomSection('Giới thiệu', { showSubtitle: false, showDateRange: false, showDescription: true }, 'text')}
+          >
+            <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center mb-2 group-hover:bg-rose-500 group-hover:text-white transition-colors">
+              <Newspaper className='text-lg' />
+            </div>
+            <span className="sc-label">Văn bản</span>
+          </button>
+
+          <button
+            className="sc-card flex-col justify-center"
+            onClick={() => addCustomSection('Tham chiếu', { showSubtitle: true, showDateRange: false, showDescription: true }, 'grid')}
+          >
+            <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center mb-2 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+              <Grid2X2 className='text-lg' />
+            </div>
+            <span className="sc-label">Lưới / Grid</span>
+          </button>
+
+          <button
+            className="sc-card flex-col justify-center"
+            onClick={() => addCustomSection('Mục mới')}
+          >
+            <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center mb-2 group-hover:border-slate-400 transition-colors">
+              <Plus className='text-lg' />
+            </div>
+            <span className="sc-label">Tạo mục tùy chỉnh</span>
+          </button>
+        </div>
       </div>
     </div>
   );

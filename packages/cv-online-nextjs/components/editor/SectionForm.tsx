@@ -160,5 +160,120 @@ export function SectionForm({ sectionKey, data, onChange }: SectionFormProps) {
     );
   }
 
+  // ── Custom Sections ──
+  if (sectionKey.startsWith('custom-')) {
+    const section = data.customSections?.find(cs => cs.id === sectionKey);
+    if (!section) return null;
+
+    const customFields: FieldDef[] = [
+      { key: 'title',       label: 'Tiêu đề',    placeholder: 'Tiêu đề mục...' },
+      { key: 'subtitle',    label: 'Phụ đề',     placeholder: 'Công ty / Tổ chức...' },
+      { key: 'dateRange',   label: 'Thời gian',  placeholder: '2024 - Hiện tại' },
+      { key: 'description', label: 'Mô tả',      type: 'textarea', placeholder: 'Mô tả chi tiết...' },
+    ];
+
+    return (
+      <div className="space-y-6">
+        {/* Section Layout / Type Picker */}
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Kiểu hiển thị (Layout)</div>
+          <div className="grid grid-cols-5 gap-2">
+            {[
+              { id: 'list', label: 'D.Sách', icon: '📋' },
+              { id: 'timeline', label: 'T.Line', icon: '📅' },
+              { id: 'tags', label: 'Tags', icon: '🏷️' },
+              { id: 'text', label: 'Văn bản', icon: '📝' },
+              { id: 'grid', label: 'Lưới', icon: '🔲' },
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  const newCustomSections = data.customSections.map(cs => 
+                    cs.id === sectionKey ? { ...cs, sectionType: t.id as any } : cs
+                  );
+                  onChange({ ...data, customSections: newCustomSections });
+                }}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
+                  (section.sectionType || 'list') === t.id 
+                    ? 'bg-blue-600 border-blue-600 text-white shadow-sm' 
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-blue-400'
+                }`}
+              >
+                <span className="text-lg">{t.icon}</span>
+                <span className="text-[10px] font-bold whitespace-nowrap">{t.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Field Visibility Settings */}
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Cấu hình chi tiết</div>
+          <div className="flex flex-wrap gap-4">
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input 
+                type="checkbox" 
+                checked={section.fieldConfig?.showSubtitle !== false} 
+                onChange={(e) => {
+                  const newCustomSections = data.customSections.map(cs => 
+                    cs.id === sectionKey ? { ...cs, fieldConfig: { ...(cs.fieldConfig || { showSubtitle: true, showDateRange: true, showDescription: true }), showSubtitle: e.target.checked } } : cs
+                  );
+                  onChange({ ...data, customSections: newCustomSections });
+                }}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">Phụ đề</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input 
+                type="checkbox" 
+                checked={section.fieldConfig?.showDateRange !== false} 
+                onChange={(e) => {
+                  const newCustomSections = data.customSections.map(cs => 
+                    cs.id === sectionKey ? { ...cs, fieldConfig: { ...(cs.fieldConfig || { showSubtitle: true, showDateRange: true, showDescription: true }), showDateRange: e.target.checked } } : cs
+                  );
+                  onChange({ ...data, customSections: newCustomSections });
+                }}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">Thời gian</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input 
+                type="checkbox" 
+                checked={section.fieldConfig?.showDescription !== false} 
+                onChange={(e) => {
+                  const newCustomSections = data.customSections.map(cs => 
+                    cs.id === sectionKey ? { ...cs, fieldConfig: { ...(cs.fieldConfig || { showSubtitle: true, showDateRange: true, showDescription: true }), showDescription: e.target.checked } } : cs
+                  );
+                  onChange({ ...data, customSections: newCustomSections });
+                }}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">Mô tả</span>
+            </label>
+          </div>
+        </div>
+
+        <EntryEditor
+          entries={section.items as unknown as Entry[]}
+          fields={customFields.filter(f => {
+            if (f.key === 'subtitle') return section.fieldConfig?.showSubtitle !== false;
+            if (f.key === 'dateRange') return section.fieldConfig?.showDateRange !== false;
+            if (f.key === 'description') return section.fieldConfig?.showDescription !== false;
+            return true;
+          })}
+          addLabel="Thêm mục mới"
+          onChange={(v) => {
+            const newCustomSections = data.customSections.map(cs => 
+              cs.id === sectionKey ? { ...cs, items: v as unknown as typeof section.items } : cs
+            );
+            onChange({ ...data, customSections: newCustomSections });
+          }}
+        />
+      </div>
+    );
+  }
+
   return null;
 }

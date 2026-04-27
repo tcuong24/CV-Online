@@ -6,6 +6,9 @@ import { Droppable, Draggable, DragDropContext, type DropResult } from '@hello-p
 import {
   RenderCtx,
   SectionShell,
+  CustomSection,
+} from './parts/SharedTemplateComponents';
+import {
   ExperienceSection,
   SkillsBlock,
   MainSectionBlocks,
@@ -90,6 +93,7 @@ export function TechTimelinePage({
                         isDragging={snap.isDragging}
                         accentColor={accentColor}
                         title={title}
+                        onTitleChange={onTitleChange}
                         fs={fs}
                         addButton={addButton}
                         styleControls={styleControls}
@@ -160,10 +164,11 @@ export function TechTimelineLayout({
     ) : undefined;
 
   const makeSection = (key: string) => {
-    const title = titles[key] || key;
+    let displayTitle = ctx.sectionLayout[key]?.title || titles[key] || key;
     let content: React.ReactNode = null;
     let addButton: React.ReactNode = undefined;
     let styleControls: React.ReactNode = undefined;
+    let onTitleChange: ((v: string) => void) | undefined = (v) => ctx.patchSectionLayout(key, { title: v });
 
     const isPersonal = (k: string) => k === 'personal' || k === 'personalInfo';
     if (isPersonal(key)) {
@@ -177,6 +182,7 @@ export function TechTimelineLayout({
           />
         </div>
       );
+      onTitleChange = undefined;
     } else if (key === 'experiences') {
       content = <ExperienceSection data={data} ctx={ctx} variant="main" />;
       addButton = makeAddBtn(key, '+', () => ctx.addEntry('experiences', { title: '', company: '', from: '', to: '', location: '', desc: '' }), !!data.experiences?.length);
@@ -199,6 +205,13 @@ export function TechTimelineLayout({
           onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
         />
       );
+    } else if (key.startsWith('custom-')) {
+      const customSection = data.customSections?.find(cs => cs.id === key);
+      if (customSection) {
+        displayTitle = customSection.sectionTitle || 'Custom Section';
+        content = <CustomSection section={customSection} ctx={ctx} />;
+        onTitleChange = (v) => ctx.updateCustomSection(customSection.id, { sectionTitle: v });
+      }
     } else {
       content = <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />;
       const addConf: any = {
@@ -209,7 +222,7 @@ export function TechTimelineLayout({
       if (addConf[key]) addButton = makeAddBtn(key, '+', addConf[key].action, addConf[key].has);
     }
 
-    return { key, title, content, addButton, styleControls };
+    return { key, title: displayTitle, content, addButton, styleControls, onTitleChange };
   };
 
   const sections = mainKeyList.map(makeSection);

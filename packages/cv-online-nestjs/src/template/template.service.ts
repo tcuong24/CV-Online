@@ -10,49 +10,91 @@ export class TemplateService {
    * Get all templates with optional filtering
    */
   async findAll(filters?: {
+    page?: number;
+    limit?: number;
+    search?: string;
     category?: string;
     isPremium?: boolean;
     isPublished?: boolean;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
   }) {
+    const {
+      page,
+      limit,
+      search,
+      category,
+      isPremium,
+      isPublished,
+      sortBy = 'popularityScore',
+      sortOrder = 'desc',
+    } = filters || {};
+
     const where: any = {};
 
-    if (filters?.category) {
-      where.category = filters.category;
+    if (category) {
+      where.category = category;
     }
-    if (filters?.isPremium !== undefined) {
-      where.isPremium = filters.isPremium;
+    if (isPremium !== undefined) {
+      where.isPremium = isPremium;
     }
-    if (filters?.isPublished !== undefined) {
-      where.isPublished = filters.isPublished;
+    if (isPublished !== undefined) {
+      where.isPublished = isPublished;
     } else {
       // By default, only show published templates
       where.isPublished = true;
     }
 
-    return this.prisma.template.findMany({
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const queryOptions: any = {
       where,
-      orderBy: [
-        { popularityScore: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: { [sortBy]: sortOrder },
       select: {
-      id: true,
-      name: true,
-      description: true,
-      thumbnailUrl: true,
-      previewPdfUrl: true,
-      category: true,
-      isPremium: true,
-      isPublished: true,
-      layoutType: true,
-      popularityScore: true,
-      usageCount: true,
-      version: true,
-      sectionsConfig: true,
-      designConfig: true,
-      tags: true,
-    },
-    });
+        id: true,
+        name: true,
+        description: true,
+        thumbnailUrl: true,
+        previewPdfUrl: true,
+        category: true,
+        isPremium: true,
+        isPublished: true,
+        layoutType: true,
+        popularityScore: true,
+        usageCount: true,
+        version: true,
+        sectionsConfig: true,
+        designConfig: true,
+        tags: true,
+      },
+    };
+
+    if (page && limit) {
+      queryOptions.skip = (page - 1) * limit;
+      queryOptions.take = limit;
+
+      const [items, total] = await Promise.all([
+        this.prisma.template.findMany(queryOptions),
+        this.prisma.template.count({ where }),
+      ]);
+
+      return {
+        items,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    }
+
+    return this.prisma.template.findMany(queryOptions);
   }
 
   /**

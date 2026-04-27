@@ -131,6 +131,10 @@ export class UpdateCVDto {
   sectionsOrder?: string[];
 
   @IsOptional()
+  @IsObject()
+  sectionsLayout?: any;
+
+  @IsOptional()
   @IsEnum(['draft', 'published', 'archived'])
   status?: 'draft' | 'published' | 'archived';
 }

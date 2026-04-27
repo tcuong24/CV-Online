@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 interface EditableTextProps {
   value: string;
-  onChange: (val: string) => void;
+  onChange?: (val: string) => void;
   placeholder?: string;
   multiline?: boolean;
   className?: string;
@@ -10,7 +10,7 @@ interface EditableTextProps {
 
 export function EditableText({
   value,
-  onChange,
+  onChange = () => {},
   placeholder = 'Nhập...',
   multiline = false,
   className = '',
