@@ -1,5 +1,5 @@
 import { COLOR_THEMES, FONT_OPTIONS, LH_MAP } from '@/constants/cvEditor';
-import { SectionLayoutConfig, StyleConfig, StyleColors, StyleTypography, StyleSpacing, StyleBorders } from '@/types/cvEditor';
+import { SectionLayoutConfig, StyleConfig, StyleColors, StyleTypography, StyleSpacing, StyleBorders, ColorTheme } from '@/types/cvEditor';
 
 // ─── Key normalisation ───────────────────────────────────────────────────────
 
@@ -322,9 +322,14 @@ export function resolveFontFamily(style: StyleConfig): string {
 
 // ─── Helper: resolve accent color from StyleConfig ───────────────────────────
 
-export function resolveTheme(style: StyleConfig) {
+export function resolveTheme(style: StyleConfig): ColorTheme {
   if (style.themeId === '_custom' && style.customColor) {
-    return style.customColor; // { primary, dark, light }
+    return {
+      id: '_custom',
+      label: 'Tùy chỉnh',
+      text: '#ffffff',
+      ...style.customColor,
+    };
   }
   const preset = COLOR_THEMES.find((t) => t.id === style.themeId);
   return preset ?? COLOR_THEMES[0];
