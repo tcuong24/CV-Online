@@ -32,9 +32,15 @@ export default function DropdownUser() {
           CV của tôi
         </DropdownMenuItem>
 
-        <DropdownMenuItem>
-          Cài đặt
-        </DropdownMenuItem>
+        {
+          session?.user?.role === 'admin' && (
+            <Link href="/admin">
+              <DropdownMenuItem>
+                Quản trị
+              </DropdownMenuItem>
+            </Link>
+          )
+        }
 
         <DropdownMenuSeparator />
 

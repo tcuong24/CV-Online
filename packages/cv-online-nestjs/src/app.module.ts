@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
 import { TemplateModule } from './template/template.module';
@@ -9,6 +10,20 @@ import { AuthModule } from './auth/auth.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
-  imports: [PrismaModule, UserModule, TemplateModule, CvModule, RenderingModule, ExportModule, AuthModule, CloudinaryModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
+      envFilePath: '.env',
+    }),
+    PrismaModule, 
+    UserModule, 
+    TemplateModule, 
+    CvModule, 
+    RenderingModule, 
+    ExportModule, 
+    AuthModule, 
+    CloudinaryModule
+  ],
 })
 export class AppModule {}

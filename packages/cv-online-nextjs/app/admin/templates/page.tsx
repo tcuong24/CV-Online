@@ -44,18 +44,6 @@ export default function TemplateManagementPage() {
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    category: '',
-    thumbnailUrl: '',
-    isPremium: false,
-    layoutType: 'SidebarRight',
-    tags: '',
-  });
-
   const fetchTemplates = useCallback(async () => {
     setLoading(true);
     try {
@@ -106,56 +94,12 @@ export default function TemplateManagementPage() {
     }
   };
 
-  const openAddModal = () => {
-    setEditingTemplate(null);
-    setFormData({
-      name: '',
-      description: '',
-      category: 'Professional',
-      thumbnailUrl: '',
-      isPremium: false,
-      layoutType: 'SidebarRight',
-      tags: '',
-    });
-    setIsModalOpen(true);
+  const handleAddTemplate = () => {
+    window.location.href = '/admin/templates/create';
   };
 
-  const openEditModal = (t: Template) => {
-    setEditingTemplate(t);
-    setFormData({
-      name: t.name,
-      description: t.description || '',
-      category: t.category,
-      thumbnailUrl: t.thumbnailUrl,
-      isPremium: t.isPremium,
-      layoutType: t.layoutType,
-      tags: (t.tags || []).join(', '),
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const data = {
-      ...formData,
-      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ''),
-      designConfig: {}, // Default mock
-      sectionsConfig: {}, // Default mock
-    };
-
-    try {
-      if (editingTemplate) {
-        await axiosInstance.put(`/admin/templates/${editingTemplate.id}`, data);
-        toast.success('Đã cập nhật mẫu CV');
-      } else {
-        await axiosInstance.post('/admin/templates', data);
-        toast.success('Đã thêm mẫu CV mới');
-      }
-      setIsModalOpen(false);
-      fetchTemplates();
-    } catch (error) {
-      toast.error('Lỗi khi lưu mẫu CV');
-    }
+  const handleEditTemplate = (id: string) => {
+    window.location.href = `/admin/templates/${id}`;
   };
 
   return (
@@ -170,7 +114,7 @@ export default function TemplateManagementPage() {
             <button onClick={fetchTemplates} className="p-2 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-100 hover:shadow-sm">
                 <RefreshCw size={20} className={`text-slate-400 ${loading ? 'animate-spin' : ''}`} />
             </button>
-            <Button onClick={openAddModal} className="rounded-xl bg-violet-600 hover:bg-violet-700 flex gap-2 h-11 px-6 shadow-lg shadow-violet-200 transition-all active:scale-95">
+            <Button onClick={handleAddTemplate} className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white flex gap-2 h-11 px-6 shadow-md transition-all active:scale-95">
                 <Plus size={18} /> Thêm mẫu mới
             </Button>
         </div>
@@ -282,10 +226,10 @@ export default function TemplateManagementPage() {
 
                    {/* Quick Actions Overlay */}
                    <div className="absolute inset-0 bg-violet-900/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4 backdrop-blur-[2px]">
-                        <button onClick={() => window.open(`/preview/${template.id}`)} className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-violet-600 hover:scale-110 active:scale-95 transition-all shadow-xl">
+                        <button onClick={() => window.open(`/preview/${template.id}`)} className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-700 hover:scale-110 active:scale-95 transition-all shadow-xl">
                             <Eye size={20} />
                         </button>
-                        <button onClick={() => openEditModal(template)} className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-violet-600 hover:scale-110 active:scale-95 transition-all shadow-xl">
+                        <button onClick={() => handleEditTemplate(template.id)} className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-700 hover:scale-110 active:scale-95 transition-all shadow-xl">
                             <Edit3 size={20} />
                         </button>
                         <button onClick={() => handleDelete(template.id)} className="w-12 h-12 bg-white/20 hover:bg-red-500 rounded-2xl flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all shadow-xl backdrop-blur-md">
@@ -297,10 +241,10 @@ export default function TemplateManagementPage() {
                {/* Info Area */}
                <div className="p-8 flex-1 flex flex-col">
                    <div className="flex items-center justify-between mb-2">
-                       <span className="text-[10px] font-black text-violet-500 uppercase tracking-widest">{template.category}</span>
-                       <span className="text-[10px] text-slate-300 font-bold uppercase">{new Date(template.createdAt).toLocaleDateString()}</span>
+                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{template.category}</span>
+                       <span className="text-[10px] text-slate-400 font-bold uppercase">{new Date(template.createdAt).toLocaleDateString()}</span>
                    </div>
-                   <h3 className="font-bold text-slate-900 text-xl mb-2 line-clamp-1 group-hover:text-violet-600 transition-colors">{template.name}</h3>
+                   <h3 className="font-bold text-slate-900 text-xl mb-2 line-clamp-1 group-hover:text-slate-700 transition-colors">{template.name}</h3>
                    <p className="text-slate-400 text-xs font-medium line-clamp-2 mb-6 leading-relaxed">
                        {template.description || 'Không có mô tả cho mẫu CV này.'}
                    </p>
@@ -334,10 +278,10 @@ export default function TemplateManagementPage() {
 
           {/* Add New Card */}
           <div 
-            onClick={openAddModal}
-            className="bg-slate-50 rounded-[40px] border-4 border-dashed border-slate-100 flex flex-col items-center justify-center p-8 text-slate-300 hover:border-violet-200 hover:text-violet-400 hover:bg-white transition-all cursor-pointer min-h-[450px] group"
+            onClick={handleAddTemplate}
+            className="bg-slate-50 rounded-[40px] border border-dashed border-slate-200 flex flex-col items-center justify-center p-8 text-slate-400 hover:border-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer min-h-[450px] group"
           >
-              <div className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 group-hover:rotate-90 transition-all duration-500">
+              <div className="w-16 h-16 rounded-3xl bg-white border border-slate-100 flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 group-hover:rotate-90 transition-all duration-500">
                   <Plus size={32} />
               </div>
               <p className="font-black text-sm uppercase tracking-widest">Thêm mẫu mới</p>
@@ -371,128 +315,6 @@ export default function TemplateManagementPage() {
         </div>
       )}
 
-      {/* Modal Add/Edit */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-            <div className="absolute inset-0 bg-violet-900/20 backdrop-blur-md" onClick={() => setIsModalOpen(false)} />
-            <div className="bg-white rounded-[40px] w-full max-w-2xl relative z-10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                <form onSubmit={handleSubmit}>
-                    <div className="p-10">
-                        <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-3xl font-black text-slate-900">{editingTemplate ? 'Sửa mẫu CV' : 'Thêm mẫu CV mới'}</h3>
-                            <button type="button" onClick={() => setIsModalOpen(false)} className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
-                                <XCircle size={24} />
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="col-span-2 space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tên mẫu CV</label>
-                                <input 
-                                  required
-                                  value={formData.name}
-                                  onChange={e => setFormData({...formData, name: e.target.value})}
-                                  placeholder="Ví dụ: Sidebar Right Modern"
-                                  className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-violet-500 font-bold transition-all"
-                                />
-                            </div>
-                            
-                            <div className="col-span-2 space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mô tả ngắn</label>
-                                <textarea 
-                                  value={formData.description}
-                                  onChange={e => setFormData({...formData, description: e.target.value})}
-                                  placeholder="Mô tả đặc điểm nổi bật..."
-                                  rows={3}
-                                  className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-violet-500 font-medium text-sm transition-all resize-none"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Danh mục</label>
-                                <select 
-                                  value={formData.category}
-                                  onChange={e => setFormData({...formData, category: e.target.value})}
-                                  className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-violet-500 font-bold text-sm transition-all"
-                                >
-                                    <option value="Professional">Professional</option>
-                                    <option value="Modern">Modern</option>
-                                    <option value="Creative">Creative</option>
-                                    <option value="Minimalist">Minimalist</option>
-                                </select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Layout Engine</label>
-                                <select 
-                                  value={formData.layoutType}
-                                  onChange={e => setFormData({...formData, layoutType: e.target.value})}
-                                  className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-violet-500 font-bold text-sm transition-all"
-                                >
-                                    <option value="SidebarRight">SidebarRight</option>
-                                    <option value="TwoColumn">TwoColumn</option>
-                                    <option value="SingleColumn">SingleColumn</option>
-                                    <option value="ExecutiveCentered">ExecutiveCentered</option>
-                                    <option value="TechTimeline">TechTimeline</option>
-                                </select>
-                            </div>
-
-                            <div className="col-span-2 space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Thumbnail URL</label>
-                                <div className="relative">
-                                    <input 
-                                      required
-                                      value={formData.thumbnailUrl}
-                                      onChange={e => setFormData({...formData, thumbnailUrl: e.target.value})}
-                                      placeholder="https://cloudinary.com/..."
-                                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-violet-500 font-bold text-xs transition-all pr-12"
-                                    />
-                                    <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tags (phân cách dấu phẩy)</label>
-                                <input 
-                                  value={formData.tags}
-                                  onChange={e => setFormData({...formData, tags: e.target.value})}
-                                  placeholder="it, marketing, hot"
-                                  className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-violet-500 font-bold text-xs transition-all"
-                                />
-                            </div>
-
-                            <div className="flex items-center gap-3 pl-2 pt-6">
-                                <button 
-                                  type="button"
-                                  onClick={() => setFormData({...formData, isPremium: !formData.isPremium})}
-                                  className={`w-12 h-6 rounded-full transition-all relative ${formData.isPremium ? 'bg-amber-400' : 'bg-slate-200'}`}
-                                >
-                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.isPremium ? 'left-7' : 'left-1'}`} />
-                                </button>
-                                <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Loại Premium</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="p-8 bg-slate-50 flex gap-4">
-                        <button 
-                          type="button" 
-                          onClick={() => setIsModalOpen(false)}
-                          className="flex-1 py-4 text-slate-400 font-black uppercase tracking-widest hover:text-slate-600 transition-colors"
-                        >
-                            Hủy
-                        </button>
-                        <Button 
-                          type="submit" 
-                          className="flex-1 rounded-2xl bg-violet-600 hover:bg-violet-700 py-6 text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-violet-200"
-                        >
-                            {editingTemplate ? 'Cập nhật ngay' : 'Thêm mẫu CV'}
-                        </Button>
-                    </div>
-                </form>
-            </div>
-        </div>
-      )}
     </div>
   );
 }

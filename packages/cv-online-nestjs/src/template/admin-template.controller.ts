@@ -45,6 +45,11 @@ export class AdminTemplateController {
     });
   }
 
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.templateService.findOne(id);
+  }
+
   @Post()
   async create(@Body() dto: CreateTemplateDto) {
     return this.templateService.create(dto);
