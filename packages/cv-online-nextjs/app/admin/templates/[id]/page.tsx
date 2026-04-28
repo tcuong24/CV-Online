@@ -35,7 +35,8 @@ export default function TemplateEditor() {
     },
     sectionsConfig: {
       order: ['personal', 'experience', 'education', 'skills'],
-      hidden: []
+      sidebar_sections: ['personal', 'skills'],
+      hidden: [] as string[]
     }
   });
 
@@ -425,11 +426,7 @@ export default function TemplateEditor() {
                 </div>
                 <textarea 
                   className="w-full flex-1 bg-slate-900 text-emerald-400 p-5 font-mono text-[13px] rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 resize-none shadow-inner"
-                  defaultValue={JSON.stringify(
-                    activeTab === 'sections' ? template.sectionsConfig : 
-                    activeTab === 'sample' ? { "sample": "Mock Data Structure..." } : 
-                    template.designConfig, null, 2
-                  )}
+                  defaultValue={JSON.stringify(template.designConfig, null, 2)}
                   onChange={e => {
                      // Note: Handle JSON string parsing robustly later
                   }}
