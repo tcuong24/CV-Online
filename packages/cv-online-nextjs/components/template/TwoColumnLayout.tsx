@@ -218,7 +218,7 @@ export function TwoColumnPage({
               </div>
             </div>
             {/* Contact */}
-            <SideSection title="Liên hệ" fontSize={fs * 1.2} titleColor={textColor.heading} borderColor={`${theme.primary}30`}>
+            <SideSection title="Liên hệ" fontSize={fs * 1.2} titleColor={textColor.heading} borderColor={`${theme.primary}30`} onTitleChange={(v) => ctx.updateSectionLabel('personal', v)}>
               <div style={{ fontSize: fs * 0.84, color: textColor.body, marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <MdEmail size={10} /><EditableText value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
               </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'; // Refreshed
 import { MdDragIndicator } from 'react-icons/md';
 import { CvData, SectionLayoutConfig, SkillEntry, StyleConfig, ExperienceEntry, EducationEntry, ProjectEntry, AwardEntry, LanguageEntry } from '@/types/cvEditor';
 import { useCvEditorStore } from '@/stores/useCvEditor';
@@ -33,6 +33,7 @@ export interface RenderCtx {
   addCustomSectionItem: (sectionId: string) => void;
   updateCustomSectionItem: (sectionId: string, itemId: string, patch: Record<string, unknown>) => void;
   removeCustomSectionItem: (sectionId: string, itemId: string) => void;
+  updateSectionLabel: (key: string, label: string) => void;
 }
 
 export function getScaledDragStyle(

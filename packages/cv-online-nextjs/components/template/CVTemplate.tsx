@@ -85,6 +85,7 @@ export interface RenderCtx {
   addCustomSectionItem: (sectionId: string) => void;
   updateCustomSectionItem: (sectionId: string, itemId: string, patch: Record<string, unknown>) => void;
   removeCustomSectionItem: (sectionId: string, itemId: string) => void;
+  updateSectionLabel: (key: string, label: string) => void;
 }
 
 // ─── StylePicker — Palette icon + hover dropdown to switch section display style ──
@@ -1143,6 +1144,8 @@ export function CVTemplate({
   const updateCustomSectionItem = useCvEditorStore(s => s.updateCustomSectionItem);
   const removeCustomSectionItem = useCvEditorStore(s => s.removeCustomSectionItem);
 
+  const updateSectionLabel = (key: string, label: string) => patchSectionLayout(key, { label });
+  
   const ctx: RenderCtx = {
     style, fs, lh, accentColor, textColor: style.textColor, sectionLayout,
     updatePersonalInfo, updateEntry, addEntry, removeEntry,
@@ -1150,6 +1153,7 @@ export function CVTemplate({
     reorderSection, reorderSideKey, moveSectionToZone, patchSectionLayout,
     addCustomSection, removeCustomSection, updateCustomSection,
     addCustomSectionItem, updateCustomSectionItem, removeCustomSectionItem,
+    updateSectionLabel,
   };
 
   const layoutProps = {

@@ -44,7 +44,7 @@ export function SidebarLeftPage({
   ctx,
   scale,
 }: {
-  mainSections: ({ key: string; title: string; content: React.ReactNode; addButton?: React.ReactNode; styleControls?: React.ReactNode })[];
+  mainSections: ({ key: string; title: string; content: React.ReactNode; addButton?: React.ReactNode; styleControls?: React.ReactNode; onTitleChange?: (v: string) => void })[];
   sideSections: SidebarSection[];
   isFirst: boolean;
   data: CvData;
@@ -116,7 +116,7 @@ export function SidebarLeftPage({
             </div>
 
             {/* Contact */}
-            <SideSection title="Liên hệ">
+            <SideSection title="Liên hệ" fontSize={fs * 0.9} onTitleChange={(v) => ctx.updateSectionLabel('personal', v)}>
               <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <MdEmail size={10} /><EditableText value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
               </div>

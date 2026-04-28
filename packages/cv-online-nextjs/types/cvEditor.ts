@@ -121,6 +121,7 @@ export interface CustomSectionItem {
 
 export interface CustomSectionEntry {
   id: string;
+  _dbId?: string;
   sectionTitle: string;
   sectionType?: 'list' | 'timeline' | 'tags' | 'text' | 'grid';
   items: CustomSectionItem[];
@@ -237,7 +238,7 @@ export interface SectionLayoutConfig {
   skills?: { title?: string; style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags' | 'none'; };
   awards?: { title?: string; style: 'compact' | 'detailed' };
   personal?: { title?: string; style: 'default' | 'centered' };
-  global?: { headerAlign?: 'left' | 'center' | 'right'; headerBorder?: 'bottom' | 'none' | 'left'; };
+  global?: { headerAlign?: 'left' | 'center' | 'right'; headerBorder?: 'bottom' | 'none' | 'left'; headerStyle?: 'default' | 'centered' | 'floating' | 'modern'; };
 }
 
 export interface FieldDef {

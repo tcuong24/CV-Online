@@ -1,4 +1,5 @@
 import { CvData, Entry, FieldDef, PersonalInfo } from '@/types/cvEditor';
+import { uid } from '@/constants/cvEditor';
 import { EntryEditor } from './EntryEditor';
 import { LangEditor } from './LangEditor';
 import { SkillsEditor } from './SkillsEditor';
@@ -120,8 +121,14 @@ export function SectionForm({ sectionKey, data, onChange }: SectionFormProps) {
   if (sectionKey === 'skills') {
     return (
       <SkillsEditor
-        skills={data.skills}
-        onChange={(v) => onChange({ ...data, skills: v })}
+        skills={(data.skills || []).map(s => typeof s === 'string' ? s : s.name)}
+        onChange={(v) => {
+          const newSkills = v.map(name => {
+            const existing = (data.skills || []).find(s => (typeof s === 'string' ? s : s.name) === name);
+            return typeof existing === 'object' ? existing : { id: uid(), name, proficiencyLevel: 'intermediate', proficiencyPercentage: 50, category: '' };
+          });
+          onChange({ ...data, skills: newSkills as any });
+        }}
       />
     );
   }

@@ -69,7 +69,7 @@ export function ExecutiveCenteredPage({
         <Droppable droppableId="sections-main">
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
-              {sections.map(({ key, title, content, addButton, styleControls }, idx) => (
+              {sections.map(({ key, title, content, addButton, styleControls, onTitleChange }, idx) => (
                 <Draggable key={key} draggableId={`section-${key}`} index={idx}>
                   {(dp, snap) => (
                     <div

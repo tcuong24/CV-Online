@@ -65,7 +65,7 @@ export function AsymmetricPage({
           <Droppable droppableId="sections-left">
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                {leftSections.map(({ key, title, content, addButton, styleControls }, idx) => (
+                {leftSections.map(({ key, title, content, addButton, styleControls, onTitleChange }, idx) => (
                   <Draggable key={key} draggableId={`section-${key}`} index={idx}>
                     {(dp, snap) => (
                       <div ref={dp.innerRef} {...dp.draggableProps} style={getScaledDragStyle(dp.draggableProps.style, snap.isDragging, scale, 260)}>
@@ -74,7 +74,7 @@ export function AsymmetricPage({
                           isDragging={snap.isDragging}
                           accentColor={accentColor}
                           title={title}
-                          onTitleChange={onTitleChange}
+                          onTitleChange={(v) => ctx.updateSectionLabel(key, v)}
                           fs={fs}
                           addButton={addButton}
                           styleControls={styleControls}

@@ -223,13 +223,13 @@ export function BlackWhitePage({
                     706,
                   )}
                 >
-                  <SectionShell
-                    dragHandleProps={dp.dragHandleProps}
-                    isDragging={snap.isDragging}
-                    accentColor={accentColor}
-                    title={title}
-                    onTitleChange={onTitleChange}
-                    fs={fs}
+                    <SectionShell
+                      dragHandleProps={dp.dragHandleProps}
+                      isDragging={snap.isDragging}
+                      accentColor={accentColor}
+                      title={title}
+                      onTitleChange={(v) => ctx.updateSectionLabel(sectionKey, v)}
+                      fs={fs}
                     addButton={makeAddBtn(sectionKey)}
                     styleControls={makeStyleControls(sectionKey)}
                   >

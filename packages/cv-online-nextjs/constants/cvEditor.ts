@@ -112,6 +112,7 @@ export const DEFAULT_DATA: CvData = {
   references: [],
   interests: [],
   activities: [],
+  customSections: [],
 };
 
 export const DEFAULT_ORDER = ['personal', 'experiences', 'education', 'skills', 'projects', 'awards', 'certifications', 'languages', 'references', 'interests', 'activities'];
