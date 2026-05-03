@@ -61,9 +61,10 @@ export function SideSection({
         <span>
           <EditableText 
             value={title} 
+            
             onChange={onTitleChange} 
             placeholder="Tiêu đề" 
-            className="hover:bg-white/10 rounded px-0.5 transition-colors"
+            className={`hover:bg-white/10 rounded px-0.5 transition-colors text-${titleColor}`}
           />
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

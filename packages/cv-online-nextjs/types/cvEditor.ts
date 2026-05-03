@@ -150,6 +150,7 @@ export interface CvData {
 export interface StyleColors {
   text: { body: string; muted: string; heading: string };
   accent: string;
+  gradient?:string;
   primary: string;
   secondary: string;
   divider: string;
@@ -230,14 +231,15 @@ export interface StyleConfig {
 export interface SectionLayoutConfig {
   [key: string]: {
     title?: string;
+    icon?: string;
     style?: string;
     [key: string]: any;
   } | undefined;
-  experiences?: { title?: string; style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showDates: boolean; dateFormat?: string; };
-  education?: { title?: string; style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showGPA: boolean };
-  skills?: { title?: string; style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags' | 'none'; };
-  awards?: { title?: string; style: 'compact' | 'detailed' };
-  personal?: { title?: string; style: 'default' | 'centered' };
+  experiences?: { title?: string; icon?: string; style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showDates: boolean; dateFormat?: string; };
+  education?: { title?: string; icon?: string; style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showGPA: boolean };
+  skills?: { title?: string; icon?: string; style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags' | 'none'; };
+  awards?: { title?: string; icon?: string; style: 'compact' | 'detailed' };
+  personal?: { title?: string; icon?: string; style: 'default' | 'centered' };
   global?: { headerAlign?: 'left' | 'center' | 'right'; headerBorder?: 'bottom' | 'none' | 'left'; headerStyle?: 'default' | 'centered' | 'floating' | 'modern'; };
 }
 
@@ -268,4 +270,34 @@ export interface FontOption {
   label: string;
   family: string;
   sample: string;
+}
+
+export interface RenderCtx {
+  style: StyleConfig;
+  fs: number;
+  lh: number;
+  accentColor: string;
+  textColor?: { body: string; muted: string; heading: string };
+  sectionLayout: SectionLayoutConfig;
+  updatePersonalInfo: (patch: Partial<CvData['personal']>) => void;
+  updateEntry: (key: string, id: string, patch: Record<string, unknown>) => void;
+  addEntry: (key: string, item: Record<string, unknown>) => void;
+  removeEntry: (key: string, id: string) => void;
+  addSkill: (item: SkillEntry) => void;
+  removeSkill: (id: string) => void;
+  updateSkill: (id: string, patch: Partial<SkillEntry>) => void;
+  reorderEntry: (key: string, fromIndex: number, toIndex: number) => void;
+  reorderSkills: (fromIndex: number, toIndex: number) => void;
+  reorderSection: (fromKey: string, toKey: string) => void;
+  reorderSideKey: (fromKey: string, toKey: string) => void;
+  moveSectionToZone: (key: string, toSidebar: boolean) => void;
+  patchSectionLayout: (key: string, patch: Record<string, unknown>) => void;
+  addCustomSection: (title: string, config?: CvData['customSections'][0]['fieldConfig']) => void;
+  removeCustomSection: (id: string) => void;
+  updateCustomSection: (id: string, patch: Partial<CvData['customSections'][0]>) => void;
+  addCustomSectionItem: (sectionId: string) => void;
+  updateCustomSectionItem: (sectionId: string, itemId: string, patch: Record<string, unknown>) => void;
+  removeCustomSectionItem: (sectionId: string, itemId: string) => void;
+  updateSectionLabel: (key: string, label: string) => void;
+  scale: number;
 }

@@ -3,7 +3,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MdEmail, MdLink, MdLocationOn, MdPhone } from 'react-icons/md';
 import { MdDragIndicator } from 'react-icons/md';
-import { CvData } from '@/types/cvEditor';
+import { CvData, StyleConfig } from '@/types/cvEditor';
 import { Droppable, Draggable, DragDropContext, type DropResult } from '@hello-pangea/dnd';
 import { EditableText } from '../shared/EditableText';
 import { SideSection } from '../shared/TemplatePart';
@@ -43,8 +43,9 @@ export function SidebarLeftPage({
   accentColor,
   ctx,
   scale,
+  style
 }: {
-  mainSections: ({ key: string; title: string; content: React.ReactNode; addButton?: React.ReactNode; styleControls?: React.ReactNode; onTitleChange?: (v: string) => void })[];
+  mainSections: ({ key: string; title: string; icon?: string; content: React.ReactNode; addButton?: React.ReactNode; styleControls?: React.ReactNode; onTitleChange?: (v: string) => void })[];
   sideSections: SidebarSection[];
   isFirst: boolean;
   data: CvData;
@@ -56,6 +57,7 @@ export function SidebarLeftPage({
   accentColor: string;
   ctx: RenderCtx;
   scale: number;
+  style: StyleConfig;
 }) {
   const initials = (data.personal.name || '??')
     .split(' ')
@@ -65,21 +67,21 @@ export function SidebarLeftPage({
   const avatarMargin = align === 'center' ? '0 auto 14px' : '0 0 14px';
   const titleAlign = ctx.sectionLayout.global?.headerAlign || 'left';
   const borderStyle = ctx.sectionLayout.global?.headerBorder || 'bottom';
-  console.log(data);
-  
+  const [sidePart, mainPart] = (style.layout?.columnRatio || '30:70').split(':').map(Number);
+  const gridColumns = `${sidePart}% ${mainPart}%`;
   return (
     <div
       className="cv-paper"
       style={{
         display: 'grid',
-        gridTemplateColumns: '190px 1fr',
+        gridTemplateColumns: gridColumns,
         fontFamily,
         fontSize: fs,
         lineHeight: lh,
       }}
     >
       {/* Sidebar */}
-      <div style={{ background: accentColor, padding: '28px 18px', color: '#fff' }}>
+      <div style={{ background: style.colors?.background.sidebar === "gradient" ? style.colors.gradient : style.colors?.background.sidebar, padding: '28px 18px', color: '#fff' }}>
         {isFirst && (
           <>
             {data.personal.avatarUrl ? (
@@ -87,47 +89,39 @@ export function SidebarLeftPage({
                 src={data.personal.avatarUrl}
                 alt={data.personal.name}
                 style={{
-                  width: 64, height: 64, borderRadius: '50%',
+                  width: 130, height: 130, borderRadius: '50%',
                   objectFit: 'cover',
-                  margin: avatarMargin,
+                  margin: '0 auto 14px',
                   display: 'block',
                 }}
               />
             ) : (
               <div
                 style={{
-                  width: 64, height: 64, borderRadius: '50%',
+                  width: 130, height: 130, borderRadius: '50%',
                   background: 'rgba(255,255,255,0.2)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 24, fontWeight: 700,
                   border: '3px solid rgba(255,255,255,0.3)',
-                  margin: avatarMargin,
+                  margin: '0 auto 14px',
                 }}
               >
                 {initials}
               </div>
             )}
-            
-            <div style={{ fontSize: fs * 1.3, fontWeight: 700, lineHeight: 1.3, marginBottom: 3, textAlign: align as React.CSSProperties['textAlign'] }}>
-              <EditableText value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="Họ và tên của bạn" />
-            </div>
-            <div style={{ fontSize: fs * 0.85, color: 'rgba(255,255,255,0.65)', marginBottom: 18, textAlign: align as React.CSSProperties['textAlign'] }}>
-              <EditableText value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
-            </div>
-
             {/* Contact */}
-            <SideSection title="Liên hệ" fontSize={fs * 0.9} onTitleChange={(v) => ctx.updateSectionLabel('personal', v)}>
-              <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <MdEmail size={10} /><EditableText value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
+            <SideSection title="Liên hệ" titleColor='#fff' fontSize={fs * 1.2} onTitleChange={(v) => ctx.updateSectionLabel('personal', v)}>
+              <div style={{ fontSize: fs * 1, color: '#fff', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <MdEmail size={10} /><EditableText scale={scale} value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
               </div>
-              <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <MdPhone size={10} /><EditableText value={data.personal.phone || ''} onChange={(v) => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
+              <div style={{ fontSize: fs * 1, color: '#fff', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <MdPhone size={10} /><EditableText scale={scale} value={data.personal.phone || ''} onChange={(v) => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
               </div>
-              <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <MdLocationOn size={10} /><EditableText value={data.personal.location || ''} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
+              <div style={{ fontSize: fs * 1, color: '#fff', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <MdLocationOn size={10} /><EditableText scale={scale} value={data.personal.location || ''} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
               </div>
-              <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <MdLink size={10} /><EditableText value={data.personal.website || ''} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
+              <div style={{ fontSize: fs * 1, color: '#fff', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <MdLink size={10} /><EditableText scale={scale} value={data.personal.website || ''} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
               </div>
             </SideSection>
           </>
@@ -184,28 +178,43 @@ export function SidebarLeftPage({
       {/* Main content */}
       <div style={{ padding: '28px 26px' }}>
         {isFirst && (
-          <div style={{ marginBottom: 22 }}>
-            <div
-              style={{
-                fontSize: fs * 0.84, fontWeight: 700, textTransform: 'uppercase',
-                letterSpacing: '0.1em', color: accentColor,
-                textAlign: titleAlign === 'center' ? 'center' : 'left',
-                borderBottom: borderStyle === 'bottom' ? `2px solid ${accentColor}` : 'none',
-                paddingBottom: borderStyle !== 'none' ? 5 : 0, 
-                marginBottom: borderStyle !== 'none' ? 12 : 6,
-                borderLeft: borderStyle === 'left' ? `4px solid ${accentColor}` : 'none',
-                paddingLeft: borderStyle === 'left' ? 8 : 0,
-              }}
-            >Giới thiệu</div>
-            <div style={{ color: '#57534e', lineHeight: lh }}>
-              <EditableText value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
+          <>
+            <div style={{ textAlign: titleAlign as any, marginBottom: 8 }}>
+              <EditableText
+                scale={scale}
+                value={data.personal.name || ''}
+                onChange={(v) => ctx.updatePersonalInfo({ name: v })}
+                placeholder="Họ Tên"
+                className="font-bold tracking-tight"
+                style={{ fontSize: fs * 2.2, color: accentColor }}
+              />
             </div>
-          </div>
+            <div style={{ fontSize: fs * 0.85, color: accentColor, marginBottom: 18, textAlign: titleAlign as any }}>
+              <EditableText scale={scale} value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
+            </div>
+          </>
         )}
+        <div style={{ marginBottom: 22 }}>
+          <div
+            style={{
+              fontSize: fs * 1.2, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '0.1em', color: accentColor,
+              textAlign: titleAlign === 'center' ? 'center' : 'left',
+              borderBottom: borderStyle === 'bottom' ? `2px solid ${accentColor}` : 'none',
+              paddingBottom: borderStyle !== 'none' ? 5 : 0,
+              marginBottom: borderStyle !== 'none' ? 12 : 6,
+              borderLeft: borderStyle === 'left' ? `4px solid ${accentColor}` : 'none',
+              paddingLeft: borderStyle === 'left' ? 8 : 0,
+            }}
+          >Giới thiệu</div>
+          <div style={{ color: '#57534e', lineHeight: lh }}>
+            <EditableText value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
+          </div>
+        </div>
         <Droppable droppableId="sections-main">
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
-              {mainSections.map(({ key, title, content, addButton, styleControls, onTitleChange }, idx) => (
+              {mainSections.map(({ key, title, icon, content, addButton, styleControls, onTitleChange }, idx) => (
                 <Draggable key={key} draggableId={`section-${key}`} index={idx}>
                   {(dp, snap) => (
                     <div
@@ -223,6 +232,7 @@ export function SidebarLeftPage({
                         isDragging={snap.isDragging}
                         accentColor={accentColor}
                         title={title}
+                        icon={icon}
                         onTitleChange={onTitleChange}
                         fs={fs}
                         addButton={addButton}
@@ -253,6 +263,7 @@ export function SidebarLeftLayout({
   fs,
   lh,
   sideKeys,
+  style,
   zoom = 100,
 }: {
   data: CvData;
@@ -264,14 +275,13 @@ export function SidebarLeftLayout({
   fs: number;
   lh: number;
   sideKeys: string[];
+  style: StyleConfig;
   zoom?: number;
 }) {
-  const accentColor = theme.sidebar || theme.primary;
+  const accentColor = style.colors?.accent || '#3b82f6';
   const scale = zoom / 100;
   const isPersonal = (k: string) => k === 'personal' || k === 'personalInfo';
   const mainKeyList = order.filter((k) => !isPersonal(k) && !sideKeys.includes(k));
-
-  // Helpers for add button and style switcher
   const makeAddBtn = (key: string, label: string, action: () => void, hasData: boolean) =>
     hasData ? (
       <button
@@ -293,7 +303,15 @@ export function SidebarLeftLayout({
     ) : undefined;
 
   // Build main sections list
-  const allMainSections: { key: string; title: string; content: React.ReactNode; addButton?: React.ReactNode; styleControls?: React.ReactNode; onTitleChange?: (v: string) => void }[] = [];
+  const allMainSections: {
+    key: string;
+    title: string;
+    icon?: string;
+    content: React.ReactNode;
+    addButton?: React.ReactNode;
+    styleControls?: React.ReactNode;
+    onTitleChange: (v: string) => void;
+  }[] = [];
   mainKeyList.forEach((key) => {
     const titles: Record<string, string> = {
       experiences: 'Kinh nghiệm',
@@ -307,7 +325,7 @@ export function SidebarLeftLayout({
       interests: 'Sở thích',
       activities: 'Hoạt động',
     };
-    
+
     // Resolve display title: Custom title from DB/Store > Default title
     const displayTitle = ctx.sectionLayout[key]?.title || titles[key] || key;
     const onTitleChange = (v: string) => ctx.patchSectionLayout(key, { title: v });
@@ -317,6 +335,7 @@ export function SidebarLeftLayout({
       allMainSections.push({
         key,
         title: displayTitle,
+        icon: ctx.sectionLayout[key]?.icon,
         onTitleChange,
         content: <ExperienceSection data={data} ctx={ctx} variant="main" />,
         addButton: makeAddBtn(key, '+ Kinh nghiệm', () => ctx.addEntry('experiences', { title: '', company: '', from: '', to: '', location: '', desc: '' }), !!data.experiences?.length),
@@ -336,6 +355,7 @@ export function SidebarLeftLayout({
       allMainSections.push({
         key,
         title: displayTitle,
+        icon: ctx.sectionLayout[key]?.icon,
         onTitleChange,
         content: <SkillsBlock data={data} ctx={ctx} dark={true} />,
         addButton: makeAddBtn(key, '+ Kỹ năng', () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' }), !!data.skills?.length),
@@ -350,13 +370,13 @@ export function SidebarLeftLayout({
       });
       return;
     }
-    
+
     // Handle Built-in Sections
     if (titles[key]) {
       const addActions: Record<string, { label: string; action: () => void; hasData: boolean }> = {
         education: { label: '+ Học vấn', action: () => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' }), hasData: !!data.education?.length },
-        projects:  { label: '+ Dự án',   action: () => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' }), hasData: !!data.projects?.length },
-        awards:    { label: '+ Giải thưởng', action: () => ctx.addEntry('awards', { title: '', year: '', org: '' }), hasData: !!data.awards?.length },
+        projects: { label: '+ Dự án', action: () => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' }), hasData: !!data.projects?.length },
+        awards: { label: '+ Giải thưởng', action: () => ctx.addEntry('awards', { title: '', year: '', org: '' }), hasData: !!data.awards?.length },
         languages: { label: '+ Ngôn ngữ', action: () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }), hasData: !!data.languages?.length },
         certifications: { label: '+ Chứng chỉ', action: () => ctx.addEntry('certifications', { name: '', issuingOrganization: '', issueDate: '', description: '' }), hasData: !!data.certifications?.length },
       };
@@ -364,6 +384,7 @@ export function SidebarLeftLayout({
       allMainSections.push({
         key,
         title: displayTitle,
+        icon: ctx.sectionLayout[key]?.icon,
         onTitleChange,
         content: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />,
         addButton: add ? makeAddBtn(key, add.label, add.action, add.hasData) : undefined,
@@ -376,6 +397,7 @@ export function SidebarLeftLayout({
         allMainSections.push({
           key,
           title: customSection.sectionTitle,
+          icon: ctx.sectionLayout[key]?.icon,
           onTitleChange: (v) => ctx.updateCustomSection(customSection.id, { sectionTitle: v }),
           content: <CustomSection section={customSection} ctx={ctx} />,
           addButton: makeAddBtn(key, '+ Thêm', () => ctx.addCustomSectionItem(customSection.id), true),
@@ -423,7 +445,7 @@ export function SidebarLeftLayout({
             <SideSection
               key={key}
               title={customSection.sectionTitle}
-              fontSize={fs * 0.75}
+              fontSize={fs * 1.2}
               addButton={addBtn}
               onTitleChange={(v) => ctx.updateCustomSection(customSection.id, { sectionTitle: v })}
             >
@@ -457,7 +479,8 @@ export function SidebarLeftLayout({
           <SideSection
             key={key}
             title={displayTitle}
-            fontSize={fs * 0.75}
+            fontSize={fs * 1.2}
+            titleColor='#fff'
             addButton={addBtn}
             onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
           >
@@ -478,7 +501,8 @@ export function SidebarLeftLayout({
           <SideSection
             key={key}
             title={displayTitle}
-            fontSize={fs * 0.75}
+            fontSize={fs * 1.2}
+            titleColor='#fff'
             addButton={addBtn}
             onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
           >
@@ -511,7 +535,8 @@ export function SidebarLeftLayout({
           <SideSection
             key={key}
             title={displayTitle}
-            fontSize={fs * 0.75}
+            fontSize={fs * 1.2}
+            titleColor='#fff'
             addButton={addBtn}
             onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
           >
@@ -541,7 +566,8 @@ export function SidebarLeftLayout({
             key={key}
             title={displayTitle}
             addButton={addBtn}
-            fontSize={fs * 0.75}
+            titleColor='#fff'
+            fontSize={fs * 1.2}
             onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
           >
             {data.education?.map((e) => (
@@ -650,6 +676,7 @@ export function SidebarLeftLayout({
         <div className="cv-pages-wrapper">
           <SidebarLeftPage
             key="pageless"
+            style={style}
             isFirst={true}
             mainSections={allMainSections}
             sideSections={sideSectionNodes}

@@ -10,17 +10,24 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
   constructor(configService: ConfigService) {
     const connectionString = configService.get<string>('DATABASE_URL');
+    const nodeEnv = configService.get<string>('NODE_ENV', 'development');
+    
+    // Tự động bật SSL nếu là Cloud DB hoặc môi trường production
+    const needsSSL = 
+      connectionString?.includes('supabase.com') || 
+      connectionString?.includes('render.com') ||
+      nodeEnv === 'production';
+
     const pool = new Pool({
       connectionString,
-      ssl:
-        connectionString?.includes('supabase.com') ||
-        connectionString?.includes('render.com')
-          ? { rejectUnauthorized: false }
-          : undefined,
+      ssl: needsSSL ? { rejectUnauthorized: false } : undefined,
     });
+
     const adapter = new PrismaPg(pool);
     super({ adapter });
-    this.logger.log(`Prisma adapter initialized with PostgreSQL from environment`);
+
+    this.logger.log(`Prisma connected to: ${connectionString?.split('@')[1]?.split('/')[0]}`);
+    this.logger.log(`SSL Mode: ${needsSSL ? 'Enabled (rejectUnauthorized: false)' : 'Disabled'}`);
   }
 
   async onModuleInit() {

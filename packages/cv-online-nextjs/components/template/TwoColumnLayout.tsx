@@ -214,22 +214,22 @@ export function TwoColumnPage({
                 }}
               >Giới thiệu</div>
               <div style={{ color: '#57534e', lineHeight: lh }}>
-                <EditableText value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
+                <EditableText scale={scale} value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
               </div>
             </div>
             {/* Contact */}
             <SideSection title="Liên hệ" fontSize={fs * 1.2} titleColor={textColor.heading} borderColor={`${theme.primary}30`} onTitleChange={(v) => ctx.updateSectionLabel('personal', v)}>
               <div style={{ fontSize: fs * 0.84, color: textColor.body, marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <MdEmail size={10} /><EditableText value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
+                <MdEmail size={10} /><EditableText scale={scale} value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
               </div>
               <div style={{ fontSize: fs * 0.84, color: textColor.body, marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <IoMdPhonePortrait size={10} /><EditableText value={data.personal.phone || ''} onChange={(v) => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
+                <IoMdPhonePortrait size={10} /><EditableText scale={scale} value={data.personal.phone || ''} onChange={(v) => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
               </div>
               <div style={{ fontSize: fs * 0.84, color: textColor.body, marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <MdLocationOn size={10} /><EditableText value={data.personal.location || ''} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
+                <MdLocationOn size={10} /><EditableText scale={scale} value={data.personal.location || ''} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
               </div>
               <div style={{ fontSize: fs * 0.84, color: textColor.body, marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <MdLink size={10} /><EditableText value={data.personal.website || ''} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
+                <MdLink size={10} /><EditableText scale={scale} value={data.personal.website || ''} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
               </div>
             </SideSection>
           </>
@@ -288,10 +288,10 @@ export function TwoColumnPage({
         {isFirst && (
           <div style={{ marginBottom: 40 }}>
             <div style={{ fontSize: fs * 2.5, fontWeight: 700, lineHeight: 1.3, marginBottom: 3, textAlign: 'center' as React.CSSProperties['textAlign'], color: textColor.muted }}>
-              <EditableText value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="Họ và tên của bạn" />
+              <EditableText scale={scale} value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="Họ và tên của bạn" />
             </div>
               <div style={{ fontSize: fs * 1.2, color: textColor.body, opacity: 0.7, marginBottom: 18, textAlign: 'center' as React.CSSProperties['textAlign'] }}>
-                <EditableText value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
+                <EditableText scale={scale} value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
               </div>
           </div>
         )}

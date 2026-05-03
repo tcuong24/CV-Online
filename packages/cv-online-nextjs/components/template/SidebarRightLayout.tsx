@@ -121,10 +121,10 @@ export function SidebarRightPage({
             <div>
 
               <div style={{ fontFamily, fontSize: fs * 2.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: '#111', marginBottom: 6 }}>
-                <EditableText value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="HỌ VÀ TÊN" />
+                <EditableText scale={scale} value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="HỌ VÀ TÊN" />
               </div>
               <div style={{ fontSize: fs * 1.1, color: theme.primary, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 20 }}>
-                <EditableText value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="VỊ TRÍ ỨNG TUYỂN" />
+                <EditableText scale={scale} value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="VỊ TRÍ ỨNG TUYỂN" />
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', justifyContent: 'center', fontSize: fs * 0.9, color: '#666' }}>
                 {/* personal phone mail github linkedin linkedinurl website */}
@@ -359,7 +359,7 @@ export function SidebarRightLayout({
     if (isPersonal(key)) {
       content = (
         <div style={{ color: '#57534e', lineHeight: lh }}>
-          <EditableText multiline value={data.personal.summary || ''} onChange={v => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." />
+          <EditableText scale={scale} multiline value={data.personal.summary || ''} onChange={v => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." />
         </div>
       );
       onTitleChange = undefined;
@@ -369,35 +369,35 @@ export function SidebarRightLayout({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: fs * 0.9 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <MdPhone size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-            <EditableText className={`text-[${style.colors?.text.heading}]`}
+            <EditableText scale={scale} className={`text-[${style.colors?.text.heading}]`}
               value={p.phone || ''} onChange={v => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <MdEmail size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-            <EditableText value={p.email || ''} onChange={v => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
+            <EditableText scale={scale} value={p.email || ''} onChange={v => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <MdLocationOn size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-            <EditableText value={p.location || ''} onChange={v => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
+            <EditableText scale={scale} value={p.location || ''} onChange={v => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
           </div>
           {(p.website || p.linkedinUrl || p.githubUrl) && (
             <>
               {p.website && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <FaGlobe size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-                  <EditableText value={p.website} onChange={v => ctx.updatePersonalInfo({ website: v })} placeholder="Website" />
+                  <EditableText scale={scale} value={p.website} onChange={v => ctx.updatePersonalInfo({ website: v })} placeholder="Website" />
                 </div>
               )}
               {p.linkedinUrl && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <FaLinkedin size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-                  <EditableText value={p.linkedinUrl} onChange={v => ctx.updatePersonalInfo({ linkedinUrl: v })} placeholder="LinkedIn" />
+                  <EditableText scale={scale} value={p.linkedinUrl} onChange={v => ctx.updatePersonalInfo({ linkedinUrl: v })} placeholder="LinkedIn" />
                 </div>
               )}
               {p.githubUrl && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <FaGithub size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-                  <EditableText value={p.githubUrl} onChange={v => ctx.updatePersonalInfo({ githubUrl: v })} placeholder="Github" />
+                  <EditableText scale={scale} value={p.githubUrl} onChange={v => ctx.updatePersonalInfo({ githubUrl: v })} placeholder="Github" />
                 </div>
               )}
             </>

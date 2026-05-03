@@ -73,23 +73,23 @@ export function BlackWhitePage({
           }}
         >
           <div style={{ fontFamily, fontSize: fs * 2.2, fontWeight: 700, letterSpacing: '-0.5px', marginBottom: 4, lineHeight: 1.2 }}>
-            <EditableText value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="Họ và tên của bạn" />
+            <EditableText scale={scale} value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="Họ và tên của bạn" />
           </div>
           <div style={{ fontSize: fs, color: '#2e2c2c', marginBottom: 14 }}>
-            <EditableText value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
+            <EditableText scale={scale} value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 18px', justifyContent: 'center' }}>
             <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <EditableText value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
+              <EditableText scale={scale} value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
             </span>|
             <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <EditableText value={data.personal.phone || ''} onChange={(v) => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
+              <EditableText scale={scale} value={data.personal.phone || ''} onChange={(v) => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
             </span>|
             <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <EditableText value={data.personal.location || ''} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
+              <EditableText scale={scale} value={data.personal.location || ''} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
             </span>|
             <span style={{ fontSize: fs, color: '#666464', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <EditableText value={data.personal.website || ''} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
+              <EditableText scale={scale} value={data.personal.website || ''} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
             </span>
           </div>
         </div>
@@ -112,7 +112,7 @@ export function BlackWhitePage({
               }}
             >Giới thiệu</div>
             <div style={{ color: '#44403c', lineHeight: lh }}>
-              <EditableText value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
+              <EditableText scale={scale} value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
             </div>
           </div>
         )}
@@ -125,6 +125,7 @@ export function BlackWhitePage({
             awards: () => ctx.addEntry('awards', { title: '', year: '', org: '' }),
             certifications: () => ctx.addEntry('certifications', { name: '', issuingOrganization: '', issueDate: '', expiryDate: '', credentialId: '', credentialUrl: '', description: '' }),
             languages: () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }),
+            skills: () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 80, category: '' }),
           };
           const ADD_LABELS: Record<string, string> = {
             experiences: '+ Kinh nghiệm',

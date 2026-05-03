@@ -1,40 +1,22 @@
 import React, { useState } from 'react'; // Refreshed
 import { MdDragIndicator } from 'react-icons/md';
-import { CvData, SectionLayoutConfig, SkillEntry, StyleConfig, ExperienceEntry, EducationEntry, ProjectEntry, AwardEntry, LanguageEntry } from '@/types/cvEditor';
+import {
+  Briefcase,
+  GraduationCap,
+  Zap,
+  Languages,
+  Award,
+  FileBadge,
+  Folder,
+  User,
+} from 'lucide-react';
+export type { RenderCtx } from '@/types/cvEditor';
+import { CvData, SectionLayoutConfig, SkillEntry, StyleConfig, ExperienceEntry, EducationEntry, ProjectEntry, AwardEntry, LanguageEntry, RenderCtx } from '@/types/cvEditor';
 import { useCvEditorStore } from '@/stores/useCvEditor';
 import { EditableText } from '../../shared/EditableText';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 
 export const PAGE_HEIGHT_PX = 1123;
-
-export interface RenderCtx {
-  style: StyleConfig;
-  fs: number;
-  lh: number;
-  accentColor: string;
-  textColor?: { body: string; muted: string; heading: string };
-  sectionLayout: SectionLayoutConfig;
-  updatePersonalInfo: (patch: Partial<CvData['personal']>) => void;
-  updateEntry: (key: string, id: string, patch: Record<string, unknown>) => void;
-  addEntry: (key: string, item: Record<string, unknown>) => void;
-  removeEntry: (key: string, id: string) => void;
-  addSkill: (item: SkillEntry) => void;
-  removeSkill: (id: string) => void;
-  updateSkill: (id: string, patch: Partial<SkillEntry>) => void;
-  reorderEntry: (key: string, fromIndex: number, toIndex: number) => void;
-  reorderSkills: (fromIndex: number, toIndex: number) => void;
-  reorderSection: (fromKey: string, toKey: string) => void;
-  reorderSideKey: (fromKey: string, toKey: string) => void;
-  moveSectionToZone: (key: string, toSidebar: boolean) => void;
-  patchSectionLayout: (key: string, patch: Record<string, unknown>) => void;
-  addCustomSection: (title: string, config?: CvData['customSections'][0]['fieldConfig']) => void;
-  removeCustomSection: (id: string) => void;
-  updateCustomSection: (id: string, patch: Partial<CvData['customSections'][0]>) => void;
-  addCustomSectionItem: (sectionId: string) => void;
-  updateCustomSectionItem: (sectionId: string, itemId: string, patch: Record<string, unknown>) => void;
-  removeCustomSectionItem: (sectionId: string, itemId: string) => void;
-  updateSectionLabel: (key: string, label: string) => void;
-}
 
 export function getScaledDragStyle(
   style: React.CSSProperties | undefined,
@@ -57,6 +39,28 @@ export function getScaledDragStyle(
   };
 }
 
+// --- Helper for Lucide Icons ---
+const ICON_MAP: Record<string, React.FC<{ size: number; color: string; strokeWidth: number }>> = {
+  '💼': Briefcase, 'experience': Briefcase, 'experiences': Briefcase,
+  '🎓': GraduationCap, 'education': GraduationCap,
+  '⚡': Zap, 'skills': Zap,
+  '🌐': Languages, 'languages': Languages,
+  '🏆': Award, 'awards': Award,
+  '📜': FileBadge, 'certifications': FileBadge,
+  '📂': Folder, 'projects': Folder,
+  '👤': User, 'personal': User,
+};
+
+const getLucideIcon = (iconName: string | undefined, size: number, color: string) => {
+  if (!iconName) return null;
+  const IconComponent = ICON_MAP[iconName];
+  if (IconComponent) {
+    return <IconComponent size={size} color={color} strokeWidth={2.5} />;
+  }
+  // Fallback: emoji hoặc tên không nhận ra
+  return <span style={{ fontSize: size }}>{iconName}</span>;
+};
+
 export function SectionShell({
   children,
   dragHandleProps = null,
@@ -69,6 +73,7 @@ export function SectionShell({
   styleControls,
   style: localStyle,
   onTitleChange,
+  icon,
 }: {
   children: React.ReactNode;
   dragHandleProps?: React.HTMLAttributes<HTMLElement> | null;
@@ -81,13 +86,13 @@ export function SectionShell({
   styleControls?: React.ReactNode;
   style?: StyleConfig;
   onTitleChange?: (v: string) => void;
+  icon?: string;
 }) {
   const [hovered, setHovered] = useState(false);
   const titleColor = dark ? 'rgba(255,255,255,0.9)' : accentColor;
   const borderColor = dark ? 'rgba(255,255,255,0.3)' : accentColor;
   const globalStyle = useCvEditorStore(s => s.style);
   const style = localStyle || globalStyle;
-
   return (
     <div
       onMouseEnter={() => setHovered(true)}
@@ -119,8 +124,16 @@ export function SectionShell({
               paddingLeft: style.sectionTitleBorder === 'left' ? 10 : 0,
               paddingTop: style.sectionTitleBorder === 'top' ? 8 : 0,
               paddingBottom: 4,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
             }}
           >
+            {icon && (
+              <span style={{ display: 'flex', alignItems: 'center' }}>
+                {getLucideIcon(icon, fs * 1.2, titleColor)}
+              </span>
+            )}
             <EditableText value={title} onChange={onTitleChange} placeholder="Tiêu đề section" />
           </span>
           <span

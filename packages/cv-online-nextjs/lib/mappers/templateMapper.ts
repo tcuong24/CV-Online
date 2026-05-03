@@ -6,6 +6,7 @@ import { SectionLayoutConfig, StyleConfig, StyleColors, StyleTypography, StyleSp
 /** Maps DB sectionsConfig keys → editor CvData keys */
 export const DB_KEY_MAP: Record<string, string> = {
   personalInfo: 'personal',
+  experience: 'experiences',
   experiences: 'experiences',
   education: 'education',
   skills: 'skills',
@@ -80,6 +81,7 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
       muted: textColorsCfg['muted'] || '#666666',
       heading: textColorsCfg['heading'] || '#000000',
     },
+    gradient: colorsCfg['gradient'] || '',
     accent: colorsCfg['accent'] || primaryHex || '#0f766e',
     primary: colorsCfg['primary'] || primaryHex || '#0f766e',
     secondary: colorsCfg['secondary'] || '#0f766e',
@@ -271,41 +273,38 @@ export function parseSectionLayouts(sectionsConfig: unknown): SectionLayoutConfi
   const result: SectionLayoutConfig = {};
 
   for (const [dbKey, secDef] of Object.entries(available)) {
-    const layout = (secDef['layout'] ?? {}) as Record<string, unknown>;
+    const layout = (secDef['layout'] ?? {}) as Record<string, any>;
     const editorKey = DB_KEY_MAP[dbKey] ?? dbKey;
+    const icon = secDef['icon'] as string | undefined;
+
+    // Default structure for any section
+    const baseConfig: any = {
+      ...layout,
+      icon, // Lưu icon vào đây
+      title: secDef['label'] as string,
+    };
 
     if (editorKey === 'experiences') {
       result.experiences = {
-        style: (layout['style'] as any) || 'detailed', // Default to detailed if missing
-        showDates: (layout['showDates'] as boolean | undefined) ?? true,
-        dateFormat: (layout['dateFormat'] as string | undefined),
+        ...baseConfig,
+        style: layout['style'] || 'detailed',
+        showDates: layout['showDates'] ?? true,
       };
     } else if (editorKey === 'education') {
       result.education = {
-        style: (layout['style'] as any) ?? 'timeline',
-        showGPA: (layout['showGPA'] as boolean | undefined) ?? false,
+        ...baseConfig,
+        style: layout['style'] ?? 'timeline',
+        showGPA: layout['showGPA'] ?? false,
       };
     } else if (editorKey === 'skills') {
-      // FIX: tách layout style ('grid'|'list'|'comma-separated') khỏi proficiency style ('bars'|'dots'|'tags')
       result.skills = {
-        style: (layout['style'] as any) ?? 'grid',
-        columns: layout['columns'] as number | undefined,
-        showProficiency: (layout['showProficiency'] as boolean | undefined) ?? false,
-        proficiencyStyle: (layout['proficiencyStyle'] || secDef['proficiencyStyle'] || 'bars') as any,
+        ...baseConfig,
+        style: layout['style'] ?? 'grid',
+        proficiencyStyle: layout['proficiencyStyle'] || secDef['proficiencyStyle'] || 'bars',
       };
-    } else if (editorKey === 'awards') {
-      result.awards = {
-        style: (layout['style'] as 'compact' | 'detailed' | undefined) ?? 'compact',
-      };
-    } else if (editorKey === 'personal') {
-      result.personal = {
-        style: (layout['style'] as 'default' | 'centered' | undefined) ?? 'default',
-      };
-    } else if (editorKey === 'global') {
-      result.global = {
-        headerAlign: layout['headerAlign'] as any,
-        headerBorder: layout['headerBorder'] as any,
-      };
+    } else {
+      // Catch-all cho các section khác (languages, projects, awards, etc.)
+      result[editorKey] = baseConfig;
     }
   }
 

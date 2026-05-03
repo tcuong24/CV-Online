@@ -170,7 +170,7 @@ export function ExecutiveCenteredLayout({
     if (isPersonal(key)) {
       content = (
         <div style={{ color: '#57534e', lineHeight: lh }}>
-          <EditableText 
+          <EditableText scale={scale} 
             value={data.personal.summary || ''} 
             onChange={(v) => ctx.updatePersonalInfo({ summary: v })} 
             placeholder="Giới thiệu bản thân..." 
