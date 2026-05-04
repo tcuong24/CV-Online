@@ -173,7 +173,7 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <DropdownMenu onOpenChange={(open) => !open && set('fontId', savedFontId)}>
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 px-3 h-9 hover:bg-slate-50 rounded-md transition-colors group min-w-[120px] ml-1">
               <span className="text-[13px] font-medium text-slate-700 truncate" style={{ fontFamily: font.family }}>{font.label}</span>
@@ -181,21 +181,18 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="p-1 border shadow-xl rounded-lg bg-white w-64 max-h-[50vh] overflow-y-auto">
-            <div onMouseLeave={() => { set('fontId', savedFontId); useCvEditorStore.temporal.getState().resume(); }}>
-              {FONT_OPTIONS.map((f) => (
-                <DropdownMenuItem
-                  key={f.id}
-                  onMouseEnter={() => { useCvEditorStore.temporal.getState().pause(); set('fontId', f.id); }}
-                  onClick={() => { useCvEditorStore.temporal.getState().resume(); set('fontId', f.id); setSavedFontId(f.id); }}
-                  className={`p-2 rounded-md cursor-pointer ${style.fontId === f.id ? 'bg-slate-100' : 'hover:bg-slate-50'}`}
-                >
-                  <div className="flex flex-col">
-                    <span style={{ fontFamily: f.family }} className="text-[13px] font-semibold">{f.label}</span>
-                    <span style={{ fontFamily: f.family }} className="text-[11px] text-slate-400">{f.sample}</span>
-                  </div>
-                </DropdownMenuItem>
-              ))}
-            </div>
+            {FONT_OPTIONS.map((f) => (
+              <DropdownMenuItem
+                key={f.id}
+                onClick={() => set('fontId', f.id)}
+                className={`p-2 rounded-md cursor-pointer ${style.fontId === f.id ? 'bg-slate-100' : 'hover:bg-slate-50'}`}
+              >
+                <div className="flex flex-col">
+                  <span style={{ fontFamily: f.family }} className="text-[13px] font-semibold">{f.label}</span>
+                  <span style={{ fontFamily: f.family }} className="text-[11px] text-slate-400">{f.sample}</span>
+                </div>
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </ToolGroup>

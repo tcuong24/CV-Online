@@ -193,6 +193,7 @@ export function SingleColumnPage({
                     { value: 'tags', label: 'Tags' },
                     { value: 'bars', label: 'Bars' },
                     { value: 'dots', label: 'Dots' },
+                    { value: 'grouped', label: 'Grouped' },
                   ]}
                   onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
                 />

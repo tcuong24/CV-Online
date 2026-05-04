@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -151,6 +152,12 @@ export class CvController {
     // TODO: Get userId from auth guard
     const userId = req.user?.id || 'user-001'; // Temporary hardcode
     return this.cvService.unpublish(id, userId);
+  }
+
+  @Patch(':id/set-default')
+  async setDefault(@Param('id') id: string, @Request() req) {
+    const userId = req.user?.id;
+    return this.cvService.setDefault(id, userId);
   }
 
   @Delete(':id')

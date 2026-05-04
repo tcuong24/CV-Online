@@ -17,8 +17,8 @@ const PREVIEW_READONLY_CSS = `
      Empty states always have cursor-pointer at section root */
   .preview-readonly .cursor-pointer { display: none !important; }
 
-  /* Fix: hide EditableText ::before placeholder text (from globals.css) */
-  .preview-readonly .editable-text[data-empty="true"]::before {
+  /* Fix: hide Tiptap EditableText placeholder in preview */
+  .preview-readonly .ProseMirror.is-editor-empty::before {
     display: none !important;
     content: none !important;
   }

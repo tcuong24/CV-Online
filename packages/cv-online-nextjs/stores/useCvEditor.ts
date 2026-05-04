@@ -33,7 +33,7 @@ import {
   LayoutType,
 } from '@/types/cvEditor';
 import type { CVWithRelations, TemplateInfo } from '@/types/cv';
-import { DEFAULT_DATA, DEFAULT_ORDER, DEFAULT_STYLE } from '@/constants/cvEditor';
+import { DEFAULT_DATA, DEFAULT_ORDER, DEFAULT_STYLE, uid } from '@/constants/cvEditor';
 import {
   parseDesignConfig,
   parseSectionsConfig,
@@ -310,7 +310,60 @@ export const useCvEditorStore = create<CvEditorState>()(
         },
 
         // ── CV Content ───────────────────────────────────────────────────────────
-        setData: (data) => set({ data, isDirty: true }),
+        setData: (data) => {
+          const sanitize = (val: any): any => {
+            if (!val || typeof val !== 'object') return val;
+
+            // Fix pluralization from AI (educations -> education)
+            if (val.educations && !val.education) {
+              val.education = val.educations;
+              delete val.educations;
+            }
+
+            // Map links array to specific fields if present in personal
+            if (val.personal?.links && Array.isArray(val.personal.links)) {
+              val.personal.links.forEach((link: string) => {
+                const lower = link.toLowerCase();
+                if (lower.includes('linkedin.com')) val.personal.linkedinUrl = link;
+                else if (lower.includes('github.com')) val.personal.githubUrl = link;
+                else if (lower.includes('facebook.com')) val.personal.facebookUrl = link;
+                else if (lower.includes('twitter.com') || lower.includes('x.com')) val.personal.twitterUrl = link;
+                else if (!val.personal.website) val.personal.website = link;
+              });
+              delete val.personal.links;
+            }
+
+            // Ensure all array items have unique IDs and basic structure
+            Object.keys(val).forEach((key) => {
+              if (Array.isArray(val[key])) {
+                val[key] = val[key].map((item: any) => {
+                  if (typeof item === 'string' && key === 'skills') {
+                    // Convert string skill to object skill
+                    return {
+                      id: uid(),
+                      name: item,
+                      proficiencyLevel: 'intermediate',
+                      proficiencyPercentage: 70,
+                      category: '',
+                    };
+                  }
+                  if (typeof item === 'object' && item !== null) {
+                    return {
+                      id: uid(),
+                      open: false,
+                      ...item,
+                    };
+                  }
+                  return item;
+                });
+              }
+            });
+
+            return val;
+          };
+
+          set({ data: sanitize(data), isDirty: true });
+        },
 
         setOrder: (order) => set({ order, isDirty: true }),
 

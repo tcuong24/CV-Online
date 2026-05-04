@@ -67,17 +67,17 @@ export class CvParserService {
       {
         "personal": { "name": "", "role": "", "email": "", "phone": "", "address": "", "links": [], "summary": "" },
         "experiences": [{ "title": "", "company": "", "location": "", "from": "", "to": "", "desc": "" }],
-        "educations": [{ "degree": "", "school": "", "location": "", "from": "", "to": "", "desc": "" }],
-        "skills": [],
+        "education": [{ "degree": "", "school": "", "location": "", "from": "", "to": "", "desc": "" }],
+        "skills": [{ "name": "", "category": "" }],
         "projects": [{ "name": "", "from": "", "to": "", "desc": "", "link": "", "tech": "" }],
         "certifications": [],
-        "languages": [{ "lang": "", "level": 1-5 }]
+        "languages": [{ "lang": "", "level": 1 }]
       }
       
       Instructions:
       - Split any time periods into "from" and "to" (e.g., "Jan 2020 - Now" becomes from: "Jan 2020", to: "Now").
       - For projects, "tech" should be a comma-separated string of technologies used (e.g., "React, Node.js, MongoDB").
-      - For skills, return a simple array of strings.
+      - For skills, return an array of objects. Each object has "name" (skill name) and "category" (the group it belongs to, e.g. "Languages", "Frameworks", "Tools", "Databases"). If the CV groups skills by category, preserve that grouping. If no grouping is present, leave "category" as empty string.
       - For languages, "level" should be a number from 1 to 5.
 
       RAW TEXT:
@@ -113,17 +113,17 @@ export class CvParserService {
       {
         "personal": { "name": "","role":"", "email": "", "phone": "", "address": "", "links": [], "summary": "" },
         "experiences": [{ "title": "", "company": "", "location": "", "from": "", "to": "", "desc": "" }],
-        "educations": [{ "degree": "", "school": "", "location": "", "from": "", "to": "", "desc": "" }],
-        "skills": [],
+        "education": [{ "degree": "", "school": "", "location": "", "from": "", "to": "", "desc": "" }],
+        "skills": [{ "name": "", "category": "" }],
         "projects": [{ "name": "", "from": "", "to": "", "desc": "", "link": "", "tech": "" }],
         "certifications": [],
-        "languages": [{ "lang": "", "level": 1-5 }]
+        "languages": [{ "lang": "", "level": 1 }]
       }
       
       Instructions:
       - Split any time periods into "from" and "to" (e.g., "Jan 2020 - Now" becomes from: "Jan 2020", to: "Now").
       - For projects, "tech" should be a comma-separated string of technologies used (e.g., "React, Node.js, MongoDB").
-      - For skills, return a simple array of strings.
+      - For skills, return an array of objects. Each object has "name" (skill name) and "category" (the group it belongs to, e.g. "Languages", "Frameworks", "Tools", "Databases"). If the CV groups skills by category, preserve that grouping. If no grouping is present, leave "category" as empty string.
       - For languages, "level" should be a number from 1 to 5.
     `;
 

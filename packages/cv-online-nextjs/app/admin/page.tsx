@@ -109,190 +109,181 @@ export default function AdminPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-[#0f0f13] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-slate-400 text-sm">Đang tải...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <div className="w-8 h-8 border-2 border-[#1e3a3a] border-t-transparent rounded-full animate-spin" />
+        <p className="text-gray-400 text-sm">Đang tải dữ liệu...</p>
       </div>
     );
   }
 
   const statCards = stats
     ? [
-        { label: 'Tổng user', value: stats.totalUsers, icon: Users, color: '#818cf8' },
-        { label: 'Tổng CV', value: stats.totalCvs, icon: BarChart3, color: '#34d399' },
-        { label: 'Admin', value: stats.adminCount, icon: Shield, color: '#f59e0b' },
-        { label: 'Pro users', value: stats.proUsers, icon: Crown, color: '#a78bfa' },
+        { label: 'Tổng người dùng', value: stats.totalUsers, icon: Users, color: '#1e3a3a' },
+        { label: 'Tổng số CV', value: stats.totalCvs, icon: BarChart3, color: '#0d9488' },
+        { label: 'Quản trị viên', value: stats.adminCount, icon: Shield, color: '#115e59' },
+        { label: 'Người dùng Pro', value: stats.proUsers, icon: Crown, color: '#0f766e' },
       ]
     : [];
 
   return (
-    <div className="min-h-screen bg-[#0f0f13] text-white">
-      {/* Header */}
-      <div className="border-b border-white/5 bg-[#16161d] px-8 py-5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center">
-            <Shield size={16} />
-          </div>
-          <div>
-            <h1 className="text-[15px] font-bold text-white">Admin Panel</h1>
-            <p className="text-[11px] text-slate-500">Quản lý hệ thống CV Online</p>
-          </div>
-        </div>
-        <button
-          onClick={fetchAll}
-          className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-[12px] text-slate-400 hover:bg-white/10 transition-all"
-        >
-          <RefreshCw size={13} /> Làm mới
-        </button>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-8 py-8 space-y-8">
-        {/* Stat cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {statCards.map((card) => (
-            <div
-              key={card.label}
-              className="rounded-2xl border border-white/5 bg-[#16161d] p-5 flex items-center gap-4"
-            >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: card.color + '20' }}
+    <div className="space-y-8">
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {statCards.map((card) => (
+          <div
+            key={card.label}
+            className="rounded-sm border border-gray-200 bg-white p-6 shadow-sm hover:border-gray-300 transition-all"
+          >
+            <div className="flex items-center justify-between mb-4">
+               <div
+                className="w-10 h-10 rounded-sm flex items-center justify-center shrink-0"
+                style={{ background: card.color + '15' }}
               >
                 <card.icon size={18} style={{ color: card.color }} />
               </div>
-              <div>
-                <p className="text-[24px] font-bold text-white">{card.value}</p>
-                <p className="text-[11px] text-slate-500">{card.label}</p>
-              </div>
+              <button onClick={fetchAll} className="text-gray-300 hover:text-gray-600 transition-colors">
+                <RefreshCw size={12} />
+              </button>
             </div>
-          ))}
+            <div>
+              <p className="text-2xl font-bold text-[#1e3a3a]">{card.value.toLocaleString()}</p>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-1">{card.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* User table */}
+      <div className="rounded-sm border border-gray-200 bg-white shadow-sm overflow-hidden">
+        {/* Table header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <div>
+            <h2 className="text-sm font-bold text-[#1e3a3a]">Danh sách người dùng</h2>
+            <p className="text-[11px] text-gray-400 mt-0.5 font-medium">Quản lý và phân quyền thành viên hệ thống</p>
+          </div>
+          <div className="flex items-center gap-2 rounded-sm border border-gray-200 bg-gray-50 px-3 py-2 w-72 focus-within:border-gray-400 transition-all">
+            <Search size={14} className="text-gray-400 shrink-0" />
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo email hoặc tên..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-transparent text-[13px] text-[#1e3a3a] placeholder-gray-400 outline-none w-full"
+            />
+          </div>
         </div>
 
-        {/* User table */}
-        <div className="rounded-2xl border border-white/5 bg-[#16161d] overflow-hidden">
-          {/* Table header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
-            <h2 className="text-[14px] font-bold text-white">Danh sách người dùng</h2>
-            <div className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2 w-64">
-              <Search size={14} className="text-slate-500 shrink-0" />
-              <input
-                type="text"
-                placeholder="Tìm email, tên..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="bg-transparent text-[13px] text-white placeholder-slate-600 outline-none w-full"
-              />
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-[13px]">
-              <thead>
-                <tr className="border-b border-white/5 text-slate-500 text-[11px] uppercase tracking-wider">
-                  <th className="text-left px-6 py-3 font-medium">Người dùng</th>
-                  <th className="text-left px-6 py-3 font-medium">Role</th>
-                  <th className="text-left px-6 py-3 font-medium">Gói</th>
-                  <th className="text-left px-6 py-3 font-medium">CV</th>
-                  <th className="text-left px-6 py-3 font-medium">Ngày tạo</th>
-                  <th className="text-left px-6 py-3 font-medium">Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors"
-                  >
-                    {/* User info */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-violet-600/30 flex items-center justify-center text-[12px] font-bold text-violet-300 shrink-0">
-                          {(user.fullName ?? user.email)[0].toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-medium text-white">{user.fullName ?? '—'}</p>
-                          <p className="text-slate-500 text-[11px]">{user.email}</p>
-                        </div>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="bg-gray-50/50 border-b border-gray-100 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
+                <th className="text-left px-6 py-4 font-bold">Người dùng</th>
+                <th className="text-left px-6 py-4 font-bold">Quyền hạn</th>
+                <th className="text-left px-6 py-4 font-bold">Gói dịch vụ</th>
+                <th className="text-left px-6 py-4 font-bold text-center">Số CV</th>
+                <th className="text-left px-6 py-4 font-bold">Ngày đăng ký</th>
+                <th className="text-right px-6 py-4 font-bold">Hành động</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.map((user) => (
+                <tr
+                  key={user.id}
+                  className="hover:bg-gray-50/50 transition-colors"
+                >
+                  {/* User info */}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-sm bg-[#1e3a3a]/10 flex items-center justify-center text-[12px] font-bold text-[#1e3a3a] shrink-0 border border-[#1e3a3a]/10">
+                        {(user.fullName ?? user.email)[0].toUpperCase()}
                       </div>
-                    </td>
+                      <div className="min-w-0">
+                        <p className="font-bold text-[#1e3a3a] truncate">{user.fullName ?? 'Chưa cập nhật'}</p>
+                        <p className="text-gray-400 text-[11px] truncate">{user.email}</p>
+                      </div>
+                    </div>
+                  </td>
 
-                    {/* Role */}
-                    <td className="px-6 py-4">
-                      <select
-                        value={user.role}
-                        disabled={actionLoading === user.id + 'role'}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'admin')}
-                        className="rounded-lg border px-2 py-1 text-[12px] font-medium bg-transparent cursor-pointer outline-none transition-all"
-                        style={
-                          user.role === 'admin'
-                            ? { borderColor: '#f59e0b55', color: '#f59e0b', background: '#f59e0b10' }
-                            : { borderColor: '#ffffff15', color: '#94a3b8', background: 'transparent' }
-                        }
-                      >
-                        <option value="user" className="bg-[#16161d] text-white">user</option>
-                        <option value="admin" className="bg-[#16161d] text-white">admin</option>
-                      </select>
-                    </td>
+                  {/* Role */}
+                  <td className="px-6 py-4">
+                    <select
+                      value={user.role}
+                      disabled={actionLoading === user.id + 'role'}
+                      onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'admin')}
+                      className="rounded-sm border border-gray-200 px-2.5 py-1.5 text-[11px] font-bold bg-white cursor-pointer outline-none hover:border-gray-300 transition-all shadow-sm"
+                      style={
+                        user.role === 'admin'
+                          ? { color: '#b45309', background: '#fef3c7' }
+                          : { color: '#1e3a3a' }
+                      }
+                    >
+                      <option value="user">USER</option>
+                      <option value="admin">ADMIN</option>
+                    </select>
+                  </td>
 
-                    {/* Subscription */}
-                    <td className="px-6 py-4">
-                      <select
-                        value={user.subscriptionType}
-                        disabled={actionLoading === user.id + 'sub'}
-                        onChange={(e) => handleSubChange(user.id, e.target.value)}
-                        className="rounded-lg border px-2 py-1 text-[12px] font-medium bg-transparent cursor-pointer outline-none"
-                        style={
-                          user.subscriptionType !== 'free'
-                            ? { borderColor: '#a78bfa55', color: '#a78bfa', background: '#a78bfa10' }
-                            : { borderColor: '#ffffff15', color: '#64748b', background: 'transparent' }
-                        }
-                      >
-                        <option value="free" className="bg-[#16161d] text-white">free</option>
-                        <option value="pro" className="bg-[#16161d] text-white">pro</option>
-                        <option value="enterprise" className="bg-[#16161d] text-white">enterprise</option>
-                      </select>
-                    </td>
+                  {/* Subscription */}
+                  <td className="px-6 py-4">
+                    <select
+                      value={user.subscriptionType}
+                      disabled={actionLoading === user.id + 'sub'}
+                      onChange={(e) => handleSubChange(user.id, e.target.value)}
+                      className="rounded-sm border border-gray-200 px-2.5 py-1.5 text-[11px] font-bold bg-white cursor-pointer outline-none hover:border-gray-300 transition-all shadow-sm"
+                      style={
+                        user.subscriptionType !== 'free'
+                          ? { color: '#0f766e', background: '#ccfbf1' }
+                          : { color: '#64748b' }
+                      }
+                    >
+                      <option value="free">FREE</option>
+                      <option value="pro">PRO</option>
+                      <option value="enterprise">ENTERPRISE</option>
+                    </select>
+                  </td>
 
-                    {/* CV count */}
-                    <td className="px-6 py-4">
-                      <span className="rounded-full bg-white/5 px-2.5 py-1 text-[11px] text-slate-400">
-                        {user._count.cvs} CV
-                      </span>
-                    </td>
+                  {/* CV count */}
+                  <td className="px-6 py-4 text-center">
+                    <span className="inline-flex items-center justify-center min-w-[32px] h-6 rounded-sm bg-gray-100 text-[11px] font-bold text-gray-500">
+                      {user._count.cvs}
+                    </span>
+                  </td>
 
-                    {/* Created at */}
-                    <td className="px-6 py-4 text-slate-500 text-[11px]">
-                      {new Date(user.createdAt).toLocaleDateString('vi-VN')}
-                    </td>
+                  {/* Created at */}
+                  <td className="px-6 py-4 text-gray-400 text-[11px] font-medium">
+                    {new Date(user.createdAt).toLocaleDateString('vi-VN')}
+                  </td>
 
-                    {/* Actions */}
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        disabled={!!actionLoading}
-                        className="flex items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1.5 text-[11px] font-medium text-red-400 hover:bg-red-500/20 transition-all disabled:opacity-40"
-                      >
-                        <Trash2 size={11} /> Xóa
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {filtered.length === 0 && (
-              <div className="flex flex-col items-center gap-2 py-16 text-slate-500">
-                <AlertTriangle size={24} className="text-slate-600" />
-                <p className="text-sm">Không tìm thấy user nào</p>
+                  {/* Actions */}
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      onClick={() => handleDelete(user.id)}
+                      disabled={!!actionLoading}
+                      className="inline-flex items-center gap-1.5 rounded-sm bg-red-50 px-3 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-100 transition-all disabled:opacity-40 border border-red-100"
+                    >
+                      <Trash2 size={12} /> Xóa
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filtered.length === 0 && (
+            <div className="flex flex-col items-center gap-3 py-20 text-gray-400 bg-gray-50/30">
+              <div className="w-12 h-12 rounded-sm bg-gray-100 flex items-center justify-center text-gray-300">
+                 <Users size={24} />
               </div>
-            )}
-          </div>
+              <p className="text-sm font-medium">Không tìm thấy người dùng nào</p>
+            </div>
+          )}
+        </div>
 
-          {/* Footer */}
-          <div className="px-6 py-3 border-t border-white/5 text-[11px] text-slate-600">
-            Hiển thị {filtered.length} / {users.length} người dùng
+        {/* Footer */}
+        <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400 font-medium">
+          <span>Hiển thị {filtered.length} trong tổng số {users.length} người dùng</span>
+          <div className="flex gap-1">
+             <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+             <span>Hệ thống đang hoạt động ổn định</span>
           </div>
         </div>
       </div>

@@ -17,6 +17,9 @@ export class CvService {
    * Create new CV
    */
   async create(userId: string, createCVDto: CreateCVDto) {
+    // Check if user has any existing CVs to decide auto-default
+    const existingCount = await this.prisma.cV.count({ where: { userId } });
+
     const cv = await this.prisma.cV.create({
       data: {
         userId,
@@ -24,6 +27,7 @@ export class CvService {
         templateId: createCVDto.templateId,
         thumbnailUrl: createCVDto.thumbnailUrl,
         status: 'draft',
+        isDefault: existingCount === 0, // first CV auto-becomes default
       },
       include: {
         template: true,
@@ -68,25 +72,57 @@ export class CvService {
    * Get the default (most recently updated) CV for a user with all sections
    */
   async findDefaultByUserId(userId: string) {
+    const include = {
+      user: {
+        select: {
+          fullName: true,
+          email: true,
+          phone: true,
+          avatarUrl: true,
+        },
+      },
+      personalInfo: true,
+      experiences: { orderBy: { displayOrder: 'asc' as const } },
+      skills: { orderBy: { displayOrder: 'asc' as const } },
+      languages: { orderBy: { displayOrder: 'asc' as const } },
+      education: { orderBy: { displayOrder: 'asc' as const } },
+    };
+
+    // Try explicit default first
+    const defaultCv = await this.prisma.cV.findFirst({
+      where: { userId, isDefault: true },
+      include,
+    });
+    if (defaultCv) return defaultCv;
+
+    // Fallback: most recently updated CV
     return this.prisma.cV.findFirst({
       where: { userId },
       orderBy: { updatedAt: 'desc' },
-      include: {
-        user: {
-          select: {
-            fullName: true,
-            email: true,
-            phone: true,
-            avatarUrl: true,
-          },
-        },
-        personalInfo: true,
-        experiences: { orderBy: { displayOrder: 'asc' } },
-        skills: { orderBy: { displayOrder: 'asc' } },
-        languages: { orderBy: { displayOrder: 'asc' } },
-        education: { orderBy: { displayOrder: 'asc' } },
-      },
+      include,
     });
+  }
+
+  /**
+   * Set a CV as the user's default profile CV
+   */
+  async setDefault(id: string, userId: string) {
+    await this.findOne(id, userId); // verify ownership
+
+    await this.prisma.$transaction([
+      // Unset all existing defaults for this user
+      this.prisma.cV.updateMany({
+        where: { userId, isDefault: true },
+        data: { isDefault: false },
+      }),
+      // Set the new default
+      this.prisma.cV.update({
+        where: { id },
+        data: { isDefault: true },
+      }),
+    ]);
+
+    return { success: true, defaultCvId: id };
   }
 
   /**
@@ -266,12 +302,25 @@ export class CvService {
    * Delete CV
    */
   async remove(id: string, userId: string) {
-    // Check ownership
-    await this.findOne(id, userId);
+    const cv = await this.findOne(id, userId);
 
-    return this.prisma.cV.delete({
-      where: { id },
-    });
+    await this.prisma.cV.delete({ where: { id } });
+
+    // If deleted CV was the default, auto-promote the next most recent
+    if (cv.isDefault) {
+      const next = await this.prisma.cV.findFirst({
+        where: { userId },
+        orderBy: { updatedAt: 'desc' },
+      });
+      if (next) {
+        await this.prisma.cV.update({
+          where: { id: next.id },
+          data: { isDefault: true },
+        });
+      }
+    }
+
+    return { success: true };
   }
   async publish(id: string, userId: string) {
   await this.findOne(id, userId);

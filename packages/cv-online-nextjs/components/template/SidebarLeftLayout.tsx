@@ -357,13 +357,13 @@ export function SidebarLeftLayout({
         title: displayTitle,
         icon: ctx.sectionLayout[key]?.icon,
         onTitleChange,
-        content: <SkillsBlock data={data} ctx={ctx} dark={true} />,
+        content: <SkillsBlock data={data} ctx={ctx} dark={false} />,
         addButton: makeAddBtn(key, '+ Kỹ năng', () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' }), !!data.skills?.length),
         styleControls: (
           <StylePicker
             fs={fs}
             value={profStyle}
-            options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }]}
+            options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }, { value: 'grouped', label: 'Grouped' }]}
             onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
           />
         ),
@@ -468,6 +468,7 @@ export function SidebarLeftLayout({
     const displayTitle = ctx.sectionLayout[key]?.title || titles[key];
 
     if (key === 'skills') {
+      const profStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
       const addBtn = (
         <button style={sideBtnStyle} onClick={() => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' })}>
           + Thêm
@@ -482,9 +483,17 @@ export function SidebarLeftLayout({
             fontSize={fs * 1.2}
             titleColor='#fff'
             addButton={addBtn}
+            styleControls={
+              <StylePicker
+                fs={fs}
+                value={profStyle}
+                options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }, { value: 'grouped', label: 'Grouped' }, { value: 'none', label: 'None' }]}
+                onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
+              />
+            }
             onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
           >
-            <SkillsBlock data={data} ctx={ctx} dark={true} />
+            <SkillsBlock data={data} ctx={ctx} dark={true} narrow={true} />
           </SideSection>
         )
       }];

@@ -442,7 +442,7 @@ export function TwoColumnLayout({
           <StylePicker
             fs={fs}
             value={profStyle}
-            options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }, { value: 'none', label: 'None' }]}
+            options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }, { value: 'none', label: 'None' }, { value: 'grouped', label: 'Grouped' }]}
             onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
           />
         ),

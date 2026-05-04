@@ -422,7 +422,7 @@ export function SidebarRightLayout({
         <StylePicker
           fs={fs}
           value={ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags'}
-          options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }]}
+          options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }, { value: 'grouped', label: 'Grouped' }]}
           onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
         />
       );

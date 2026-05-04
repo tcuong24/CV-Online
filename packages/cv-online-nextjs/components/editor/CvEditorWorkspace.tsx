@@ -39,7 +39,7 @@ export function CvEditorWorkspace({ onSave }: CvEditorWorkspaceProps) {
   const [zoom, setZoom] = useState(100);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<'sections' | 'templates'>('sections');
-  const [aiPanelOpen, setAiPanelOpen] = useState(true);
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [aiPanelWidth, setAiPanelWidth] = useState(AI_PANEL_DEFAULT);
   const dragging = useRef(false);
 

@@ -173,6 +173,7 @@ export function SectionShell({
   styleControls,
   style: localStyle,
   onTitleChange,
+  scale = 1,
 }: {
   children: React.ReactNode;
   dragHandleProps?: React.HTMLAttributes<HTMLElement> | null;
@@ -185,6 +186,7 @@ export function SectionShell({
   styleControls?: React.ReactNode;
   style?: StyleConfig;
   onTitleChange?: (v: string) => void;
+  scale?: number;
 }) {
   const [hovered, setHovered] = useState(false);
   const titleColor = dark ? 'rgba(255,255,255,0.9)' : accentColor;
@@ -252,7 +254,7 @@ export function SectionShell({
               color: titleColor,
             }}
           >
-            <EditableText scale={ctx.scale} value={title} onChange={onTitleChange} placeholder="Tiêu đề section" />
+            <EditableText scale={scale} value={title} onChange={onTitleChange} placeholder="Tiêu đề section" />
           </span>
         </div>
         {/* Right: style picker + add button — visible only on hover */}
@@ -455,18 +457,19 @@ export function ExperienceSection({
   );
 }
 
-/** Skills renderer — handles bars / dots / tags styles. */
+/** Skills renderer — handles bars / dots / tags / grouped styles. */
 export function SkillsBlock({
   data,
   ctx,
   dark = false,
+  narrow = false,
 }: {
   data: CvData;
   ctx: RenderCtx;
   dark?: boolean;
+  narrow?: boolean;
 }) {
   const skillStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
-  console.log(skillStyle);
 
   const { fs, accentColor, textColor: dbText } = ctx;
   const textColor = dark ? 'rgba(255,255,255,0.85)' : (dbText?.body || '#44403c');
@@ -525,6 +528,159 @@ export function SkillsBlock({
           </span>
         ))}
 
+      </div>
+    );
+  }
+
+  // ── Grouped by category (như ảnh mẫu) ─────────────────────────────────────
+  if (skillStyle === 'grouped') {
+    const commaColor = dark ? 'rgba(255,255,255,0.35)' : '#9ca3af';
+    const borderColor = dark ? 'rgba(255,255,255,0.12)' : `${accentColor}18`;
+
+    // Badge-style delete button — absolute, does not take space
+    const RemoveBadge = ({ id }: { id: string }) => (
+      <button
+        onClick={() => ctx.removeSkill(id)}
+        title="Xóa"
+        style={{
+          position: 'absolute',
+          top: -6,
+          right: -10,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: fs * 1.05,
+          height: fs * 1.05,
+          fontSize: fs * 0.6,
+          lineHeight: 1,
+          borderRadius: '50%',
+          border: dark ? '1px solid rgba(255,255,255,0.25)' : '1px solid #e5e7eb',
+          background: dark ? 'rgba(255,255,255,0.1)' : '#f9fafb',
+          color: dark ? 'rgba(255,255,255,0.5)' : '#9ca3af',
+          cursor: 'pointer',
+          zIndex: 5,
+          transition: 'all 0.12s',
+        }}
+        className="opacity-0 group-hover/item:opacity-100 hover:!bg-red-100 hover:!text-red-500 hover:!border-red-200 transition-all"
+      >
+        ✕
+      </button>
+    );
+
+    // "+" button — absolute right of category row, does not take space
+    const AddToCat = ({ cat }: { cat: string }) => (
+      <button
+        onClick={() => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: 'intermediate', proficiencyPercentage: 70, category: cat })}
+        title={`Thêm vào ${cat}`}
+        style={{
+          position: 'absolute',
+          right: 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: fs * 1.3,
+          height: fs * 1.3,
+          fontSize: fs * 0.85,
+          borderRadius: '50%',
+          border: dark ? '1px solid rgba(255,255,255,0.2)' : `1px solid ${accentColor}40`,
+          background: 'transparent',
+          color: dark ? 'rgba(255,255,255,0.4)' : `${accentColor}80`,
+          cursor: 'pointer',
+          zIndex: 5,
+          transition: 'all 0.12s',
+        }}
+        className="opacity-0 group-hover/cat:opacity-100 hover:!opacity-100 hover:!bg-blue-50 hover:!text-blue-600 hover:!border-blue-300 transition-all"
+      >
+        +
+      </button>
+    );
+
+    // Nhóm skills theo category
+    const grouped: Record<string, typeof data.skills> = {};
+    const uncategorized: typeof data.skills = [];
+    data.skills.forEach((s) => {
+      const cat = s.category?.trim();
+      if (cat) {
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(s);
+      } else {
+        uncategorized.push(s);
+      }
+    });
+    const categories = Object.keys(grouped);
+    const hasCategories = categories.length > 0;
+
+    if (!hasCategories) {
+      // Fallback: không có category → hiển thị bình thường comma-separated
+      return (
+        <div style={{ fontSize: fs * 0.9, color: textColor, lineHeight: 1.7 }} className="relative group pb-6">
+          {data.skills.map((s, i) => (
+            <span key={s.id} className="group/item relative inline-flex items-center">
+              <EditableText scale={ctx.scale} value={s.name} onChange={(v) => ctx.updateSkill(s.id, { name: v })} placeholder="Kỹ năng" />
+              <RemoveBadge id={s.id} />
+              {i < data.skills.length - 1 && <span style={{ color: commaColor, marginRight: 4 }}>,</span>}
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+    const renderSkillList = (skills: typeof data.skills) => (
+      skills.map((s, i) => (
+        <span key={s.id} style={{ position: 'relative' }} className="group/item inline-flex items-center">
+          <EditableText scale={ctx.scale} value={s.name} onChange={(v) => ctx.updateSkill(s.id, { name: v })} placeholder="Kỹ năng" />
+          <RemoveBadge id={s.id} />
+          {i < skills.length - 1 && <span style={{ color: commaColor, marginRight: 4 }}>,</span>}
+        </span>
+      ))
+    );
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 6 : 4 }} className="relative group pb-6">
+        {categories.map((cat) => (
+          narrow ? (
+            // Narrow (sidebar) — stacked: category on top, skills below
+            <div key={cat} style={{ position: 'relative', borderBottom: `1px solid ${borderColor}`, paddingBottom: 6, marginBottom: 4, paddingRight: fs * 1.8 }} className="group/cat">
+              <div style={{ fontWeight: 700, fontSize: fs * 0.88, color: dark ? 'rgba(255,255,255,0.9)' : accentColor, marginBottom: 2 }}>
+                {cat}
+              </div>
+              <div style={{ fontSize: fs * 0.84, color: textColor, lineHeight: 1.7 }}>
+                {renderSkillList(grouped[cat])}
+              </div>
+              <AddToCat cat={cat} />
+            </div>
+          ) : (
+            // Wide (main area) — 2-column: category left, skills right
+            <div key={cat} style={{ position: 'relative', display: 'flex', alignItems: 'baseline', gap: 10, borderBottom: `1px solid ${borderColor}`, paddingBottom: 4, marginBottom: 2, paddingRight: fs * 2 }} className="group/cat">
+              <span style={{ fontWeight: 700, fontSize: fs * 0.9, color: dark ? 'rgba(255,255,255,0.9)' : accentColor, flexShrink: 0, minWidth: '30%', maxWidth: '38%' }}>
+                {cat}
+              </span>
+              <span style={{ fontSize: fs * 0.88, color: textColor, lineHeight: 1.8, flex: 1 }}>
+                {renderSkillList(grouped[cat])}
+              </span>
+              <AddToCat cat={cat} />
+            </div>
+          )
+        ))}
+        {/* Uncategorized skills */}
+        {uncategorized.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, paddingBottom: 4 }}>
+            <span style={{ fontWeight: 700, fontSize: fs * 0.9, color: dark ? 'rgba(255,255,255,0.9)' : accentColor, flexShrink: 0, minWidth: '30%', maxWidth: '38%' }}>
+              Khác
+            </span>
+            <span style={{ fontSize: fs * 0.88, color: textColor, flex: 1, lineHeight: 1.8 }}>
+              {uncategorized.map((s, i) => (
+                <span key={s.id} style={{ position: 'relative' }} className="group/item inline-flex items-center">
+                  <EditableText scale={ctx.scale} value={s.name} onChange={(v) => ctx.updateSkill(s.id, { name: v })} placeholder="Kỹ năng" />
+                  <RemoveBadge id={s.id} />
+                  {i < uncategorized.length - 1 && <span style={{ color: commaColor, marginRight: 4 }}>,</span>}
+                </span>
+              ))}
+            </span>
+          </div>
+        )}
       </div>
     );
   }
@@ -1119,6 +1275,7 @@ export function CVTemplate({
 
   const ctx: RenderCtx = {
     style, fs, lh, accentColor, textColor: style.textColor, sectionLayout,
+    scale: (zoom ?? 100) / 100,
     updatePersonalInfo, updateEntry, addEntry, removeEntry,
     addSkill, removeSkill, updateSkill, reorderEntry, reorderSkills,
     reorderSection, reorderSideKey, moveSectionToZone, patchSectionLayout,

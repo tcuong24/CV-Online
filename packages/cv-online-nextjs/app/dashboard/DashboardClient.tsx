@@ -30,6 +30,14 @@ export default function DashboardClient() {
       console.error(error);
     }
   }
+  const handleSetDefault = async (id: string) => {
+    try {
+      await axiosInstance.patch(`/cvs/${id}/set-default`);
+      getCvs();
+    } catch (error) {
+      console.error(error);
+    }
+  }
   const getCvs = async () => {
     try {
       const res = await axiosInstance.get("/cvs");
@@ -130,6 +138,11 @@ export default function DashboardClient() {
                       </svg>
                     )}
                   </div>
+                  {cv.isDefault && (
+                    <div className="absolute top-2 left-2 bg-[#1e3a3a] text-white text-[10px] font-semibold px-2 py-0.5 rounded-sm">
+                      Hồ sơ chính
+                    </div>
+                  )}
                 </Link>
                 <div className="flex items-center justify-between">
                   <div>
@@ -141,6 +154,15 @@ export default function DashboardClient() {
                     </p>
                   </div>
                   <div className="flex items-center space-x-3 text-gray-800">
+                    <button
+                      title={cv.isDefault ? 'Đang là hồ sơ chính' : 'Đặt làm hồ sơ chính'}
+                      onClick={() => !cv.isDefault && handleSetDefault(cv.id)}
+                      className={cv.isDefault ? 'text-[#1e3a3a] cursor-default' : 'text-gray-300 hover:text-[#1e3a3a] cursor-pointer'}
+                    >
+                      <svg className="w-4 h-4" fill={cv.isDefault ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                      </svg>
+                    </button>
                     <Link href={`/cvs/${cv.id}/edit`}>
                       <button className="hover:text-black">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

@@ -237,7 +237,7 @@ export interface SectionLayoutConfig {
   } | undefined;
   experiences?: { title?: string; icon?: string; style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showDates: boolean; dateFormat?: string; };
   education?: { title?: string; icon?: string; style: 'timeline' | 'simple' | 'cards' | 'bullets' | 'compact' | 'minimal-lines' | 'detailed'; showGPA: boolean };
-  skills?: { title?: string; icon?: string; style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags' | 'none'; };
+  skills?: { title?: string; icon?: string; style: 'grid' | 'list' | 'comma-separated'; columns?: number; showProficiency: boolean; proficiencyStyle: 'bars' | 'dots' | 'tags' | 'none' | 'grouped'; };
   awards?: { title?: string; icon?: string; style: 'compact' | 'detailed' };
   personal?: { title?: string; icon?: string; style: 'default' | 'centered' };
   global?: { headerAlign?: 'left' | 'center' | 'right'; headerBorder?: 'bottom' | 'none' | 'left'; headerStyle?: 'default' | 'centered' | 'floating' | 'modern'; };
