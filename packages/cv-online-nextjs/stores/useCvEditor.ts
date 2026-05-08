@@ -76,6 +76,7 @@ interface CvEditorState {
   isDirty: boolean;
   isSaving: boolean;
   lastSavedAt: number | null;
+  deletedQueue: Array<{ path: string, dbId: string }>;
 
   // ── Editor UI (NOT persisted via partialize) ─────────────────────────────────
   activeTab: 'content' | 'style';
@@ -192,6 +193,7 @@ export const useCvEditorStore = create<CvEditorState>()(
         isDirty: false,
         isSaving: false,
         lastSavedAt: null,
+        deletedQueue: [],
 
         // UI state (excluded from partialize)
         activeTab: 'content',
@@ -285,8 +287,18 @@ export const useCvEditorStore = create<CvEditorState>()(
               if (sectionsSource) {
                 const { order: tplOrder, sideKeys } = parseSectionsConfig(sectionsSource);
                 // cv.sectionsOrder overrides template order if present (user reordered)
-                s.order = cv.sectionsOrder ?? tplOrder;
-                s.sideKeys = sideKeys;
+                if (cv.sectionsOrder) {
+                  if (Array.isArray(cv.sectionsOrder)) {
+                    s.order = cv.sectionsOrder;
+                    s.sideKeys = sideKeys;
+                  } else if (typeof cv.sectionsOrder === 'object') {
+                    s.order = (cv.sectionsOrder as any).main ?? tplOrder;
+                    s.sideKeys = (cv.sectionsOrder as any).side ?? sideKeys;
+                  }
+                } else {
+                  s.order = tplOrder;
+                  s.sideKeys = sideKeys;
+                }
                 
                 // Prioritize CV-specific layouts from DB, fallback to template
                 s.sectionLayout = (cv.sectionsLayout as SectionLayoutConfig) || parseSectionLayouts(sectionsSource);
@@ -362,7 +374,30 @@ export const useCvEditorStore = create<CvEditorState>()(
             return val;
           };
 
-          set({ data: sanitize(data), isDirty: true });
+          set((state) => {
+            const sanitizedData = sanitize(data);
+            const newOrder = [...state.order];
+            
+            const standardSections = ['experiences', 'education', 'skills', 'projects', 'awards', 'certifications', 'languages', 'references', 'interests', 'activities'];
+            
+            standardSections.forEach(key => {
+              if (sanitizedData[key] && Array.isArray(sanitizedData[key]) && sanitizedData[key].length > 0) {
+                if (!newOrder.includes(key) && !state.sideKeys.includes(key)) {
+                  newOrder.push(key);
+                }
+              }
+            });
+
+            if (sanitizedData.customSections && Array.isArray(sanitizedData.customSections)) {
+              sanitizedData.customSections.forEach((sec: any) => {
+                if (sec && sec.id && !newOrder.includes(sec.id) && !state.sideKeys.includes(sec.id)) {
+                  newOrder.push(sec.id);
+                }
+              });
+            }
+
+            return { data: sanitizedData, order: newOrder, isDirty: true };
+          });
         },
 
         setOrder: (order) => set({ order, isDirty: true }),
@@ -421,6 +456,11 @@ export const useCvEditorStore = create<CvEditorState>()(
               const data = s.data as unknown as Record<string, unknown>;
               const section = data[key];
               if (!Array.isArray(section)) return;
+              const entry = section.find((e: Record<string, unknown>) => e['id'] === id);
+              if (entry && entry['_dbId']) {
+                if (!s.deletedQueue) s.deletedQueue = [];
+                s.deletedQueue.push({ path: key, dbId: entry['_dbId'] as string });
+              }
               data[key] = section.filter((e: Record<string, unknown>) => e['id'] !== id);
               s.isDirty = true;
             })
@@ -439,6 +479,11 @@ export const useCvEditorStore = create<CvEditorState>()(
           set(
             produce((s: CvEditorState) => {
               if (!s.data.skills) return;
+              const entry = s.data.skills.find((sk) => sk.id === id);
+              if (entry && entry['_dbId']) {
+                if (!s.deletedQueue) s.deletedQueue = [];
+                s.deletedQueue.push({ path: 'skills', dbId: entry['_dbId'] as string });
+              }
               s.data.skills = s.data.skills.filter((sk) => sk.id !== id);
               s.isDirty = true;
             })
@@ -529,6 +574,11 @@ export const useCvEditorStore = create<CvEditorState>()(
           set(
             produce((s: CvEditorState) => {
               if (!s.data.customSections) return;
+              const section = s.data.customSections.find((cs) => cs.id === id);
+              if (section && section['_dbId']) {
+                if (!s.deletedQueue) s.deletedQueue = [];
+                s.deletedQueue.push({ path: 'custom-sections', dbId: section['_dbId'] as string });
+              }
               s.data.customSections = s.data.customSections.filter((cs) => cs.id !== id);
               s.order = s.order.filter((o) => o !== id);
               s.isDirty = true;
@@ -629,7 +679,7 @@ export const useCvEditorStore = create<CvEditorState>()(
                   ? `CV của ${s.data.personal.name}`
                   : 'CV mới',
                 customStyles: s.style,
-                sectionsOrder: s.order,
+                sectionsOrder: { main: s.order, side: s.sideKeys },
                 sectionsLayout: s.sectionLayout,
                 sectionsVisibility: s.visibility,
                 ...(uploadedUrl ? { thumbnailUrl: uploadedUrl } : {})
@@ -640,7 +690,7 @@ export const useCvEditorStore = create<CvEditorState>()(
               // CV đã có → PUT /cvs/:id
               await axiosInstance.put(`/cvs/${cvId}`, {
                 customStyles: s.style,
-                sectionsOrder: s.order,
+                sectionsOrder: { main: s.order, side: s.sideKeys },
                 sectionsLayout: s.sectionLayout,
                 sectionsVisibility: s.visibility,
                 ...(uploadedUrl ? { thumbnailUrl: uploadedUrl } : {})
@@ -810,7 +860,15 @@ export const useCvEditorStore = create<CvEditorState>()(
                       if (dbId) {
                         set(produce((draft: CvEditorState) => {
                           const cs = draft.data.customSections?.find(c => c.id === section.id);
-                          if (cs) cs['_dbId'] = dbId;
+                          if (cs) {
+                            cs['_dbId'] = dbId;
+                            // Cập nhật id trong order để khớp với id trên DB
+                            const orderIndex = draft.order.indexOf(cs.id);
+                            if (orderIndex !== -1) {
+                              draft.order[orderIndex] = dbId;
+                            }
+                            cs.id = dbId;
+                          }
                         }));
                       }
                     })
@@ -819,7 +877,22 @@ export const useCvEditorStore = create<CvEditorState>()(
               });
             }
 
+            // ── 5. Process Deleted Queue ──────────────────────────────────────────
+            if (s.deletedQueue && s.deletedQueue.length > 0) {
+              const deleteCalls = s.deletedQueue.map((del) =>
+                axiosInstance.delete(`/cvs/${cvId}/${del.path}/${del.dbId}`).catch(console.error)
+              );
+              await Promise.all(deleteCalls);
+              set({ deletedQueue: [] });
+            }
+
             await Promise.all(sectionCalls);
+
+            // ── 6. Sync lại thứ tự sau khi các Custom Sections đã có ID thật ──
+            const finalState = get();
+            await axiosInstance.put(`/cvs/${cvId}/reorder-sections`, {
+              sectionsOrder: { main: finalState.order, side: finalState.sideKeys },
+            });
 
             set({ isDirty: false, isSaving: false, lastSavedAt: Date.now() });
             return cvId;

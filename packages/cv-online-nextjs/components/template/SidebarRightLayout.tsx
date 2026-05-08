@@ -21,6 +21,7 @@ import { EditableText } from '../shared/EditableText';
 import Image from 'next/image';
 import { MdEmail, MdPhone, MdLocationOn, MdLink } from 'react-icons/md';
 import { FaLinkedin, FaGithub, FaGlobe } from 'react-icons/fa';
+import { Globe, User } from 'lucide-react';
 
 export function SidebarRightPage({
   mainSections,
@@ -270,7 +271,8 @@ export function SidebarRightPage({
                           dragHandleProps={dp.dragHandleProps}
                           titleColor={accentColor}
                           borderColor={`${accentColor}30`}
-                          sectionTitleBorder={style?.sectionTitleBorder}
+                          sectionTitleBorder={style?.title?.border}
+                          sectionTitleBorderSize={style?.title?.borderSize}
                         >
                           {content}
                         </SideSection>
@@ -366,41 +368,49 @@ export function SidebarRightLayout({
     } else if (key === 'contact') {
       const p = data.personal;
       content = (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: fs * 0.9 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: fs * 0.9 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <MdPhone size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-            <EditableText scale={scale} className={`text-[${style.colors?.text.heading}]`}
-              value={p.phone || ''} onChange={v => ctx.updatePersonalInfo({ phone: v })} placeholder="Số điện thoại" />
+            <MdPhone size={16} />
+            <span style={{ fontWeight: 600, minWidth: 60 }}>Phone:</span>
+            <EditableText scale={scale} value={p.phone || ''} onChange={v => ctx.updatePersonalInfo({ phone: v })} placeholder="+84 ..." />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <MdEmail size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-            <EditableText scale={scale} value={p.email || ''} onChange={v => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
+            <MdEmail size={16} />
+            <span style={{ fontWeight: 600, minWidth: 60 }}>Email:</span>
+            <EditableText scale={scale} value={p.email || ''} onChange={v => ctx.updatePersonalInfo({ email: v })} placeholder="example@gmail.com" />
+          </div>
+          {p.website && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <FaGlobe size={16} />
+              <span style={{ fontWeight: 600, minWidth: 60 }}>Website:</span>
+              <EditableText scale={scale} value={p.website} onChange={v => ctx.updatePersonalInfo({ website: v })} placeholder="www.yoursite.com" />
+            </div>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <MdLocationOn size={16} />
+            <span style={{ fontWeight: 600, minWidth: 60 }}>Location:</span>
+            <EditableText scale={scale} value={p.location || ''} onChange={v => ctx.updatePersonalInfo({ location: v })} placeholder="Hà Nội, VN" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <MdLocationOn size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-            <EditableText scale={scale} value={p.location || ''} onChange={v => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
+            <Globe size={16} />
+            <span style={{ fontWeight: 600, minWidth: 60 }}>Website:</span>
+            <EditableText scale={scale} value={p.website} onChange={v => ctx.updatePersonalInfo({ website: v })} placeholder="linkedin.com/in/..." />
           </div>
-          {(p.website || p.linkedinUrl || p.githubUrl) && (
-            <>
-              {p.website && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <FaGlobe size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-                  <EditableText scale={scale} value={p.website} onChange={v => ctx.updatePersonalInfo({ website: v })} placeholder="Website" />
-                </div>
-              )}
+          {(p.linkedinUrl || p.githubUrl) && (
+            <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 8 }}>
               {p.linkedinUrl && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <FaLinkedin size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-                  <EditableText scale={scale} value={p.linkedinUrl} onChange={v => ctx.updatePersonalInfo({ linkedinUrl: v })} placeholder="LinkedIn" />
+                  <FaLinkedin size={16} />
+                  <EditableText scale={scale} value={p.linkedinUrl} onChange={v => ctx.updatePersonalInfo({ linkedinUrl: v })} placeholder="linkedin.com/in/..." />
                 </div>
               )}
               {p.githubUrl && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <FaGithub size={14} style={{ color: style.colors?.text.heading, opacity: 1 }} />
-                  <EditableText scale={scale} value={p.githubUrl} onChange={v => ctx.updatePersonalInfo({ githubUrl: v })} placeholder="Github" />
+                  <FaGithub size={16} />
+                  <EditableText scale={scale} value={p.githubUrl} onChange={v => ctx.updatePersonalInfo({ githubUrl: v })} placeholder="github.com/..." />
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       );

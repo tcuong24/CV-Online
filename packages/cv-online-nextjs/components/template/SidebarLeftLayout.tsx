@@ -4,6 +4,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MdEmail, MdLink, MdLocationOn, MdPhone } from 'react-icons/md';
 import { MdDragIndicator } from 'react-icons/md';
 import { CvData, StyleConfig } from '@/types/cvEditor';
+import { FileText, User } from 'lucide-react';
 import { Droppable, Draggable, DragDropContext, type DropResult } from '@hello-pangea/dnd';
 import { EditableText } from '../shared/EditableText';
 import { SideSection } from '../shared/TemplatePart';
@@ -64,11 +65,29 @@ export function SidebarLeftPage({
     .slice(-2)
     .map((w: string) => w[0])
     .join('');
-  const avatarMargin = align === 'center' ? '0 auto 14px' : '0 0 14px';
+  const avatarMargin =  '0 auto 30px' ;
   const titleAlign = ctx.sectionLayout.global?.headerAlign || 'left';
   const borderStyle = ctx.sectionLayout.global?.headerBorder || 'bottom';
   const [sidePart, mainPart] = (style.layout?.columnRatio || '30:70').split(':').map(Number);
   const gridColumns = `${sidePart}% ${mainPart}%`;
+  const [isAvatarHovered, setIsAvatarHovered] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      ctx.updatePersonalInfo({ avatarUrl: base64 });
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div
       className="cv-paper"
@@ -84,31 +103,63 @@ export function SidebarLeftPage({
       <div style={{ background: style.colors?.background.sidebar === "gradient" ? style.colors.gradient : style.colors?.background.sidebar, padding: '28px 18px', color: '#fff' }}>
         {isFirst && (
           <>
-            {data.personal.avatarUrl ? (
-              <img
-                src={data.personal.avatarUrl}
-                alt={data.personal.name}
-                style={{
-                  width: 130, height: 130, borderRadius: '50%',
-                  objectFit: 'cover',
-                  margin: '0 auto 14px',
-                  display: 'block',
-                }}
-              />
-            ) : (
+            <div
+              onMouseEnter={() => setIsAvatarHovered(true)}
+              onMouseLeave={() => setIsAvatarHovered(false)}
+              onClick={handleAvatarClick}
+              className="relative mx-auto avatar-uploader"
+              style={{
+                width: 150, height: 150, borderRadius: '50%',
+                margin: avatarMargin,
+                display: 'block',
+                cursor: 'pointer',
+              }}
+            >
+              {data.personal.avatarUrl ? (
+                <img
+                  src={data.personal.avatarUrl}
+                  alt={data.personal.name || "Avatar"}
+                  style={{
+                    width: '100%', height: '100%', borderRadius: '50%',
+                    objectFit: 'cover',
+                    transition: 'transform 0.2s',
+                    transform: isAvatarHovered ? 'scale(1.05)' : 'scale(1)',
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: '100%', height: '100%', borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.2)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 24, fontWeight: 700,
+                    border: '3px solid rgba(255,255,255,0.3)',
+                    transition: 'transform 0.2s',
+                    transform: isAvatarHovered ? 'scale(1.05)' : 'scale(1)',
+                  }}
+                >
+                  {initials}
+                </div>
+              )}
+
               <div
+                className="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity"
                 style={{
-                  width: 130, height: 130, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.2)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 24, fontWeight: 700,
-                  border: '3px solid rgba(255,255,255,0.3)',
-                  margin: '0 auto 14px',
+                  borderRadius: '50%',
+                  opacity: isAvatarHovered ? 1 : 0,
                 }}
               >
-                {initials}
+                <span className="text-white text-xs font-semibold">Tải ảnh lên</span>
               </div>
-            )}
+            </div>
+
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              ref={avatarInputRef}
+              onChange={handleFileChange}
+            />
             {/* Contact */}
             <SideSection title="Liên hệ" titleColor='#fff' fontSize={fs * 1.2} onTitleChange={(v) => ctx.updateSectionLabel('personal', v)}>
               <div style={{ fontSize: fs * 1, color: '#fff', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -205,8 +256,19 @@ export function SidebarLeftPage({
               marginBottom: borderStyle !== 'none' ? 12 : 6,
               borderLeft: borderStyle === 'left' ? `4px solid ${accentColor}` : 'none',
               paddingLeft: borderStyle === 'left' ? 8 : 0,
+              display: 'flex', alignItems: 'center', gap: 8,
+              justifyContent: titleAlign === 'center' ? 'center' : 'flex-start'
             }}
-          >Giới thiệu</div>
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <FileText size={fs * 1.2} color={accentColor} strokeWidth={2.5} />
+            </span>
+            <EditableText 
+              value={ctx.sectionLayout.personal?.title || 'Giới thiệu'} 
+              onChange={(v) => ctx.updateSectionLabel('personal', v)} 
+              placeholder="Tiêu đề giới thiệu" 
+            />
+          </div>
           <div style={{ color: '#57534e', lineHeight: lh }}>
             <EditableText value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
           </div>

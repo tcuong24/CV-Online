@@ -200,7 +200,7 @@ export function parseDesignConfig(designConfig: unknown): StyleConfig {
     fontSize,
     lineHeight,
     sectionTitleAlign: layoutCfg['sectionTitleAlign'] || cfg['sectionTitleAlign'],
-    sectionTitleBorder: layoutCfg['sectionTitleBorder'] || cfg['sectionTitleBorder'],
+    title: layoutCfg['title'] || cfg['title'] || { border: layoutCfg['sectionTitleBorder'] || cfg['sectionTitleBorder'] || 'bottom', borderSize: '2px' },
     headerStyle: layoutCfg['headerStyle'],
     headerBgColor: layoutCfg['headerBgColor'],
     borderStyle: layoutCfg['borderStyle'],

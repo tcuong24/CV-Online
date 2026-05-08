@@ -212,7 +212,7 @@ export function TwoColumnPage({
                   borderLeft: borderStyle === 'left' ? `4px solid ${theme.primary}30` : 'none',
                   paddingLeft: borderStyle === 'left' ? 8 : 0,
                 }}
-              >Giới thiệu</div>
+              >SUMMARY</div>
               <div style={{ color: '#57534e', lineHeight: lh }}>
                 <EditableText scale={scale} value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
               </div>

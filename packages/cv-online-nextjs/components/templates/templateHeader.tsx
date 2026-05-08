@@ -18,27 +18,24 @@ export function TemplatesHeader() {
             </div>
           </Link>
           <nav className="flex items-center gap-6 text-sm">
-            <a
+            <Link
               className="transition-colors hover:text-foreground/80 text-foreground/60"
-              href="#"
+              href="/dashboard"
             >
               Quản lý CV
-            </a>
-            <a
+            </Link>
+            <Link
               className="transition-colors hover:text-foreground/80 text-foreground/60"
-              href="#"
+              href="/about"
             >
-              Tài khoản
-            </a>
+              Thông tin
+            </Link>
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-4">
 
           {session?.user ? (
             <>
-              <Link href="/editor" className={`hidden md:block inline-block text-center ${btnEditorial}`}>
-                Tạo CV
-              </Link>
               <DropdownUser />
             </>
           ) : (

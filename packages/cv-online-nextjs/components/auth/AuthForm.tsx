@@ -372,7 +372,7 @@ export function AuthForm() {
             </div>
 
             {/* Social buttons */}
-            <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="grid  gap-2 mb-4">
               <button
                 type="button"
                 onClick={handleGoogle}
@@ -380,12 +380,7 @@ export function AuthForm() {
               >
                 <GoogleIcon /> Google
               </button>
-              <button
-                type="button"
-                className="flex items-center justify-center gap-2 py-2.5 px-3 bg-white border-[1.5px] border-[#e3e8f0] rounded-[9px] text-[13px] font-medium text-gray-900 cursor-pointer transition-all duration-150 hover:border-[#c5cee0] hover:shadow-[0_2px_8px_rgba(0,0,0,0.07)] whitespace-nowrap"
-              >
-                <AppleIcon /> Apple
-              </button>
+            
             </div>
 
             {/* Submit */}

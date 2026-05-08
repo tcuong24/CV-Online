@@ -195,7 +195,7 @@ export function SectionShell({
   const style = localStyle || globalStyle;
 
   const align = style?.sectionTitleAlign || 'left';
-  const borderStyle = style?.sectionTitleBorder || 'bottom';
+  const borderStyle = style?.title?.border || 'bottom';
   return (
     <div
       onMouseEnter={() => setHovered(true)}

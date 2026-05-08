@@ -1,9 +1,25 @@
 import Link from "next/link";
 import Header from "@/components/layout/header";
 
-export default function Home() {
+async function getTemplates() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:9999/api"}/templates`, {
+      next: { revalidate: 60 }
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch (e) {
+    console.error("Failed to fetch templates:", e);
+    return [];
+  }
+}
+
+export default async function Home() {
   const btnEditorial =
     "border border-foreground px-8 py-3 font-label uppercase tracking-widest text-[0.75rem] transition-colors duration-100 hover:bg-foreground hover:text-background";
+
+  const templates = await getTemplates();
+  const displayTemplates = templates.slice(0, 3); // Chỉ hiển thị 3 mẫu nổi bật
 
   return (
     <div className="bg-background text-foreground font-body antialiased selection:bg-foreground selection:text-background min-h-screen">
@@ -15,13 +31,13 @@ export default function Home() {
             Sự nghiệp của bạn,<br />Được viết bằng sự Tinh tế.
           </h1>
           <p className="font-body text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-            CV chuyên nghiệp dành cho những ai trân trọng sự rõ ràng và tỉ mỉ. Hãy từ bỏ những điều bình thường; xây dựng một bộ hồ sơ phản ánh quyền uy của bạn. Hãy từ chối sự tầm thường; xây dựng một tài liệu phản ánh uy quyền của bạn.
+            CV chuyên nghiệp dành cho những ai trân trọng sự rõ ràng và tỉ mỉ. Hãy từ bỏ những điều bình thường; xây dựng một bộ hồ sơ phản ánh quyền uy của bạn.
           </p>
           <div className="flex flex-col md:flex-row justify-center items-center gap-8">
-            <Link href="/editor" className={`w-full md:w-auto px-12 text-center ${btnEditorial}`}>
+            <Link href="/templates" className={`w-full md:w-auto px-12 text-center ${btnEditorial}`}>
               Tạo CV của bạn
             </Link>
-            <Link className="font-label uppercase tracking-widest text-[0.75rem] border-b border-foreground pb-1 hover:border-transparent transition-all" href="#">
+            <Link className="font-label uppercase tracking-widest text-[0.75rem] border-b border-foreground pb-1 hover:border-transparent transition-all" href="/templates">
               Xem các mẫu CV
             </Link>
           </div>
@@ -34,35 +50,33 @@ export default function Home() {
             <span className="block w-12 h-px bg-foreground mb-4"></span>
             <h2 className="font-headline text-3xl md:text-5xl font-black italic tracking-tight">Mẫu CV</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {/* Template Card 1 */}
-            <div className="group">
-              <div className="border border-border bg-card p-1 mb-6 overflow-hidden aspect-[3/4] relative">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="Template Alpha" className="w-full h-full object-cover filter grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPv9NB95-6dRCvso_rHPO6jweiorZbebZqzuYAj79YMzjtJU-aqqZuQi9wDiQNaWoMF7OK4NNe020FWISUejrizqsfAaoxSBlZLmPpyYoVRVGaLnKNwVygOeV2aeug8fWyJP-zM_opy2cOob3q8UHm47CFTy5sPpRZ6Deq02W0-rUBFGxDV9Qoy-XuUC-ugSq8wXPrfnhTbB9a6lSnKHgJqiZyUPn__OoffuZLYg1XdG4CytWAKwEfTCChwQj1HyUoncREmKaB93E" />
-              </div>
-              <h3 className="font-headline text-xl mb-2">The Jurist</h3>
-              <p className="font-label text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">Conservative • Structured</p>
+          
+          {displayTemplates.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              {displayTemplates.map((tpl: any) => (
+                <div key={tpl.id} className="group cursor-pointer">
+                  <Link href="/templates">
+                    <div className="border border-border bg-card p-1 mb-6 overflow-hidden aspect-[3/4] relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img 
+                        alt={tpl.name} 
+                        className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-300" 
+                        src={tpl.thumbnailUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuDPv9NB95-6dRCvso_rHPO6jweiorZbebZqzuYAj79YMzjtJU-aqqZuQi9wDiQNaWoMF7OK4NNe020FWISUejrizqsfAaoxSBlZLmPpyYoVRVGaLnKNwVygOeV2aeug8fWyJP-zM_opy2cOob3q8UHm47CFTy5sPpRZ6Deq02W0-rUBFGxDV9Qoy-XuUC-ugSq8wXPrfnhTbB9a6lSnKHgJqiZyUPn__OoffuZLYg1XdG4CytWAKwEfTCChwQj1HyUoncREmKaB93E"} 
+                      />
+                    </div>
+                    <h3 className="font-headline text-xl mb-2">{tpl.name}</h3>
+                    <p className="font-label text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">
+                      {tpl.category} • {tpl.layoutType}
+                    </p>
+                  </Link>
+                </div>
+              ))}
             </div>
-            {/* Template Card 2 */}
-            <div className="group">
-              <div className="border border-border bg-card p-1 mb-6 overflow-hidden aspect-[3/4] relative">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="Template Beta" className="w-full h-full object-cover filter grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoR9g9JyFX8BBJWyIbQDhDuDVcQRkIV1Sxzunenl_jrcveUoxEA4qmcRw_vIYgTV9sJmpm-WN0x0QIJY9AlzTx0CkysnWIwFWbJ3i3_1Y3VczgEw4rSBIH_qTYr5cco_IKyZJT_ZhM6f2sfZKMg9pcrq2DkZnsJNej0perZJqUu1JP6T1uLwGfgvKspEn82rPpiD2YJg3LjGSWrYQ9dvjz_tWxyJMIBIRommam_Z_8D8jj8a90ueUaMKjxixY3b2MwtJaKNF08F88" />
-              </div>
-              <h3 className="font-headline text-xl mb-2">The Curator</h3>
-              <p className="font-label text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">Modern • Asymmetrical</p>
+          ) : (
+            <div className="text-center text-muted-foreground py-12">
+              Đang cập nhật các mẫu CV...
             </div>
-            {/* Template Card 3 */}
-            <div className="group">
-              <div className="border border-border bg-card p-1 mb-6 overflow-hidden aspect-[3/4] relative">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="Template Gamma" className="w-full h-full object-cover filter grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChNJqH7godpBU9nxMIDNO1sahK5lDZ6_e6oUWvnnppkit1V4GdS63nIy3Yd0JRNy1fpOFszj-VBogmnCzy0JoG8obVeaVd6WnG9qJXh6zKHkW33dFvnChlAhOTYQcVuxFXQIQDklQBQoqK3bqmp2rD0I7LRgpfll8iwYrCXFHE3SavvevQMCqVS5cKYDLZnRTooThvHUKWSBTru5P-JrdG1YPhINRkMWvbUH3pS-py2dj68iZfeRsd7aP-AYfKUDfX76qUD_7H8ks" />
-              </div>
-              <h3 className="font-headline text-xl mb-2">The Founder</h3>
-              <p className="font-label text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">Classic • Authoritative</p>
-            </div>
-          </div>
+          )}
         </section>
 
         {/* 4. Features Section (Alternating) */}

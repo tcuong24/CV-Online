@@ -22,13 +22,13 @@ export default async function Header() {
             <Link className="text-muted-foreground hover:text-foreground transition-colors" href="/templates">
               Mẫu CV
             </Link>
-            <Link className="text-muted-foreground hover:text-foreground transition-colors" href="#">
+            <Link className="text-muted-foreground hover:text-foreground transition-colors" href="/dashboard">
               Quản lý CV
             </Link>
             {/* <Link className="text-muted-foreground hover:text-foreground transition-colors" href="#">
               Giá
             </Link> */}
-            <Link className="text-muted-foreground hover:text-foreground transition-colors" href="#">
+            <Link className="text-muted-foreground hover:text-foreground transition-colors" href="/about">
               Giới thiệu
             </Link>
           </div>

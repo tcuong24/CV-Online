@@ -108,9 +108,10 @@ export function SectionShell({
       }}
     >
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, borderBottom: (style.sectionTitleBorder !== 'none' && style.sectionTitleBorder !== 'left' && style.sectionTitleBorder !== 'top') ? `1px solid ${borderColor}44` : 'none',
-        borderLeft: style.sectionTitleBorder === 'left' ? `4px solid ${borderColor}` : 'none',
-        borderTop: style.sectionTitleBorder === 'top' ? `2px solid ${borderColor}` : 'none',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, 
+        borderBottom: (style.title?.border !== 'none' && style.title?.border !== 'left' && style.title?.border !== 'top') ? `${style.title?.borderSize || '1px'} solid ${borderColor}` : 'none',
+        borderLeft: style.title?.border === 'left' ? `${style.title?.borderSize || '4px'} solid ${borderColor}` : 'none',
+        borderTop: style.title?.border === 'top' ? `${style.title?.borderSize || '2px'} solid ${borderColor}` : 'none',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
 
@@ -121,8 +122,8 @@ export function SectionShell({
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
               color: titleColor,
-              paddingLeft: style.sectionTitleBorder === 'left' ? 10 : 0,
-              paddingTop: style.sectionTitleBorder === 'top' ? 8 : 0,
+              paddingLeft: style.title?.border === 'left' ? 10 : 0,
+              paddingTop: style.title?.border === 'top' ? 8 : 0,
               paddingBottom: 4,
               display: 'flex',
               alignItems: 'center',

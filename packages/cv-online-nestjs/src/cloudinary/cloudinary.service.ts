@@ -10,10 +10,10 @@ export class CloudinaryService {
       const upload = cloudinary.uploader.upload_stream(
         { folder: 'cv-online' },
         (error, result) => {
-  if (error) return reject(error);
-  if (!result) return reject(new Error('Upload failed'));
-  resolve(result);
-},
+          if (error) return reject(error);
+          if (!result) return reject(new Error('Upload failed'));
+          resolve(result);
+        },
       );
       Readable.from(file.buffer).pipe(upload);
     });

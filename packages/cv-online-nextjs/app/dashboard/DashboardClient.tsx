@@ -6,7 +6,14 @@ import axiosInstance from "@/lib/axios";
 import Link from "next/link";
 import ConfirmDialog from "@/components/utils/ConfirmDialog";
 import { EditableText } from "@/components/utils/EditableText";
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { TemplatesGrid } from "@/components/templates/TemplateGrid";
 export default function DashboardClient() {
   const { data: session } = useSession();
   const [cvs, setCvs] = useState<any[]>([]);
@@ -66,14 +73,22 @@ export default function DashboardClient() {
       <section className="mb-12" data-purpose="hero-section">
         <p className="text-lg font-normal mb-1">{getTimeLable()}, {session?.user?.name}</p>
         <h1 className="text-6xl font-headline italic mb-8 text-foreground">Những bản CV của bạn trông thật chuyên nghiệp.</h1>
-        <Link href="/cvs/create">
-          <button className="flex items-center space-x-2 border border-[#1e3a3a] text-[#1e3a3a] px-5 py-2.5 rounded-sm hover:bg-gray-200 transition-colors text-sm font-medium">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4.5v15m7.5-7.5h-15" strokeLinecap="round" strokeLinejoin="round"></path>
-            </svg>
-            <span>Tạo CV mới</span>
-          </button>
-        </Link>
+        <Dialog>
+          <DialogTrigger asChild>
+            <button className="flex items-center space-x-2 border border-[#1e3a3a] text-[#1e3a3a] px-5 py-2.5 rounded-sm hover:bg-gray-200 transition-colors text-sm font-medium">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4.5v15m7.5-7.5h-15" strokeLinecap="round" strokeLinejoin="round"></path>
+              </svg>
+              <span>Tạo CV mới</span>
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-7xl sm:max-w-5xl md:max-w-6xl lg:max-w-7xl h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline mb-4">Chọn mẫu CV để bắt đầu</DialogTitle>
+            </DialogHeader>
+            <TemplatesGrid />
+          </DialogContent>
+        </Dialog>
       </section>
 
       {/* Stats Section */}

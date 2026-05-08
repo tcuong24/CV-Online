@@ -127,8 +127,7 @@ export class UpdateCVDto {
   sectionsVisibility?: Record<string, boolean>;
 
   @IsOptional()
-  @IsArray()
-  sectionsOrder?: string[];
+  sectionsOrder?: any;
 
   @IsOptional()
   @IsObject()
@@ -145,9 +144,8 @@ export class UpdateCustomStylesDto {
 }
 
 export class ReorderSectionsDto {
-  @IsArray()
-  @IsString({ each: true })
-  sectionsOrder: string[];
+  @IsOptional()
+  sectionsOrder?: any;
 }
 
 // =============================================================================

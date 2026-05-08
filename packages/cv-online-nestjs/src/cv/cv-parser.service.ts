@@ -86,7 +86,7 @@ export class CvParserService {
 
     try {
       const result = await this.client.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-2.5-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           responseMimeType: 'application/json',
@@ -129,7 +129,7 @@ export class CvParserService {
 
     try {
       const result = await this.client.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-2.5-flash',
         contents: [
           {
             role: 'user',

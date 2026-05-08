@@ -48,6 +48,7 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
   // ── Experience ──
   const experiences = ((dbCv['experiences'] ?? []) as Record<string, unknown>[]).map((e) => ({
     id:       (e['id'] as string | undefined) ?? uid(),
+    _dbId:    e['id'] as string | undefined,
     title:    (e['position']    as string | undefined) ?? '',
     company:  (e['companyName'] as string | undefined) ?? '',
     location: (e['location']    as string | undefined) ?? '',
@@ -60,6 +61,7 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
   // ── Education ──
   const education = ((dbCv['education'] ?? []) as Record<string, unknown>[]).map((e) => ({
     id:     (e['id']              as string | undefined) ?? uid(),
+    _dbId:  e['id'] as string | undefined,
     degree: (e['degree']          as string | undefined) ?? '',
     school: (e['institutionName'] as string | undefined) ?? '',
     from:   toYearString(e['startDate'] as string | undefined),
@@ -71,6 +73,7 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
   // ── Skills ──
   const skills = ((dbCv['skills'] ?? []) as Record<string, unknown>[]).map((s) => ({
     id:                     (s['id'] as string | undefined) ?? uid(),
+    _dbId:                  s['id'] as string | undefined,
     name:                   (s['skillName'] as string | undefined) ?? '',
     proficiencyLevel:       (s['proficiencyLevel'] as string | undefined) ?? '',
     proficiencyPercentage:  (s['proficiencyPercentage'] as number | undefined) ?? 0,
@@ -80,6 +83,7 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
   // ── Projects ──
   const projects = ((dbCv['projects'] ?? []) as Record<string, unknown>[]).map((p) => ({
     id:   (p['id']          as string | undefined) ?? uid(),
+    _dbId: p['id'] as string | undefined,
     name: (p['projectName'] as string | undefined) ?? '',
     role: (p['role']        as string | undefined) ?? '',
     tech: ((p['technologies'] as string[] | undefined) ?? []).join(', '),
@@ -91,6 +95,7 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
   // ── Awards ──
   const awards = ((dbCv['awards'] ?? []) as Record<string, unknown>[]).map((a) => ({
     id:   (a['id']    as string | undefined) ?? uid(),
+    _dbId: a['id'] as string | undefined,
     title: (a['title'] as string | undefined) ?? '',
     org:  (a['issuer'] as string | undefined) ?? '',
     year: toYearString(a['dateReceived'] as string | undefined),
@@ -100,6 +105,7 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
   // ── Certifications ──
   const certifications = ((dbCv['certifications'] ?? []) as Record<string, unknown>[]).map((c) => ({
     id:                   (c['id']                   as string | undefined) ?? uid(),
+    _dbId:                c['id'] as string | undefined,
     name:                 (c['name']                 as string | undefined) ?? '',
     issuingOrganization:  (c['issuingOrganization']  as string | undefined) ?? '',
     issueDate:            toYearString(c['issueDate'] as string | undefined),
@@ -113,6 +119,7 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
   // ── Languages ──
   const languages = ((dbCv['languages'] ?? []) as Record<string, unknown>[]).map((l) => ({
     id:    (l['id']           as string | undefined) ?? uid(),
+    _dbId: l['id'] as string | undefined,
     lang:  (l['languageName'] as string | undefined) ?? '',
     level: PROFICIENCY_TO_LEVEL[(l['proficiencyLevel'] as string | undefined) ?? ''] ?? 3,
   }));
@@ -120,6 +127,7 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
   // ── References ──
   const references = ((dbCv['references'] ?? []) as Record<string, unknown>[]).map((r) => ({
     id:           (r['id']           as string | undefined) ?? uid(),
+    _dbId:        r['id'] as string | undefined,
     fullName:     (r['fullName']     as string | undefined) ?? '',
     jobTitle:     (r['jobTitle']     as string | undefined) ?? '',
     company:      (r['company']      as string | undefined) ?? '',
@@ -132,12 +140,14 @@ export function mapDbCvToCvData(dbCv: Record<string, unknown>): CvData {
   // ── Interests ──
   const interests = ((dbCv['interests'] ?? []) as Record<string, unknown>[]).map((i) => ({
     id:   (i['id']   as string | undefined) ?? uid(),
+    _dbId: i['id'] as string | undefined,
     name: (i['name'] as string | undefined) ?? '',
   }));
 
   // ── Activities ──
   const activities = ((dbCv['activities'] ?? []) as Record<string, unknown>[]).map((a) => ({
     id:          (a['id']          as string | undefined) ?? uid(),
+    _dbId:       a['id'] as string | undefined,
     name:        (a['name']        as string | undefined) ?? '',
     role:        (a['role']        as string | undefined) ?? '',
     startDate:   toYearString(a['startDate'] as string | undefined),

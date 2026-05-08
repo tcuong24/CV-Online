@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { MdEmail, MdLink, MdLocationOn, MdPhone } from 'react-icons/md';
+import { User } from 'lucide-react';
 import { CvData } from '@/types/cvEditor';
 import { Droppable, Draggable, DragDropContext, type DropResult } from '@hello-pangea/dnd';
 import { EditableText } from '../shared/EditableText';
@@ -59,7 +60,8 @@ export function SingleColumnPage({
 
   const globalStyle = useCvEditorStore.getState().style;
   const titleAlign = globalStyle?.sectionTitleAlign || ctx.sectionLayout.global?.headerAlign || 'left';
-  const borderStyle = globalStyle?.sectionTitleBorder || ctx.sectionLayout.global?.headerBorder || 'bottom';
+  const borderStyle = globalStyle?.title?.border || ctx.sectionLayout.global?.headerBorder || 'bottom';
+  const borderSize = globalStyle?.title?.borderSize || '1px';
 
   return (
     <div className="cv-paper" style={{ fontFamily, fontSize: fs, lineHeight: lh, width: 794 }}>
@@ -104,13 +106,21 @@ export function SingleColumnPage({
                 fontSize: fs * 1.2, fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.1em', color: accentColor,
                 textAlign: titleAlign === 'center' ? 'center' : 'left',
-                borderBottom: borderStyle === 'bottom' ? `1px solid ${accentColor}` : 'none',
+                borderBottom: borderStyle === 'bottom' ? `${borderSize} solid ${accentColor}` : 'none',
                 paddingBottom: borderStyle !== 'none' ? 5 : 0,
                 marginBottom: borderStyle !== 'none' ? 12 : 6,
-                borderLeft: borderStyle === 'left' ? `4px solid ${accentColor}` : 'none',
+                borderLeft: borderStyle === 'left' ? `${globalStyle?.title?.borderSize || '4px'} solid ${accentColor}` : 'none',
                 paddingLeft: borderStyle === 'left' ? 8 : 0,
+                display: 'flex', alignItems: 'center', gap: 8,
+                justifyContent: titleAlign === 'center' ? 'center' : 'flex-start'
               }}
-            >Giới thiệu</div>
+            >
+              <EditableText 
+                value={ctx.sectionLayout.personal?.title || 'Giới thiệu'} 
+                onChange={(v) => ctx.updateSectionLabel('personal', v)} 
+                placeholder="Tiêu đề giới thiệu" 
+              />
+            </div>
             <div style={{ color: '#44403c', lineHeight: lh }}>
               <EditableText scale={scale} value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
             </div>

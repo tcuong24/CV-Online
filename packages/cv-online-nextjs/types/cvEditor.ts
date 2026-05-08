@@ -209,7 +209,10 @@ export interface StyleConfig {
   fontSize: number;
   lineHeight: string;
   sectionTitleAlign?: 'left' | 'center' | 'right';
-  sectionTitleBorder?: 'bottom' | 'none' | 'left' | 'top';
+  title?: {
+    border?: 'bottom' | 'none' | 'left' | 'top';
+    borderSize?: string;
+  };
   headerStyle?: 'default' | 'centered' | 'floating';
   headerBgColor?: string;
   borderStyle?: 'minimal' | 'bold' | 'none';

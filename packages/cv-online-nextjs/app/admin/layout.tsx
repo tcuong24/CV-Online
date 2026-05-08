@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import {
-  Users, Shield, BarChart3, RefreshCw, LayoutDashboard, Settings
+  Users, Shield, BarChart3, RefreshCw, LayoutDashboard, Settings, History
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -42,10 +42,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0 shrink-0">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-10 px-2">
-            <div className="w-8 h-8 rounded-sm bg-[#1e3a3a] flex items-center justify-center text-white">
-              <Shield size={18} />
-            </div>
-            <span className="font-bold text-lg tracking-tight text-[#1e3a3a]">Admin Panel</span>
+
+            <span className="font-headline text-2xl font-black tracking-tighter text-foreground">CVision</span>
           </div>
 
           <nav className="space-y-1">
@@ -67,11 +65,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               label="Thống kê"
               active={pathname === '/admin/stats'}
             />
-             <NavItem
+            <NavItem
               href="/admin/settings"
               icon={<Settings size={18} />}
               label="Cài đặt"
               active={pathname === '/admin/settings'}
+            />
+            <NavItem
+              href="/admin/logs"
+              icon={<History size={18} />}
+              label="Nhật ký"
+              active={pathname === '/admin/logs'}
             />
           </nav>
         </div>

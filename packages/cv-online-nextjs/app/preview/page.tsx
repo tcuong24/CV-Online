@@ -17,10 +17,19 @@ const PREVIEW_READONLY_CSS = `
      Empty states always have cursor-pointer at section root */
   .preview-readonly .cursor-pointer { display: none !important; }
 
+  /* Disable avatar upload click in preview */
+  .preview-readonly .avatar-uploader { pointer-events: none !important; }
+
   /* Fix: hide Tiptap EditableText placeholder in preview */
-  .preview-readonly .ProseMirror.is-editor-empty::before {
+  .preview-readonly .is-editor-empty::before,
+  .preview-readonly .is-editor-empty:before,
+  .preview-readonly [data-placeholder]:empty::before,
+  .preview-readonly [data-placeholder]:empty:before {
     display: none !important;
     content: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    color: transparent !important;
   }
 
   /* EditableText: remove hover underline, disable pointer */
