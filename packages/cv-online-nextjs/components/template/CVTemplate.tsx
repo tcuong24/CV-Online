@@ -5,6 +5,7 @@ import { MdDragIndicator } from 'react-icons/md';
 import { Palette } from 'lucide-react';
 import { LH_MAP } from '@/constants/cvEditor';
 import { CvData, SectionLayoutConfig, SkillEntry, StyleConfig, ExperienceEntry, EducationEntry, ProjectEntry, AwardEntry, LanguageEntry, LayoutType, RenderCtx } from '@/types/cvEditor';
+export type { RenderCtx };
 import { resolveFontFamily, resolveTheme } from '@/lib/mappers/templateMapper';
 import { useCvEditorStore } from '@/stores/useCvEditor';
 import { EditableText } from '../shared/EditableText';

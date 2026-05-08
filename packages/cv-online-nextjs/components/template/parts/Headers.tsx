@@ -3,7 +3,7 @@
 import React from 'react';
 import { MdEmail, MdLink, MdLocationOn, MdPhone } from 'react-icons/md';
 import { EditableText } from '../../shared/EditableText';
-import { RenderCtx } from '../CVTemplate';
+import type { RenderCtx } from '../CVTemplate';
 import { CvData } from '@/types/cvEditor';
 
 interface HeaderProps {

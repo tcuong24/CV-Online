@@ -28,6 +28,7 @@ export interface ExperienceEntry {
   to: string;
   desc: string;
   open: boolean;
+  _dbId?: string;
 }
 
 export interface EducationEntry {
@@ -38,6 +39,7 @@ export interface EducationEntry {
   to: string;
   desc: string;
   open: boolean;
+  _dbId?: string;
 }
 
 export interface ProjectEntry {
@@ -48,6 +50,7 @@ export interface ProjectEntry {
   link: string;
   desc: string;
   open: boolean;
+  _dbId?: string;
 }
 
 export interface AwardEntry {
@@ -56,12 +59,14 @@ export interface AwardEntry {
   org: string;
   year: string;
   open: boolean;
+  _dbId?: string;
 }
 
 export interface LanguageEntry {
   id: string;
   lang: string;
   level: number;
+  _dbId?: string;
 }
 
 export interface SkillEntry {
@@ -70,6 +75,7 @@ export interface SkillEntry {
   proficiencyLevel: string;
   proficiencyPercentage: number;
   category: string;
+  _dbId?: string;
 }
 
 export interface CertificationEntry {
@@ -82,6 +88,7 @@ export interface CertificationEntry {
   credentialUrl: string;
   description: string;
   open: boolean;
+  _dbId?: string;
 }
 
 export interface ReferenceEntry {
@@ -93,11 +100,13 @@ export interface ReferenceEntry {
   email: string;
   phone: string;
   open: boolean;
+  _dbId?: string;
 }
 
 export interface InterestEntry {
   id: string;
   name: string;
+  _dbId?: string;
 }
 
 export interface ActivityEntry {
@@ -108,6 +117,7 @@ export interface ActivityEntry {
   endDate: string;
   description: string;
   open: boolean;
+  _dbId?: string;
 }
 
 export interface CustomSectionItem {
@@ -117,6 +127,7 @@ export interface CustomSectionItem {
   dateRange: string;
   description: string;
   open: boolean;
+  _dbId?: string;
 }
 
 export interface CustomSectionEntry {
