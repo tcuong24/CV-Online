@@ -10,7 +10,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(dto: RegisterDto) {
     // Kiểm tra email đã tồn tại chưa
@@ -82,7 +82,47 @@ export class AuthService {
       access_token: token,
     };
   }
-
+  async loginWithGoogle(idToken: string) {
+    const { OAuth2Client } = require('google-auth-library');
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    })
+    const payload = ticket.getPayload();
+    if (!payload.email) {
+      throw new UnauthorizedException('Không thể xác thực tài khoản Google')
+    }
+    const user = await this.prisma.user.upsert({
+      where: { email: payload.email },
+      update: {
+        avatarUrl: payload.picture ?? null,
+        lastLoginAt: new Date(),
+      },
+      create: {
+        email: payload.email,
+        fullName: payload.picture ?? null,
+        avatarUrl: payload.picture ?? null,
+        passwordHash: "",
+      }
+    })
+    const token = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+      role: user.role
+    })
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        subscriptionType: user.subscriptionType,
+      },
+      access_token: token,
+    }
+  }
   async getMe(userId: string) {
     return this.prisma.user.findUnique({
       where: { id: userId },
