@@ -52,6 +52,10 @@ export function TemplatesGrid() {
         t.tags?.includes(activeTag)
       );
   const handleSelectTemplate = (template: Template) => {
+    if (!session?.user) {
+      router.push("/auth");
+      return;
+    }
     const { order, sideKeys: _sideKeys } = parseSectionsConfig(template.sectionsConfig);
     const availableSections = (template.sectionsConfig?.available_sections ?? []) as Array<{
       id: string;
