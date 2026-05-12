@@ -179,7 +179,7 @@ export function AuthForm() {
 
   // ── Google OAuth ──────────────────────────────────────────────────────────
   const handleGoogle = () => {
-    const callbackUrl = searchParams.get('callbackUrl') ?? '/cvs';
+    const callbackUrl = searchParams.get('callbackUrl') ?? '/dashboard';
     signIn('google', { callbackUrl });
   };
 
