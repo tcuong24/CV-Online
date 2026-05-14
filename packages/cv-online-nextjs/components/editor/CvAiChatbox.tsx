@@ -27,7 +27,6 @@ interface SuggestionItem {
 interface BaseResponse {
   intent: string;
   suggestions: SuggestionItem[];
-  keywords: string[];
   score: { before: number; after: number };
 }
 
@@ -79,6 +78,20 @@ interface GeneralQaResponse extends BaseResponse {
   tips: string[];
 }
 
+export interface ClarificationQuestion {
+  id: string;
+  question: string;
+  required: boolean;
+  options: string[];
+}
+
+export interface NeedClarificationResponse {
+  intent: 'need_clarification';
+  message: string;
+  questions: ClarificationQuestion[];
+  pendingIntent: string;
+}
+
 type AiResponse =
   | CollectInfoResponse
   | AnalyzeCvResponse
@@ -86,6 +99,7 @@ type AiResponse =
   | MatchJdResponse
   | SuggestKeywordsResponse
   | WriteContentResponse
+  | NeedClarificationResponse
   | GeneralQaResponse;
 
 interface Message {
@@ -166,21 +180,7 @@ function SuggestionsList({
   );
 }
 
-function KeywordsList({ keywords }: { keywords: string[] }) {
-  if (!keywords.length) return null;
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {keywords.map((kw, i) => (
-        <span
-          key={i}
-          className="rounded-lg bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-[#7c7cf1] border border-blue-100/50"
-        >
-          #{kw}
-        </span>
-      ))}
-    </div>
-  );
-}
+
 
 // ─── Intent-specific cards ────────────────────────────────────────────────────
 
@@ -240,7 +240,6 @@ function AnalyzeCvCard({
 
       <IssuesList issues={data.issues} />
       <SuggestionsList suggestions={data.suggestions} onApply={onApply} />
-      <KeywordsList keywords={data.keywords} />
     </div>
   );
 }
@@ -258,7 +257,6 @@ function SuggestionsCard({
       <p className="text-[14px] text-slate-700">{data.analysis}</p>
       <IssuesList issues={data.issues} />
       <SuggestionsList suggestions={data.suggestions} onApply={onApply} />
-      <KeywordsList keywords={data.keywords} />
     </div>
   );
 }
@@ -294,7 +292,6 @@ function MatchJdCard({
       </div>
 
       <SuggestionsList suggestions={data.suggestions} onApply={onApply} />
-      <KeywordsList keywords={data.keywords} />
     </div>
   );
 }
@@ -356,7 +353,6 @@ function WriteContentCard({
         {data.generated}
       </div>
       <SuggestionsList suggestions={data.suggestions} onApply={onApply} />
-      <KeywordsList keywords={data.keywords} />
     </div>
   );
 }
@@ -409,6 +405,9 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
     { role: 'assistant', content: 'Xin chào! Tôi sẵn sàng phân tích CV của bạn. Muốn cải thiện phần nào nhé?' },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingIntent, setPendingIntent] = useState<string | null>(null);
+  const [clarificationQuestions, setClarificationQuestions] = useState<ClarificationQuestion[]>([]);
+  const [answeredQuestions, setAnsweredQuestions] = useState<{ id: string; answer: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const cvData = useCvEditorStore((s) => s.data);
@@ -433,6 +432,10 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
     setInput('');
     setIsLoading(true);
 
+    const clarificationContext = pendingIntent
+      ? { pendingIntent, answeredQuestions }
+      : undefined;
+
     try {
       const response = await axiosInstance.post('/cv/ai/chat', {
         history: newMessages.map((m) => ({
@@ -442,6 +445,7 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
         currentCv: cvData,
         message: text,
         activeSection,
+        clarificationContext,
       });
 
       let aiResult = response.data.response;
@@ -450,6 +454,15 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
       try {
         aiResult = JSON.parse(aiResult);
         isJson = true;
+        
+        if (aiResult.intent === 'need_clarification') {
+          setPendingIntent(aiResult.pendingIntent);
+          setClarificationQuestions(aiResult.questions || []);
+        } else {
+          setPendingIntent(null);
+          setClarificationQuestions([]);
+          setAnsweredQuestions([]);
+        }
       } catch {
         // Not JSON — render as plain string
       }
@@ -463,6 +476,24 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
       ]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAnswerQuestion = (questionId: string, answer: string) => {
+    const updated = [
+      ...answeredQuestions.filter((q) => q.id !== questionId),
+      { id: questionId, answer },
+    ];
+    setAnsweredQuestions(updated);
+
+    const allRequired = clarificationQuestions
+      .filter((q) => q.required)
+      .every((q) => updated.some((a) => a.id === q.id));
+
+    if (allRequired) {
+      // Auto-send when all required answers are collected
+      handleSend('Tôi đã cung cấp đủ thông tin. Hãy tiếp tục.');
+      setClarificationQuestions([]);
     }
   };
 
@@ -480,20 +511,41 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
     if (section === 'summary') {
       updatePersonalInfo({ summary: value });
     } else if (section === 'skills') {
-      // AI sends newText as comma-separated skill names.
-      // Add any new skills not already present in the list.
-      const existingNames = new Set(
-        ((cvData as any).skills ?? []).map((s: any) => (s.name ?? '').toLowerCase())
-      );
-      const incoming = value
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-      incoming.forEach((name) => {
-        if (!existingNames.has(name.toLowerCase())) {
-          addSkill({ id: crypto.randomUUID(), name, proficiencyLevel: 'Intermediate' } as any);
-        }
-      });
+      if (value.includes(':')) {
+        // Grouped skills format: "Category1: skill1, skill2 | Category2: skill3"
+        const groups = value.split('|').map(g => g.trim());
+        groups.forEach(group => {
+          const parts = group.split(':');
+          if (parts.length >= 2) {
+            const category = parts[0].trim();
+            const skillsStr = parts[1].trim();
+            const incoming = skillsStr.split(',').map(s => s.trim()).filter(Boolean);
+            incoming.forEach(name => {
+              const exists = ((cvData as any).skills ?? []).some((s: any) => 
+                (s.name ?? '').toLowerCase() === name.toLowerCase() && 
+                s.category === category
+              );
+              if (!exists) {
+                addSkill({ id: crypto.randomUUID(), name, category, proficiencyLevel: 'Intermediate' } as any);
+              }
+            });
+          }
+        });
+      } else {
+        // Flat skills format
+        const existingNames = new Set(
+          ((cvData as any).skills ?? []).map((s: any) => (s.name ?? '').toLowerCase())
+        );
+        const incoming = value
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        incoming.forEach((name) => {
+          if (!existingNames.has(name.toLowerCase())) {
+            addSkill({ id: crypto.randomUUID(), name, proficiencyLevel: 'Intermediate' } as any);
+          }
+        });
+      }
     } else {
       const items = (cvData as any)[section];
       if (Array.isArray(items)) {
@@ -556,6 +608,56 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
           </div>
         ))}
 
+        {clarificationQuestions.length > 0 && !isLoading && (
+          <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-2xl p-4 shadow-sm space-y-4">
+            <p className="text-[13px] text-[#1e40af] font-medium flex items-center gap-1.5">
+              <AlertCircle size={14} />
+              Cần thêm thông tin để hỗ trợ tốt nhất:
+            </p>
+            {clarificationQuestions.map(q => (
+              <div key={q.id} className="space-y-2.5 bg-white p-3 rounded-xl border border-[#dbeafe]">
+                <p className="text-[13px] text-slate-700 font-medium leading-relaxed">
+                  {q.question} {q.required && <span className="text-red-500">*</span>}
+                </p>
+                {q.options && q.options.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {q.options.map(opt => {
+                      const isSelected = answeredQuestions.find(a => a.id === q.id)?.answer === opt;
+                      return (
+                        <button
+                          key={opt}
+                          className={`px-3 py-1.5 text-[12px] font-medium rounded-full border transition-all ${
+                            isSelected
+                              ? 'bg-[#2563eb] text-white border-[#2563eb] shadow-sm' 
+                              : 'bg-white text-slate-600 border-slate-200 hover:border-[#93c5fd] hover:bg-[#f8fafc]'
+                          }`}
+                          onClick={() => handleAnswerQuestion(q.id, opt)}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    className="w-full text-[13px] px-3 py-2 text-slate-800 border border-slate-200 rounded-lg outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6] placeholder:text-slate-400 transition-all"
+                    placeholder="Nhập câu trả lời..."
+                    onBlur={e => {
+                      if (e.target.value.trim()) handleAnswerQuestion(q.id, e.target.value.trim());
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                        handleAnswerQuestion(q.id, e.currentTarget.value.trim());
+                      }
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         {isLoading && (
           <div className="flex items-start gap-2">
             <Skeleton className="rounded-2xl rounded-tl-none bg-white border border-slate-100 px-4! py-3!">
@@ -573,8 +675,8 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
       </div>
 
       {/* Quick Actions — 2×2 grid */}
-      {!isLoading && (
-        <div className="grid grid-cols-2 shrink-0 gap-1.5 px-3 pb-3 pt-2 border-t border-slate-100 bg-white">
+      {!isLoading && !input.trim() && (
+        <div className="grid grid-cols-2 shrink-0 gap-1.5 px-3 pb-3 pt-2 border-t border-slate-100 bg-white animate-in fade-in slide-in-from-bottom-2 duration-300">
           {quickActions.map((action, i) => (
             <button
               key={i}
@@ -590,14 +692,19 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
 
       {/* Input Area */}
       <div className="shrink-0 border-t border-slate-100 bg-white p-4!">
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
+        <div className="flex items-end gap-2">
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
             placeholder="Nhập yêu cầu cải thiện CV..."
-            className="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-3! pl-4! pr-4! text-[14px] outline-none focus:border-slate-400 focus:bg-white transition-all"
+            rows={Math.min(5, input.split('\n').length || 1)}
+            className="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-3! px-4! text-[14px] outline-none focus:border-slate-400 focus:bg-white transition-all resize-none max-h-32"
           />
           <button
             onClick={() => handleSend()}

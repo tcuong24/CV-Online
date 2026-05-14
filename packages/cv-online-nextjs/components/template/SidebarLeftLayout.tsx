@@ -161,7 +161,7 @@ export function SidebarLeftPage({
               onChange={handleFileChange}
             />
             {/* Contact */}
-            <SideSection title="Liên hệ" titleColor='#fff' fontSize={fs * 1.2} onTitleChange={(v) => ctx.updateSectionLabel('personal', v)}>
+            <SideSection title={ctx.sectionLayout.personal?.title || "Liên hệ"} titleColor='#fff' fontSize={fs * 1.2} onTitleChange={(v) => ctx.patchSectionLayout('personal', { title: v })}>
               <div style={{ fontSize: fs * 1, color: '#fff', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <MdEmail size={10} /><EditableText scale={scale} value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
               </div>
@@ -245,34 +245,7 @@ export function SidebarLeftPage({
             </div>
           </>
         )}
-        <div style={{ marginBottom: 22 }}>
-          <div
-            style={{
-              fontSize: fs * 1.2, fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.1em', color: accentColor,
-              textAlign: titleAlign === 'center' ? 'center' : 'left',
-              borderBottom: borderStyle === 'bottom' ? `2px solid ${accentColor}` : 'none',
-              paddingBottom: borderStyle !== 'none' ? 5 : 0,
-              marginBottom: borderStyle !== 'none' ? 12 : 6,
-              borderLeft: borderStyle === 'left' ? `4px solid ${accentColor}` : 'none',
-              paddingLeft: borderStyle === 'left' ? 8 : 0,
-              display: 'flex', alignItems: 'center', gap: 8,
-              justifyContent: titleAlign === 'center' ? 'center' : 'flex-start'
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <FileText size={fs * 1.2} color={accentColor} strokeWidth={2.5} />
-            </span>
-            <EditableText 
-              value={ctx.sectionLayout.personal?.title || 'Giới thiệu'} 
-              onChange={(v) => ctx.updateSectionLabel('personal', v)} 
-              placeholder="Tiêu đề giới thiệu" 
-            />
-          </div>
-          <div style={{ color: '#57534e', lineHeight: lh }}>
-            <EditableText value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
-          </div>
-        </div>
+
         <Droppable droppableId="sections-main">
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
@@ -414,13 +387,24 @@ export function SidebarLeftLayout({
     }
     if (key === 'skills') {
       const profStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
+      const addSkillAction = profStyle === 'grouped'
+        ? () => {
+          const existingCats = new Set(data.skills?.map(s => s.category?.trim()).filter(Boolean));
+          let newCat = 'Danh mục mới';
+          let idx = 1;
+          while (existingCats.has(newCat)) newCat = `Danh mục mới ${idx++}`;
+          ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: 'intermediate', proficiencyPercentage: 70, category: newCat });
+        }
+        : () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' });
+      const addLabel = profStyle === 'grouped' ? '+ Danh mục' : '+ Kỹ năng';
+
       allMainSections.push({
         key,
         title: displayTitle,
         icon: ctx.sectionLayout[key]?.icon,
         onTitleChange,
         content: <SkillsBlock data={data} ctx={ctx} dark={false} />,
-        addButton: makeAddBtn(key, '+ Kỹ năng', () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' }), !!data.skills?.length),
+        addButton: makeAddBtn(key, addLabel, addSkillAction, !!data.skills?.length),
         styleControls: (
           <StylePicker
             fs={fs}
@@ -428,6 +412,21 @@ export function SidebarLeftLayout({
             options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }, { value: 'grouped', label: 'Grouped' }]}
             onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
           />
+        ),
+      });
+      return;
+    }
+
+    if (key === 'summary') {
+      allMainSections.push({
+        key,
+        title: ctx.sectionLayout.summary?.title || displayTitle || 'Giới thiệu',
+        icon: ctx.sectionLayout[key]?.icon,
+        onTitleChange: (v) => ctx.patchSectionLayout('summary', { title: v }),
+        content: (
+          <div style={{ fontSize: fs * 0.92, color: '#44403c', lineHeight: lh }}>
+            <EditableText scale={scale} value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
+          </div>
         ),
       });
       return;
@@ -520,6 +519,7 @@ export function SidebarLeftLayout({
 
     // Built-in sections in sidebar
     const titles: Record<string, string> = {
+      summary: 'Giới thiệu',
       skills: 'Kỹ năng',
       languages: 'Ngoại ngữ',
       awards: 'Chứng chỉ',
@@ -529,10 +529,38 @@ export function SidebarLeftLayout({
     };
     const displayTitle = ctx.sectionLayout[key]?.title || titles[key];
 
+    if (key === 'summary') {
+      return [{
+        key,
+        content: (
+          <SideSection
+            key={key}
+            title={displayTitle}
+            fontSize={fs * 1.2}
+            titleColor='#fff'
+            onTitleChange={(v) => ctx.patchSectionLayout('summary', { title: v })}
+          >
+            <div style={{ fontSize: fs * 0.88, color: 'rgba(255,255,255,0.85)', lineHeight: lh }}>
+              <EditableText scale={scale} value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
+            </div>
+          </SideSection>
+        )
+      }];
+    }
+
     if (key === 'skills') {
       const profStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
+      const addSideSkillAction = profStyle === 'grouped'
+        ? () => {
+          const existingCats = new Set(data.skills?.map(s => s.category?.trim()).filter(Boolean));
+          let newCat = 'Danh mục mới';
+          let idx = 1;
+          while (existingCats.has(newCat)) newCat = `Danh mục mới ${idx++}`;
+          ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: 'intermediate', proficiencyPercentage: 70, category: newCat });
+        }
+        : () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' });
       const addBtn = (
-        <button style={sideBtnStyle} onClick={() => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' })}>
+        <button style={sideBtnStyle} onClick={addSideSkillAction}>
           + Thêm
         </button>
       );
@@ -644,9 +672,18 @@ export function SidebarLeftLayout({
             {data.education?.map((e) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{e.degree || 'Chuyên ngành'}</div>
-                  <div style={{ fontSize: fs * 0.78, color: 'rgba(255,255,255,0.65)' }}>{e.school || 'Trường'}</div>
-                  {(e.from || e.to) && <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.45)' }}>{e.from} – {e.to}</div>}
+                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
+                    <EditableText scale={scale} value={e.degree || ''} onChange={(v) => ctx.updateEntry('education', e.id, { degree: v })} placeholder="Chuyên ngành" />
+                  </div>
+                  <div style={{ fontSize: fs * 0.78, color: 'rgba(255,255,255,0.65)' }}>
+                    <EditableText scale={scale} value={e.school || ''} onChange={(v) => ctx.updateEntry('education', e.id, { school: v })} placeholder="Trường" />
+                  </div>
+                  <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.45)' }}>
+                    <EditableText scale={scale} value={e.from || ''} onChange={(v) => ctx.updateEntry('education', e.id, { from: v })} placeholder="Bắt đầu" /> – <EditableText scale={scale} value={e.to || ''} onChange={(v) => ctx.updateEntry('education', e.id, { to: v })} placeholder="Kết thúc" />
+                  </div>
+                  <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.55)', fontStyle: 'italic', marginTop: 2 }}>
+                    <EditableText scale={scale} value={e.desc || ''} onChange={(v) => ctx.updateEntry('education', e.id, { desc: v })} placeholder="Mô tả..." multiline />
+                  </div>
                 </div>
                 <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('education', e.id)} title="Xóa">✕</button>
               </div>
@@ -674,8 +711,15 @@ export function SidebarLeftLayout({
             {data.projects?.map((e) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{e.name || 'Tên dự án'}</div>
-                  {e.tech && <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.55)' }}>{e.tech}</div>}
+                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
+                    <EditableText scale={scale} value={e.name || ''} onChange={(v) => ctx.updateEntry('projects', e.id, { name: v })} placeholder="Tên dự án" />
+                  </div>
+                  <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.55)' }}>
+                    <EditableText scale={scale} value={e.tech || ''} onChange={(v) => ctx.updateEntry('projects', e.id, { tech: v })} placeholder="Công nghệ" multiline />
+                  </div>
+                  <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.55)', fontStyle: 'italic', marginTop: 2 }}>
+                    <EditableText scale={scale} value={e.desc || ''} onChange={(v) => ctx.updateEntry('projects', e.id, { desc: v })} placeholder="Mô tả dự án..." multiline />
+                  </div>
                 </div>
                 <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('projects', e.id)} title="Xóa">✕</button>
               </div>
@@ -703,9 +747,18 @@ export function SidebarLeftLayout({
             {data.experiences?.map((e) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{e.title || 'Vị trí'}</div>
-                  <div style={{ fontSize: fs * 0.78, color: 'rgba(255,255,255,0.65)' }}>{e.company || 'Công ty'}</div>
-                  {(e.from || e.to) && <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.45)' }}>{e.from} – {e.to}</div>}
+                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
+                    <EditableText scale={scale} value={e.title || ''} onChange={(v) => ctx.updateEntry('experiences', e.id, { title: v })} placeholder="Vị trí" />
+                  </div>
+                  <div style={{ fontSize: fs * 0.78, color: 'rgba(255,255,255,0.65)' }}>
+                    <EditableText scale={scale} value={e.company || ''} onChange={(v) => ctx.updateEntry('experiences', e.id, { company: v })} placeholder="Công ty" />
+                  </div>
+                  <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.45)' }}>
+                    <EditableText scale={scale} value={e.from || ''} onChange={(v) => ctx.updateEntry('experiences', e.id, { from: v })} placeholder="Bắt đầu" /> – <EditableText scale={scale} value={e.to || ''} onChange={(v) => ctx.updateEntry('experiences', e.id, { to: v })} placeholder="Kết thúc" />
+                  </div>
+                  <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.55)', fontStyle: 'italic', marginTop: 2 }}>
+                    <EditableText scale={scale} value={e.desc || ''} onChange={(v) => ctx.updateEntry('experiences', e.id, { desc: v })} placeholder="Mô tả công việc..." multiline />
+                  </div>
                 </div>
                 <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('experiences', e.id)} title="Xóa">✕</button>
               </div>
@@ -738,9 +791,9 @@ export function SidebarLeftLayout({
             const toKey = sideKeys[destination.index];
             if (toKey) ctx.reorderSideKey(fromKey, toKey);
           } else if (source.droppableId === 'sections-main' && destination.droppableId === 'sections-sidebar') {
-            ctx.moveSectionToZone(fromKey, true);
+            ctx.moveSectionToZone(fromKey, true, destination.index);
           } else if (source.droppableId === 'sections-sidebar' && destination.droppableId === 'sections-main') {
-            ctx.moveSectionToZone(fromKey, false);
+            ctx.moveSectionToZone(fromKey, false, destination.index);
           }
         }}
       >

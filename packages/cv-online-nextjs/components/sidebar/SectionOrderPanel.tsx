@@ -52,7 +52,7 @@ export function SectionOrderPanel() {
 
   // Fix #5: guard sideKeys against stale localStorage values
   const sideVisible = isSidebarLayout && sideKeys.length > 0
-    ? sideKeys.filter(k => isVisible(k) && order.includes(k))
+    ? sideKeys.filter(k => isVisible(k))
     : [];
   const mainVisible = isSidebarLayout
     ? visibleKeys.filter(k => !sideKeys.includes(k))

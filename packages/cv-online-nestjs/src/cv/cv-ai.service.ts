@@ -17,7 +17,31 @@ export class CvAiService {
     });
   }
 
-  async chat(history: any[], currentCv: any, message: string, activeSection?: string): Promise<string> {
+  async chat(
+    history: any[],
+    currentCv: any,
+    message: string,
+    activeSection?: string,
+    clarificationContext?: {
+      pendingIntent: string;
+      answeredQuestions: { id: string; answer: string }[];
+    }
+  ): Promise<string> {
+
+    let enrichedMessage = message;
+    if (clarificationContext?.answeredQuestions?.length) {
+      const answers = clarificationContext.answeredQuestions
+        .map(q => `${q.id}: ${q.answer}`)
+        .join('\n');
+      enrichedMessage = `
+[CONTEXT - Người dùng đã trả lời các câu hỏi làm rõ]
+Pending intent: ${clarificationContext.pendingIntent}
+${answers}
+
+[TIN NHẮN GỐC]
+${message}
+      `.trim();
+    }
     const systemPrompt = `
 Bạn là CV Assistant thông minh, hỗ trợ người dùng xây dựng và tối ưu CV chuyên nghiệp.
 
@@ -30,11 +54,33 @@ Phân tích tin nhắn người dùng và chọn MỘT trong các intent sau:
 - "match_jd"         : So sánh CV với Job Description, gợi ý tùy chỉnh theo vị trí cụ thể
 - "suggest_keywords" : Gợi ý từ khóa ATS, kỹ năng còn thiếu theo ngành
 - "write_content"    : Viết mới hoàn toàn (summary, cover letter, bullet points) theo yêu cầu
+- "need_clarification": Chưa đủ thông tin context để thực hiện yêu cầu tốt nhất (VD: thiếu target_role, JD)
 - "general_qa"       : Câu hỏi chung về CV, nghề nghiệp không thuộc các loại trên
+
+=== KHI NÀO DÙNG need_clarification ===
+Dùng khi người dùng yêu cầu nhưng THIẾU thông tin (context) quan trọng:
+- Yêu cầu "viết summary", "cải thiện CV", "gợi ý keyword" nhưng chưa biết ngành/vị trí mục tiêu (target role).
+- Yêu cầu "phân tích từ khóa ATS" hoặc "match CV" nhưng chưa có Job Description (JD). Nếu chưa có JD, hãy tạo câu hỏi dạng free text để người dùng copy paste JD vào.
+KHÔNG dùng nếu dữ liệu CV đã đủ context để trả lời chung chung theo ngành, nhưng nếu yêu cầu cụ thể mà thiếu thì phải hỏi.
 
 === BƯỚC 2: TRẢ VỀ JSON ĐÚNG SCHEMA THEO INTENT ===
 
 Chỉ trả về JSON, KHÔNG thêm text ngoài JSON.
+
+--- Intent: need_clarification ---
+{
+  "intent": "need_clarification",
+  "message": "Giải thích ngắn tại sao cần thêm thông tin (vd: Để viết summary tốt hơn, tôi cần biết...)",
+  "questions": [
+    {
+      "id": "job_description",
+      "question": "Vui lòng dán Job Description (mô tả công việc) hoặc vị trí bạn muốn ứng tuyển vào đây để tôi phân tích nhé:",
+      "required": true,
+      "options": []
+    }
+  ],
+  "pendingIntent": "write_content"
+}
 
 --- Intent: collect_info ---
 {
@@ -64,7 +110,6 @@ Chỉ trả về JSON, KHÔNG thêm text ngoài JSON.
       "newText": "Đoạn thay thế mạnh hơn, có động từ mạnh"
     }
   ],
-  "keywords": ["keyword ATS"],
   "score": { "before": 0, "after": 0 }
 }
 
@@ -81,7 +126,6 @@ Chỉ trả về JSON, KHÔNG thêm text ngoài JSON.
       "newText": "Text viết lại mạnh hơn"
     }
   ],
-  "keywords": ["strong verb 1", "strong verb 2"],
   "score": { "before": 0, "after": 0 }
 }
 
@@ -100,7 +144,6 @@ Chỉ trả về JSON, KHÔNG thêm text ngoài JSON.
       "newText": "Text tối ưu cho JD này"
     }
   ],
-  "keywords": ["keyword quan trọng trong JD"],
   "score": { "before": 0, "after": 0 }
 }
 
@@ -121,7 +164,6 @@ Chỉ trả về JSON, KHÔNG thêm text ngoài JSON.
       "newText": "danh sách kỹ năng đã bổ sung keyword còn thiếu"
     }
   ],
-  "keywords": ["keyword ưu tiên cao"],
   "score": { "before": 0, "after": 0 }
 }
 
@@ -139,7 +181,6 @@ Chỉ trả về JSON, KHÔNG thêm text ngoài JSON.
       "newText": "Nội dung mới vừa được viết"
     }
   ],
-  "keywords": ["keyword nổi bật"],
   "score": { "before": 0, "after": 0 }
 }
 
@@ -149,7 +190,6 @@ Chỉ trả về JSON, KHÔNG thêm text ngoài JSON.
   "message": "Câu trả lời thân thiện, hữu ích",
   "tips": ["Tip ngắn 1", "Tip ngắn 2"],
   "suggestions": [],
-  "keywords": [],
   "score": { "before": 0, "after": 0 }
 }
 
@@ -160,7 +200,8 @@ Section đang focus: ${activeSection || 'personal'}
 
 === LƯU Ý QUAN TRỌNG ===
 - "oldText" phải là text THỰC lấy từ CV data bên trên. Nếu field trống thì oldText = ""
-- "field" mapping: summary → "summary" | kinh nghiệm → "experience.{index}.desc" | dự án → "projects.{index}.desc" | kỹ năng → "skills"
+- "field" mapping: KHÔNG ĐƯỢC DÙNG "personal.summary", bắt buộc phải trả về chính xác "summary" | kinh nghiệm → "experiences.{index}.desc" | dự án → "projects.{index}.desc" | kỹ năng → "skills"
+- Đặc biệt với mục Kỹ năng ("skills"): Nếu CV hiện tại đang nhóm theo category (có trường category), \`newText\` PHẢI giữ format "Category1: skill1, skill2 | Category2: skill3". Nếu không có category, trả về comma-separated (VD: "skill1, skill2").
 - Score "before/after" phải hợp lý, chênh lệch phản ánh mức độ cải thiện thực sự
 - Nếu CV data trống, ưu tiên intent "collect_info" và hỏi thông tin
 `;
@@ -171,7 +212,7 @@ Section đang focus: ${activeSection || 'personal'}
         parts: [{ text: h.content }]
       }));
 
-      contents.push({ role: 'user', parts: [{ text: message }] });
+      contents.push({ role: 'user', parts: [{ text: enrichedMessage }] });
 
       const result = await this.client.models.generateContent({
         model: 'gemini-3-flash-preview',

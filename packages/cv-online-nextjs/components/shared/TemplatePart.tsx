@@ -70,7 +70,7 @@ export function SideSection({
             className={`hover:bg-white/10 rounded px-0.5 transition-colors text-${titleColor}`}
           />
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 ,marginRight: 12 }}>
           {styleControls && (
             <div style={{ opacity: hovered ? 1 : 0, transition: 'opacity 0.15s' }}>
               {styleControls}

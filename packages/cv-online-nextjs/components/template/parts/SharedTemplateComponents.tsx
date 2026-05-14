@@ -9,6 +9,7 @@ import {
   FileBadge,
   Folder,
   User,
+  FileText,
 } from 'lucide-react';
 export type { RenderCtx } from '@/types/cvEditor';
 import { CvData, SectionLayoutConfig, SkillEntry, StyleConfig, ExperienceEntry, EducationEntry, ProjectEntry, AwardEntry, LanguageEntry, RenderCtx } from '@/types/cvEditor';
@@ -48,7 +49,8 @@ const ICON_MAP: Record<string, React.FC<{ size: number; color: string; strokeWid
   '🏆': Award, 'awards': Award,
   '📜': FileBadge, 'certifications': FileBadge,
   '📂': Folder, 'projects': Folder,
-  '👤': User, 'personal': User,
+  '👤': User, 'personal': User, 'user': User, 'USER': User,
+  'file-text': FileText, 'summary': FileText,
 };
 
 const getLucideIcon = (iconName: string | undefined, size: number, color: string) => {

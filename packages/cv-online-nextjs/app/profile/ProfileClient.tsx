@@ -190,8 +190,8 @@ function EmptySection({ label }: { label: string }) {
   return (
     <p className="text-sm text-gray-400 italic">
       Chưa có {label}.{' '}
-      <Link href="/cv/edit" className="text-[#1e3a3a] hover:underline font-medium not-italic">
-        Cập nhật CV
+      <Link href="/templates" className="text-[#1e3a3a] hover:underline font-medium not-italic">
+        Tạo CV
       </Link>
     </p>
   );

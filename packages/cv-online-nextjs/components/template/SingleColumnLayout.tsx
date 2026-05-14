@@ -99,41 +99,27 @@ export function SingleColumnPage({
 
       {/* Body */}
       <div style={{ padding: isFirst ? '28px 44px 44px' : '44px 44px 44px' }}>
-        {isFirst && (
-          <div style={{ marginBottom: 24 }}>
-            <div
-              style={{
-                fontSize: fs * 1.2, fontWeight: 700, textTransform: 'uppercase',
-                letterSpacing: '0.1em', color: accentColor,
-                textAlign: titleAlign === 'center' ? 'center' : 'left',
-                borderBottom: borderStyle === 'bottom' ? `${borderSize} solid ${accentColor}` : 'none',
-                paddingBottom: borderStyle !== 'none' ? 5 : 0,
-                marginBottom: borderStyle !== 'none' ? 12 : 6,
-                borderLeft: borderStyle === 'left' ? `${globalStyle?.title?.borderSize || '4px'} solid ${accentColor}` : 'none',
-                paddingLeft: borderStyle === 'left' ? 8 : 0,
-                display: 'flex', alignItems: 'center', gap: 8,
-                justifyContent: titleAlign === 'center' ? 'center' : 'flex-start'
-              }}
-            >
-              <EditableText 
-                value={ctx.sectionLayout.personal?.title || 'Giới thiệu'} 
-                onChange={(v) => ctx.updateSectionLabel('personal', v)} 
-                placeholder="Tiêu đề giới thiệu" 
-              />
-            </div>
-            <div style={{ color: '#44403c', lineHeight: lh }}>
-              <EditableText scale={scale} value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
-            </div>
-          </div>
-        )}
+
         {/* Group units by section for DnD */}
         {(() => {
+          const profStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
           const ADD_DEFAULTS: Record<string, () => void> = {
             experiences: () => ctx.addEntry('experiences', { title: '', company: '', from: '', to: '', location: '', desc: '' }),
             education: () => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' }),
             projects: () => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' }),
             awards: () => ctx.addEntry('awards', { title: '', year: '', org: '' }),
             languages: () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }),
+            skills: () => {
+              if (profStyle === 'grouped') {
+                const existingCats = new Set(data.skills?.map(s => s.category?.trim()).filter(Boolean));
+                let newCat = 'Danh mục mới';
+                let idx = 1;
+                while (existingCats.has(newCat)) newCat = `Danh mục mới ${idx++}`;
+                ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: 'intermediate', proficiencyPercentage: 70, category: newCat });
+              } else {
+                ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' });
+              }
+            },
           };
           const ADD_LABELS: Record<string, string> = {
             experiences: '+ Kinh nghiệm',
@@ -141,7 +127,7 @@ export function SingleColumnPage({
             projects: '+ Dự án',
             awards: '+ Giải thưởng',
             languages: '+ Ngôn ngữ',
-            skills: '+ Kỹ năng',
+            skills: profStyle === 'grouped' ? '+ Danh mục' : '+ Kỹ năng',
           };
           const HAS_DATA: Record<string, boolean> = {
             experiences: !!data.experiences?.length,
@@ -293,6 +279,7 @@ export function SingleColumnLayout({
   const units: RenderUnit[] = [];
   order.filter(k => k !== 'personal').forEach(key => {
     const sectionTitles: Record<string, string> = {
+      summary: 'Giới thiệu',
       experiences: 'Kinh nghiệm làm việc',
       education: 'Học vấn',
       skills: 'Kỹ năng',
@@ -310,8 +297,17 @@ export function SingleColumnLayout({
     
     // Handle Built-in Sections
     if (sectionTitles[key]) {
-      units.push({ kind: 'section-header', sectionKey: key, title: displayTitle });
-      if (key === 'experiences') {
+      units.push({ kind: 'section-header', sectionKey: key, title: displayTitle } as any); // cast for extra fields
+      
+      // Update title and onTitleChange for summary since it uses a custom binding
+      if (key === 'summary') {
+        const header = units[units.length - 1] as any;
+        header.title = ctx.sectionLayout.summary?.title || sectionTitles.summary;
+        header.onTitleChange = (v: string) => ctx.patchSectionLayout('summary', { title: v });
+        units.push({ kind: 'item', sectionKey: key, node: <div style={{ color: '#44403c', lineHeight: lh }}>
+          <EditableText scale={scale} value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
+        </div> });
+      } else if (key === 'experiences') {
         units.push({ kind: 'item', sectionKey: key, node: <ExperienceSection data={data} ctx={ctx} variant="main" /> });
       } else if (key === 'skills') {
         units.push({ kind: 'item', sectionKey: key, node: <SkillsBlock data={data} ctx={ctx} dark={false} /> });

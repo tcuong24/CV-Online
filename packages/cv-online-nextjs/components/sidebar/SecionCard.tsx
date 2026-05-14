@@ -22,6 +22,7 @@ export const SECTION_META: Record<
   { label: string; icon: React.ReactNode; color: string; iconColor: string }
 > = {
   personal:       { label: 'Thông tin',      icon: <MdPerson />,            color: '#dbeafe', iconColor: '#2563eb' },
+  summary:        { label: 'Giới thiệu',     icon: <MdPerson />,            color: '#f0f9ff', iconColor: '#0369a1' },
   experiences:    { label: 'Kinh nghiệm',    icon: <MdWork />,              color: '#dcfce7', iconColor: '#16a34a' },
   education:      { label: 'Học vấn',        icon: <MdSchool />,            color: '#fef3c7', iconColor: '#d97706' },
   skills:         { label: 'Kỹ năng',        icon: <MdStar />,              color: '#fce7f3', iconColor: '#db2777' },

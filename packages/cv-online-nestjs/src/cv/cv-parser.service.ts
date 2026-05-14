@@ -65,6 +65,22 @@ export class CvParserService {
       You are a world-class CV parsing assistant. Your task is to extract structured information from the following raw text of a resume/CV.
       IMPORTANT: You MUST return a JSON object that matches the following EXACT structure:
       {
+        "metadata": {
+          "language": "en", // Output "en" for English or "vi" for Vietnamese based on the CV content
+          "skillStyle": "tags", // Determine the visual style for skills based on the CV layout. Output "grouped" if skills are categorized into groups, "bars" if they have percentage/proficiency levels, or "tags" if it's a simple list.
+          "sectionTitles": { // Translate these to the detected language. e.g. "Học vấn" for vi, "Education" for en
+            "personal": "Liên hệ",
+            "contact": "Liên hệ",
+            "summary": "Giới thiệu",
+            "experiences": "Kinh nghiệm",
+            "education": "Học vấn",
+            "skills": "Kỹ năng",
+            "projects": "Dự án",
+            "certifications": "Chứng chỉ",
+            "languages": "Ngoại ngữ",
+            "awards": "Giải thưởng"
+          }
+        },
         "personal": { "name": "", "role": "", "email": "", "phone": "", "address": "", "links": [], "summary": "" },
         "experiences": [{ "title": "", "company": "", "location": "", "from": "", "to": "", "desc": "" }],
         "education": [{ "degree": "", "school": "", "location": "", "from": "", "to": "", "desc": "" }],
@@ -86,7 +102,7 @@ export class CvParserService {
 
     try {
       const result = await this.client.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           responseMimeType: 'application/json',
@@ -111,6 +127,22 @@ export class CvParserService {
       Analyze the image and extract all relevant information.
       IMPORTANT: You MUST return a JSON object that matches the following EXACT structure:
       {
+        "metadata": {
+          "language": "en", // Output "en" for English or "vi" for Vietnamese based on the CV content
+          "skillStyle": "tags", // Determine the visual style for skills based on the CV layout. Output "grouped" if skills are categorized into groups, "bars" if they have percentage/proficiency levels, or "tags" if it's a simple list.
+          "sectionTitles": { // Translate these to the detected language. e.g. "Học vấn" for vi, "Education" for en
+            "personal": "Liên hệ",
+            "contact": "Liên hệ",
+            "summary": "Giới thiệu",
+            "experiences": "Kinh nghiệm",
+            "education": "Học vấn",
+            "skills": "Kỹ năng",
+            "projects": "Dự án",
+            "certifications": "Chứng chỉ",
+            "languages": "Ngoại ngữ",
+            "awards": "Giải thưởng"
+          }
+        },
         "personal": { "name": "","role":"", "email": "", "phone": "", "address": "", "links": [], "summary": "" },
         "experiences": [{ "title": "", "company": "", "location": "", "from": "", "to": "", "desc": "" }],
         "education": [{ "degree": "", "school": "", "location": "", "from": "", "to": "", "desc": "" }],
@@ -129,7 +161,7 @@ export class CvParserService {
 
     try {
       const result = await this.client.models.generateContent({
-        model: 'gemini-3-flash',
+        model: 'gemini-3-flash-preview',
         contents: [
           {
             role: 'user',

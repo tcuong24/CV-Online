@@ -165,7 +165,7 @@ interface CvEditorState {
   setDragOver: (key: string | null) => void;
   reorderSection: (fromKey: string, toKey: string) => void;
   reorderSideKey: (fromKey: string, toKey: string) => void;
-  moveSectionToZone: (key: string, toSidebar: boolean) => void;
+  moveSectionToZone: (key: string, toSidebar: boolean, targetIndex?: number) => void;
   resetDrag: () => void;
   resetCV: () => void;
 }
@@ -377,6 +377,27 @@ export const useCvEditorStore = create<CvEditorState>()(
           set((state) => {
             const sanitizedData = sanitize(data);
             const newOrder = [...state.order];
+            const newSectionLayout = { ...state.sectionLayout };
+            
+            // Apply localized section titles if provided by AI
+            if (sanitizedData.metadata?.sectionTitles) {
+              const titles = sanitizedData.metadata.sectionTitles;
+              for (const [key, title] of Object.entries(titles)) {
+                if (!newSectionLayout[key]) newSectionLayout[key] = {};
+                newSectionLayout[key] = { ...newSectionLayout[key], title: title as string };
+              }
+            }
+            
+            // Apply skill style if provided by AI
+            if (sanitizedData.metadata?.skillStyle) {
+              if (!newSectionLayout.skills) newSectionLayout.skills = {};
+              newSectionLayout.skills = { ...newSectionLayout.skills, proficiencyStyle: sanitizedData.metadata.skillStyle as string };
+            }
+            
+            // Clean up metadata
+            if (sanitizedData.metadata) {
+              delete sanitizedData.metadata;
+            }
             
             const standardSections = ['experiences', 'education', 'skills', 'projects', 'awards', 'certifications', 'languages', 'references', 'interests', 'activities'];
             
@@ -396,7 +417,7 @@ export const useCvEditorStore = create<CvEditorState>()(
               });
             }
 
-            return { data: sanitizedData, order: newOrder, isDirty: true };
+            return { data: sanitizedData, order: newOrder, sectionLayout: newSectionLayout, isDirty: true };
           });
         },
 
@@ -954,13 +975,25 @@ export const useCvEditorStore = create<CvEditorState>()(
             })
           ),
 
-        moveSectionToZone: (key, toSidebar) =>
+        moveSectionToZone: (key, toSidebar, targetIndex) =>
           set(
             produce((s: CvEditorState) => {
               if (toSidebar && !s.sideKeys.includes(key)) {
-                s.sideKeys.push(key);
+                if (targetIndex !== undefined) {
+                  s.sideKeys.splice(targetIndex, 0, key);
+                } else {
+                  s.sideKeys.push(key);
+                }
+                s.order = s.order.filter((k) => k !== key); // xóa khỏi main
               } else if (!toSidebar) {
                 s.sideKeys = s.sideKeys.filter((k) => k !== key);
+                if (!s.order.includes(key)) {
+                  if (targetIndex !== undefined) {
+                    s.order.splice(targetIndex, 0, key);
+                  } else {
+                    s.order.push(key); // thêm vào main nếu chưa có
+                  }
+                }
               }
               // local UI only — không đánh dấu isDirty
             })

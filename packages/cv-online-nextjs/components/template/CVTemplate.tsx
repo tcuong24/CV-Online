@@ -13,9 +13,6 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { SingleColumnLayout } from './SingleColumnLayout';
 import { SidebarLeftLayout } from './SidebarLeftLayout';
 import { SidebarRightLayout } from './SidebarRightLayout';
-import { ExecutiveCenteredLayout } from './ExecutiveCentered';
-import { TechTimelineLayout } from './TechTimeline';
-import { AsymmetricLayout } from './AsymmetricLayout';
 import { TwoColumnLayout } from './TwoColumnLayout';
 import { BlackWhiteLayout } from './BlackWhiteLayout';
 
@@ -640,12 +637,13 @@ export function SkillsBlock({
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 6 : 4 }} className="relative group pb-6">
-        {categories.map((cat) => (
-          narrow ? (
+        {categories.map((cat) => {
+          const catKey = grouped[cat][0]?.id ?? cat;
+          return narrow ? (
             // Narrow (sidebar) — stacked: category on top, skills below
-            <div key={cat} style={{ position: 'relative', borderBottom: `1px solid ${borderColor}`, paddingBottom: 6, marginBottom: 4, paddingRight: fs * 1.8 }} className="group/cat">
+            <div key={catKey} style={{ position: 'relative', borderBottom: `1px solid ${borderColor}`, paddingBottom: 6, marginBottom: 4, paddingRight: fs * 1.8 }} className="group/cat">
               <div style={{ fontWeight: 700, fontSize: fs * 0.88, color: dark ? 'rgba(255,255,255,0.9)' : accentColor, marginBottom: 2 }}>
-                {cat}
+                <EditableText scale={ctx.scale} value={cat} onChange={(newCat) => { grouped[cat].forEach(s => ctx.updateSkill(s.id, { category: newCat })); }} placeholder="Danh mục" />
               </div>
               <div style={{ fontSize: fs * 0.84, color: textColor, lineHeight: 1.7 }}>
                 {renderSkillList(grouped[cat])}
@@ -654,34 +652,18 @@ export function SkillsBlock({
             </div>
           ) : (
             // Wide (main area) — 2-column: category left, skills right
-            <div key={cat} style={{ position: 'relative', display: 'flex', alignItems: 'baseline', gap: 10, borderBottom: `1px solid ${borderColor}`, paddingBottom: 4, marginBottom: 2, paddingRight: fs * 2 }} className="group/cat">
+            <div key={catKey} style={{ position: 'relative', display: 'flex', alignItems: 'baseline', gap: 10, borderBottom: `1px solid ${borderColor}`, paddingBottom: 4, marginBottom: 2, paddingRight: fs * 2 }} className="group/cat">
               <span style={{ fontWeight: 700, fontSize: fs * 0.9, color: dark ? 'rgba(255,255,255,0.9)' : accentColor, flexShrink: 0, minWidth: '30%', maxWidth: '38%' }}>
-                {cat}
+                <EditableText scale={ctx.scale} value={cat} onChange={(newCat) => { grouped[cat].forEach(s => ctx.updateSkill(s.id, { category: newCat })); }} placeholder="Danh mục" />
               </span>
-              <span style={{ fontSize: fs * 0.88, color: textColor, lineHeight: 1.8, flex: 1 }}>
+              <span style={{ fontSize: fs * 0.88, color: dark ? 'rgba(255,255,255,0.9)' : accentColor, lineHeight: 1.8, flex: 1 }}>
                 {renderSkillList(grouped[cat])}
               </span>
               <AddToCat cat={cat} />
             </div>
-          )
-        ))}
-        {/* Uncategorized skills */}
-        {uncategorized.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, paddingBottom: 4 }}>
-            <span style={{ fontWeight: 700, fontSize: fs * 0.9, color: dark ? 'rgba(255,255,255,0.9)' : accentColor, flexShrink: 0, minWidth: '30%', maxWidth: '38%' }}>
-              Khác
-            </span>
-            <span style={{ fontSize: fs * 0.88, color: textColor, flex: 1, lineHeight: 1.8 }}>
-              {uncategorized.map((s, i) => (
-                <span key={s.id} style={{ position: 'relative' }} className="group/item inline-flex items-center">
-                  <EditableText scale={ctx.scale} value={s.name} onChange={(v) => ctx.updateSkill(s.id, { name: v })} placeholder="Kỹ năng" />
-                  <RemoveBadge id={s.id} />
-                  {i < uncategorized.length - 1 && <span style={{ color: commaColor, marginRight: 4 }}>,</span>}
-                </span>
-              ))}
-            </span>
-          </div>
-        )}
+          );
+        })}
+
       </div>
     );
   }
@@ -765,16 +747,14 @@ export function MainSectionBlocks({
                         <div className="flex-1">
                           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 2 }}>
                             <span style={titleStyle}><EditableText scale={ctx.scale} value={e.degree} onChange={(v) => ctx.updateEntry('education', e.id, { degree: v })} placeholder="Chuyên ngành" /></span>
-                            {(e.from || e.to) && (
-                              <span style={dateStyle} className="flex gap-1">
-                                <EditableText scale={ctx.scale} value={e.from} onChange={(v) => ctx.updateEntry('education', e.id, { from: v })} placeholder="Bắt đầu" />
-                                <span>–</span>
-                                <EditableText scale={ctx.scale} value={e.to} onChange={(v) => ctx.updateEntry('education', e.id, { to: v })} placeholder="Kết thúc" />
-                              </span>
-                            )}
+                            <span style={dateStyle} className="flex gap-1">
+                              <EditableText scale={ctx.scale} value={e.from} onChange={(v) => ctx.updateEntry('education', e.id, { from: v })} placeholder="Bắt đầu" />
+                              <span>–</span>
+                              <EditableText scale={ctx.scale} value={e.to} onChange={(v) => ctx.updateEntry('education', e.id, { to: v })} placeholder="Kết thúc" />
+                            </span>
                           </div>
                           <div style={subStyle}><EditableText scale={ctx.scale} value={e.school} onChange={(v) => ctx.updateEntry('education', e.id, { school: v })} placeholder="Tên trường học" /></div>
-                          {e.desc && <div style={descStyle}><EditableText scale={ctx.scale} value={e.desc} onChange={(v) => ctx.updateEntry('education', e.id, { desc: v })} placeholder="Mô tả" multiline /></div>}
+                          <div style={descStyle}><EditableText scale={ctx.scale} value={e.desc} onChange={(v) => ctx.updateEntry('education', e.id, { desc: v })} placeholder="Mô tả" multiline /></div>
                         </div>
                         <button onClick={() => ctx.removeEntry('education', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
                       </div>
@@ -817,10 +797,10 @@ export function MainSectionBlocks({
                         <div className="flex-1">
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 2 }}>
                             <span style={titleStyle}><EditableText scale={ctx.scale} value={e.name} onChange={(v) => ctx.updateEntry('projects', e.id, { name: v })} placeholder="Tên dự án" /></span>
-                            {e.link && <span style={dateStyle}><EditableText scale={ctx.scale} value={e.link} onChange={(v) => ctx.updateEntry('projects', e.id, { link: v })} placeholder="Link dự án" /></span>}
+                            <span style={dateStyle}><EditableText scale={ctx.scale} value={e.link} onChange={(v) => ctx.updateEntry('projects', e.id, { link: v })} placeholder="Link dự án" /></span>
                           </div>
-                          {e.tech && <div style={{ ...subStyle, fontStyle: 'normal' }}><EditableText scale={ctx.scale} value={e.tech} onChange={(v) => ctx.updateEntry('projects', e.id, { tech: v })} placeholder="Công nghệ sử dụng" multiline /></div>}
-                          {e.desc && <div style={descStyle}><EditableText scale={ctx.scale} value={e.desc} onChange={(v) => ctx.updateEntry('projects', e.id, { desc: v })} placeholder="Mô tả dự án" multiline /></div>}
+                          <div style={{ ...subStyle, fontStyle: 'normal' }}><EditableText scale={ctx.scale} value={e.tech} onChange={(v) => ctx.updateEntry('projects', e.id, { tech: v })} placeholder="Công nghệ sử dụng" multiline /></div>
+                          <div style={descStyle}><EditableText scale={ctx.scale} value={e.desc} onChange={(v) => ctx.updateEntry('projects', e.id, { desc: v })} placeholder="Mô tả dự án" multiline /></div>
                         </div>
                         <button onClick={() => ctx.removeEntry('projects', e.id)} className="absolute top-0 right-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
                       </div>
@@ -1294,12 +1274,6 @@ export function CVTemplate({
       return <SidebarLeftLayout {...layoutProps} sideKeys={sideKeys} />;
     case 'sidebar-right':
       return <SidebarRightLayout {...layoutProps} sideKeys={sideKeys} />;
-    case 'executive-centered':
-      return <ExecutiveCenteredLayout {...layoutProps} />;
-    case 'tech-timeline':
-      return <TechTimelineLayout {...layoutProps} />;
-    case 'asymmetric':
-      return <AsymmetricLayout {...layoutProps} sideKeys={sideKeys} />;
     case 'two-column':
       return <TwoColumnLayout {...layoutProps} sideKeys={sideKeys} />;
     case 'black-white':

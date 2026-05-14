@@ -7,6 +7,7 @@ import { SectionLayoutConfig, StyleConfig, StyleColors, StyleTypography, StyleSp
 export const DB_KEY_MAP: Record<string, string> = {
   personalInfo: 'personal',
   experience: 'experiences',
+  summary: 'summary',
   experiences: 'experiences',
   education: 'education',
   skills: 'skills',

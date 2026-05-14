@@ -359,12 +359,15 @@ export function SidebarRightLayout({
     let onTitleChange: ((v: string) => void) | undefined = (v) => ctx.patchSectionLayout(key, { title: v });
 
     if (isPersonal(key)) {
+      return { key, title: '', content: null };
+    } else if (key === 'summary') {
+      displayTitle = ctx.sectionLayout.summary?.title || titles.personal || 'Giới thiệu';
       content = (
         <div style={{ color: '#57534e', lineHeight: lh }}>
           <EditableText scale={scale} multiline value={data.personal.summary || ''} onChange={v => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." />
         </div>
       );
-      onTitleChange = undefined;
+      onTitleChange = (v) => ctx.patchSectionLayout('summary', { title: v });
     } else if (key === 'contact') {
       const p = data.personal;
       content = (
@@ -426,8 +429,19 @@ export function SidebarRightLayout({
         />
       );
     } else if (key === 'skills') {
+      const profStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
+      const addSkillAction = profStyle === 'grouped'
+        ? () => {
+          const existingCats = new Set(data.skills?.map(s => s.category?.trim()).filter(Boolean));
+          let newCat = 'Danh mục mới';
+          let idx = 1;
+          while (existingCats.has(newCat)) newCat = `Danh mục mới ${idx++}`;
+          ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: 'intermediate', proficiencyPercentage: 70, category: newCat });
+        }
+        : () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' });
+
       content = <SkillsBlock data={data} ctx={ctx} dark={false} />;
-      addButton = makeAddBtn(key, '+', () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' }), !!data.skills?.length);
+      addButton = makeAddBtn(key, '+', addSkillAction, !!data.skills?.length);
       styleControls = (
         <StylePicker
           fs={fs}
@@ -472,9 +486,9 @@ export function SidebarRightLayout({
         } else if (source.droppableId === 'sections-sidebar' && destination.droppableId === 'sections-sidebar') {
           ctx.reorderSideKey(fromKey, sideKeys[destination.index]);
         } else if (source.droppableId.includes('main') && destination.droppableId.includes('sidebar')) {
-          ctx.moveSectionToZone(fromKey, true);
+          ctx.moveSectionToZone(fromKey, true, destination.index);
         } else {
-          ctx.moveSectionToZone(fromKey, false);
+          ctx.moveSectionToZone(fromKey, false, destination.index);
         }
       }}
     >

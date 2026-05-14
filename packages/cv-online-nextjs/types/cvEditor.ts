@@ -304,7 +304,7 @@ export interface RenderCtx {
   reorderSkills: (fromIndex: number, toIndex: number) => void;
   reorderSection: (fromKey: string, toKey: string) => void;
   reorderSideKey: (fromKey: string, toKey: string) => void;
-  moveSectionToZone: (key: string, toSidebar: boolean) => void;
+  moveSectionToZone: (key: string, toSidebar: boolean, targetIndex?: number) => void;
   patchSectionLayout: (key: string, patch: Record<string, unknown>) => void;
   addCustomSection: (title: string, config?: CvData['customSections'][0]['fieldConfig']) => void;
   removeCustomSection: (id: string) => void;

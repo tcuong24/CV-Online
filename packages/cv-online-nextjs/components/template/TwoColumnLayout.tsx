@@ -22,7 +22,71 @@ import {
   PAGE_HEIGHT_PX,
   StylePicker,
 } from './CVTemplate';
+import { FaFacebook, FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 
+function AddLinkDropdown({ data, ctx, fs, textColor }: {
+  data: CvData; ctx: RenderCtx; fs: number; textColor: { body: string; muted: string; heading: string };
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const linkOptions = [
+    { field: 'linkedinUrl', label: 'LinkedIn' },
+    { field: 'githubUrl', label: 'GitHub' },
+    { field: 'portfolioUrl', label: 'Website' },
+    { field: 'twitterUrl', label: 'Twitter' },
+    { field: 'facebookUrl', label: 'Facebook' },
+  ].filter(({ field }) => {
+    const val = (data.personal as any)[field];
+    return !val || val.trim() === '';
+  });
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  if (linkOptions.length === 0) return null;
+
+  return (
+    <div ref={ref} style={{ position: 'relative', marginTop: 6 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          fontSize: fs * 0.75, padding: '2px 8px',
+          background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)',
+          borderRadius: 99, cursor: 'pointer', color: textColor.body, fontFamily: 'inherit',
+        }}
+      >+ Thêm link</button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, marginTop: 4,
+          background: '#fff',
+          borderRadius: 8, padding: '4px 0', zIndex: 999, minWidth: 130,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+        }}>
+          {linkOptions.map(({ field, label }) => (
+            <button
+              key={field}
+              onClick={() => { ctx.updatePersonalInfo({ [field]: 'https://' } as any); setOpen(false); }}
+              style={{
+                display: 'block', width: '100%', textAlign: 'left',
+                padding: '5px 12px', fontSize: fs * 0.8,
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: textColor.body, fontFamily: 'inherit',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+            >{label}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Layout: sidebar-left ─────────────────────────────────────────────────────
 
@@ -64,8 +128,8 @@ export function TwoColumnPage({
 }) {
   const [isAvatarHovered, setIsAvatarHovered] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  console.log("data",data);
-  
+  console.log("data", data);
+
   const handleAvatarClick = () => {
     avatarInputRef.current?.click();
   };
@@ -200,25 +264,9 @@ export function TwoColumnPage({
                 onChange={handleFileChange}
               />
             </div>
-            <div style={{ marginBottom: 22 }}>
-              <div
-                style={{
-                  fontSize: fs * 1.2, fontWeight: 700, textTransform: 'uppercase',
-                  letterSpacing: '0.1em', color: accentColor,
-                  textAlign: titleAlign === 'center' ? 'center' : 'left',
-                  borderBottom: borderStyle === 'bottom' ? `1px solid ${theme.primary}30` : 'none',
-                  paddingBottom: borderStyle !== 'none' ? 5 : 0,
-                  marginBottom: borderStyle !== 'none' ? 12 : 6,
-                  borderLeft: borderStyle === 'left' ? `4px solid ${theme.primary}30` : 'none',
-                  paddingLeft: borderStyle === 'left' ? 8 : 0,
-                }}
-              >SUMMARY</div>
-              <div style={{ color: '#57534e', lineHeight: lh }}>
-                <EditableText scale={scale} value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
-              </div>
-            </div>
+
             {/* Contact */}
-            <SideSection title="Liên hệ" fontSize={fs * 1.2} titleColor={textColor.heading} borderColor={`${theme.primary}30`} onTitleChange={(v) => ctx.updateSectionLabel('personal', v)}>
+            <SideSection title={ctx.sectionLayout.personal?.title || "Liên hệ"} fontSize={fs * 1.2} titleColor={textColor.heading} borderColor={`${theme.primary}30`} onTitleChange={(v) => ctx.patchSectionLayout('personal', { title: v })}>
               <div style={{ fontSize: fs * 0.84, color: textColor.body, marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <MdEmail size={10} /><EditableText scale={scale} value={data.personal.email || ''} onChange={(v) => ctx.updatePersonalInfo({ email: v })} placeholder="Email" />
               </div>
@@ -228,10 +276,44 @@ export function TwoColumnPage({
               <div style={{ fontSize: fs * 0.84, color: textColor.body, marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <MdLocationOn size={10} /><EditableText scale={scale} value={data.personal.location || ''} onChange={(v) => ctx.updatePersonalInfo({ location: v })} placeholder="Địa chỉ" />
               </div>
-              <div style={{ fontSize: fs * 0.84, color: textColor.body, marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <MdLink size={10} /><EditableText scale={scale} value={data.personal.website || ''} onChange={(v) => ctx.updatePersonalInfo({ website: v })} placeholder="Website / Link" />
-              </div>
+
+              {/* Dynamic social links với nút xóa */}
+              {[
+                { field: 'linkedinUrl', icon: <FaLinkedin size={10} />, placeholder: 'LinkedIn URL' },
+                { field: 'githubUrl', icon: <FaGithub size={10} />, placeholder: 'GitHub URL' },
+                { field: 'portfolioUrl', icon: <MdLink size={10} />, placeholder: 'Portfolio / Website' },
+                { field: 'twitterUrl', icon: <FaTwitter size={10} />, placeholder: 'Twitter URL' },
+                { field: 'facebookUrl', icon: <FaFacebook size={10} />, placeholder: 'Facebook URL' },
+              ].map(({ field, icon, placeholder }) => {
+                const val = (data.personal as any)[field] || '';
+                if (!val || val.trim() === '') return null;
+                return (
+                  <div key={field} className='group' style={{ fontSize: fs * 0.84, color: textColor.body, marginBottom: 5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 5 }}>
+                    <div className='flex items-center gap-2'>
+                      {icon}
+                      <EditableText scale={scale} value={val} onChange={(v) => ctx.updatePersonalInfo({ [field]: v } as any)} placeholder={placeholder} />
+                    </div>
+                    <button
+                      onClick={() => ctx.updatePersonalInfo({ [field]: '' } as any)}
+                      title="Xóa"
+                      className='text-red-500 cursor-pointer opacity-0 group-hover:opacity-100'
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+
+              {/* Nút + để mở dropdown chọn link */}
+              <AddLinkDropdown
+                data={data}
+                ctx={ctx}
+                fs={fs}
+                textColor={textColor}
+              />
             </SideSection>
+
+
           </>
         )}
 
@@ -258,18 +340,18 @@ export function TwoColumnPage({
                           {...(dp.dragHandleProps ?? {})}
                           style={{
                             position: 'absolute',
-                            top: 2,
+                            top: 4,
                             right: 0,
                             display: 'flex',
                             alignItems: 'center',
                             cursor: 'grab',
-                            color: 'rgba(255,255,255,0.6)',
+                            color: accentColor,
                             zIndex: 1,
                           }}
                           title="Kéo để sắp xếp"
                           className="opacity-0 group-hover/sidesec:opacity-100 transition-opacity"
                         >
-                          <MdDragIndicator size={12} />
+                          <MdDragIndicator size={18} />
                         </span>
                         {content}
                       </div>
@@ -290,9 +372,9 @@ export function TwoColumnPage({
             <div style={{ fontSize: fs * 2.5, fontWeight: 700, lineHeight: 1.3, marginBottom: 3, textAlign: 'center' as React.CSSProperties['textAlign'], color: textColor.muted }}>
               <EditableText scale={scale} value={data.personal.name || ''} onChange={(v) => ctx.updatePersonalInfo({ name: v })} placeholder="Họ và tên của bạn" />
             </div>
-              <div style={{ fontSize: fs * 1.2, color: textColor.body, opacity: 0.7, marginBottom: 18, textAlign: 'center' as React.CSSProperties['textAlign'] }}>
-                <EditableText scale={scale} value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
-              </div>
+            <div style={{ fontSize: fs * 1.2, color: textColor.body, opacity: 0.7, marginBottom: 18, textAlign: 'center' as React.CSSProperties['textAlign'] }}>
+              <EditableText scale={scale} value={data.personal.role || ''} onChange={(v) => ctx.updatePersonalInfo({ role: v })} placeholder="Vị trí ứng tuyển" />
+            </div>
           </div>
         )}
 
@@ -430,14 +512,39 @@ export function TwoColumnLayout({
       return;
     }
 
+    if (key === 'summary') {
+      allMainSections.push({
+        key,
+        title: ctx.sectionLayout.summary?.title || displayTitle || 'Giới thiệu',
+        onTitleChange: (v) => ctx.patchSectionLayout('summary', { title: v }),
+        content: (
+          <div style={{ fontSize: fs * 0.92, color: textColor.body, lineHeight: lh }}>
+            <EditableText scale={scale} value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
+          </div>
+        ),
+      });
+      return;
+    }
+
+
     if (key === 'skills') {
       const profStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
+      const addSkillAction = profStyle === 'grouped'
+        ? () => {
+          const existingCats = new Set(data.skills.map(s => s.category?.trim()).filter(Boolean));
+          let newCat = 'Danh mục mới';
+          let idx = 1;
+          while (existingCats.has(newCat)) newCat = `Danh mục mới ${idx++}`;
+          ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: 'intermediate', proficiencyPercentage: 70, category: newCat });
+        }
+        : () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' });
+      const addLabel = profStyle === 'grouped' ? '+ Danh mục' : '+ Kỹ năng';
       allMainSections.push({
         key,
         title: displayTitle,
         onTitleChange,
-        content: <SkillsBlock data={data} ctx={ctx} dark={true} />,
-        addButton: makeAddBtn(key, '+ Kỹ năng', () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' }), !!data.skills?.length),
+        content: <SkillsBlock data={data} ctx={ctx} />,
+        addButton: makeAddBtn(key, addLabel, addSkillAction, true),
         styleControls: (
           <StylePicker
             fs={fs}
@@ -486,11 +593,12 @@ export function TwoColumnLayout({
   // ── Shared sidebar button style ──────────────────────────────────────────
   const sideBtnStyle: React.CSSProperties = {
     padding: '1px 6px',
-    fontSize: 8,
+    fontSize: 12,
     fontWeight: 600,
     border: theme.dark,
     borderRadius: 99,
     cursor: 'pointer',
+    height: '100%',
     background: 'transparent',
     color: textColor.body,
     fontFamily: 'inherit',
@@ -511,6 +619,7 @@ export function TwoColumnLayout({
   const sideSectionNodes: SidebarSection[] = sideKeys.flatMap((key) => {
     // 1. Resolve basic titles
     const defaultTitles: Record<string, string> = {
+      summary: 'Summary',
       skills: 'Kỹ năng',
       languages: 'Ngoại ngữ',
       awards: 'Chứng chỉ',
@@ -548,14 +657,70 @@ export function TwoColumnLayout({
       }
     }
 
-    // 3. Built-in Sidebar Sections
+    // 3. Personal — hardcoded in isFirst, skip to avoid phantom drag index
+    if (key === 'personal') return [];
+
+    // 4. Summary section
+    if (key === 'summary') {
+      return [{
+        key,
+        content: (
+          <SideSection
+            key={key}
+            title={ctx.sectionLayout.summary?.title || displayTitle || 'Summary'}
+            fontSize={fs * 1.2}
+            titleColor={textColor.heading}
+            borderColor={`${theme.primary}30`}
+            onTitleChange={(v) => ctx.patchSectionLayout('summary', { title: v })}
+          >
+            <div style={{ fontSize: fs * 0.88, color: textColor.body, lineHeight: lh }}>
+              <EditableText scale={scale} value={data.personal.summary || ''} onChange={(v) => ctx.updatePersonalInfo({ summary: v })} placeholder="Giới thiệu bản thân..." multiline />
+            </div>
+          </SideSection>
+        )
+      }];
+    }
+
+    // 4. Built-in Sidebar Sections
     if (key === 'skills') {
+      const profStyle = ctx.sectionLayout.skills?.proficiencyStyle ?? 'tags';
+      const addSideSkillAction = profStyle === 'grouped'
+        ? () => {
+          const existingCats = new Set(data.skills.map(s => s.category?.trim()).filter(Boolean));
+          let newCat = 'Danh mục mới';
+          let idx = 1;
+          while (existingCats.has(newCat)) newCat = `Danh mục mới ${idx++}`;
+          ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: 'intermediate', proficiencyPercentage: 70, category: newCat });
+        }
+        : () => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' });
       const addBtn = (
-        <button style={sideBtnStyle} onClick={() => ctx.addSkill({ id: crypto.randomUUID(), name: 'Kỹ năng mới', proficiencyLevel: '3', proficiencyPercentage: 60, category: '' })}>
-          + Thêm
+        <button className='p-2 border'  style={sideBtnStyle} onClick={addSideSkillAction}>
+          {profStyle === 'grouped' ? '+' : '+'}
         </button>
       );
-      return [{ key, content: <SideSection key={key} title={displayTitle} fontSize={fs * 1.2} titleColor={textColor.heading} borderColor={`${accentColor}30`} addButton={addBtn} onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}><SkillsBlock data={data} ctx={ctx} dark={false} /></SideSection> }];
+      return [{
+        key, content: (
+          <SideSection
+            key={key}
+            title={displayTitle}
+            fontSize={fs * 1.2}
+            titleColor={textColor.heading}
+            borderColor={`${accentColor}30`}
+            addButton={addBtn}
+            styleControls={
+              <StylePicker
+                fs={fs}
+                value={profStyle}
+                options={[{ value: 'tags', label: 'Tags' }, { value: 'bars', label: 'Bars' }, { value: 'dots', label: 'Dots' }, { value: 'grouped', label: 'Grouped' }, { value: 'none', label: 'None' }]}
+                onChange={(v) => ctx.patchSectionLayout('skills', { proficiencyStyle: v })}
+              />
+            }
+            onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
+          >
+            <SkillsBlock data={data} ctx={ctx} dark={false} narrow={true} />
+          </SideSection>
+        )
+      }];
     }
 
     if (key === 'languages') {
@@ -620,9 +785,10 @@ export function TwoColumnLayout({
             {data.education?.map((e) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: fs * 0.9, fontWeight: 600 }}>{e.degree || 'Chuyên ngành'}</div>
-                  <div style={{ fontSize: fs * 0.88, color: textColor.body }}>{e.school || 'Trường'}</div>
-                  {(e.from || e.to) && <div style={{ fontSize: fs * 0.75, color: textColor.muted }}>{e.from} – {e.to}</div>}
+                  <div style={{ fontSize: fs * 0.9, fontWeight: 600 }}><EditableText scale={scale} value={e.degree || ''} onChange={(v) => ctx.updateEntry('education', e.id, { degree: v })} placeholder="Chuyên ngành" /></div>
+                  <div style={{ fontSize: fs * 0.88, color: textColor.body }}><EditableText scale={scale} value={e.school || ''} onChange={(v) => ctx.updateEntry('education', e.id, { school: v })} placeholder="Trường" /></div>
+                  <div style={{ fontSize: fs * 0.75, color: textColor.muted }}><EditableText scale={scale} value={e.from || ''} onChange={(v) => ctx.updateEntry('education', e.id, { from: v })} placeholder="Bắt đầu" /> – <EditableText scale={scale} value={e.to || ''} onChange={(v) => ctx.updateEntry('education', e.id, { to: v })} placeholder="Kết thúc" /></div>
+                  <div style={{ fontSize: fs * 0.78, color: textColor.muted, marginTop: 2, fontStyle: 'italic' }}><EditableText scale={scale} value={e.desc || ''} onChange={(v) => ctx.updateEntry('education', e.id, { desc: v })} placeholder="Mô tả..." multiline /></div>
                 </div>
                 <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('education', e.id)} title="Xóa">✕</button>
               </div>
@@ -644,8 +810,15 @@ export function TwoColumnLayout({
             {data.projects?.map((e) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{e.name || 'Tên dự án'}</div>
-                  {e.tech && <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.55)' }}>{e.tech}</div>}
+                  <div style={{ fontSize: fs * 0.84, color: textColor.heading, fontWeight: 600 }}>
+                    <EditableText scale={scale} value={e.name || ''} onChange={(v) => ctx.updateEntry('projects', e.id, { name: v })} placeholder="Tên dự án" />
+                  </div>
+                  <div style={{ fontSize: fs * 0.75, color: textColor.body }}>
+                    <EditableText scale={scale} value={e.tech || ''} onChange={(v) => ctx.updateEntry('projects', e.id, { tech: v })} placeholder="Công nghệ" multiline />
+                  </div>
+                  <div style={{ fontSize: fs * 0.75, color: textColor.muted, fontStyle: 'italic', marginTop: 2 }}>
+                    <EditableText scale={scale} value={e.desc || ''} onChange={(v) => ctx.updateEntry('projects', e.id, { desc: v })} placeholder="Mô tả dự án..." multiline />
+                  </div>
                 </div>
                 <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('projects', e.id)} title="Xóa">✕</button>
               </div>
@@ -667,9 +840,18 @@ export function TwoColumnLayout({
             {data.experiences?.map((e) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{e.title || 'Vị trí'}</div>
-                  <div style={{ fontSize: fs * 0.78, color: 'rgba(255,255,255,0.65)' }}>{e.company || 'Công ty'}</div>
-                  {(e.from || e.to) && <div style={{ fontSize: fs * 0.75, color: 'rgba(255,255,255,0.45)' }}>{e.from} – {e.to}</div>}
+                  <div style={{ fontSize: fs * 0.84, color: textColor.heading, fontWeight: 600 }}>
+                    <EditableText scale={scale} value={e.title || ''} onChange={(v) => ctx.updateEntry('experiences', e.id, { title: v })} placeholder="Vị trí" />
+                  </div>
+                  <div style={{ fontSize: fs * 0.78, color: textColor.body }}>
+                    <EditableText scale={scale} value={e.company || ''} onChange={(v) => ctx.updateEntry('experiences', e.id, { company: v })} placeholder="Công ty" />
+                  </div>
+                  <div style={{ fontSize: fs * 0.75, color: textColor.muted }}>
+                    <EditableText scale={scale} value={e.from || ''} onChange={(v) => ctx.updateEntry('experiences', e.id, { from: v })} placeholder="Bắt đầu" /> – <EditableText scale={scale} value={e.to || ''} onChange={(v) => ctx.updateEntry('experiences', e.id, { to: v })} placeholder="Kết thúc" />
+                  </div>
+                  <div style={{ fontSize: fs * 0.75, color: textColor.muted, fontStyle: 'italic', marginTop: 2 }}>
+                    <EditableText scale={scale} value={e.desc || ''} onChange={(v) => ctx.updateEntry('experiences', e.id, { desc: v })} placeholder="Mô tả công việc..." multiline />
+                  </div>
                 </div>
                 <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('experiences', e.id)} title="Xóa">✕</button>
               </div>
@@ -701,9 +883,9 @@ export function TwoColumnLayout({
             const toKey = sideKeys[destination.index];
             if (toKey) ctx.reorderSideKey(fromKey, toKey);
           } else if (source.droppableId === 'sections-main' && destination.droppableId === 'sections-sidebar') {
-            ctx.moveSectionToZone(fromKey, true);
+            ctx.moveSectionToZone(fromKey, true, destination.index);
           } else if (source.droppableId === 'sections-sidebar' && destination.droppableId === 'sections-main') {
-            ctx.moveSectionToZone(fromKey, false);
+            ctx.moveSectionToZone(fromKey, false, destination.index);
           }
         }}
       >
