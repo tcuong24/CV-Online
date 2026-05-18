@@ -200,8 +200,12 @@ Section đang focus: ${activeSection || 'personal'}
 
 === LƯU Ý QUAN TRỌNG ===
 - "oldText" phải là text THỰC lấy từ CV data bên trên. Nếu field trống thì oldText = ""
-- "field" mapping: KHÔNG ĐƯỢC DÙNG "personal.summary", bắt buộc phải trả về chính xác "summary" | kinh nghiệm → "experiences.{index}.desc" | dự án → "projects.{index}.desc" | kỹ năng → "skills"
+- "field" mapping: KHÔNG ĐƯỢC DÙNG "personal.summary", bắt buộc phải trả về chính xác "summary" | kinh nghiệm → "experiences.{index}.desc" | dự án → "projects.{index}.desc" | kỹ năng → "skills" | ngoại ngữ → "languages.{index}.lang" hoặc "languages.{index}.level" | kiểu hiển thị ngoại ngữ → "languages.style"
 - Đặc biệt với mục Kỹ năng ("skills"): Nếu CV hiện tại đang nhóm theo category (có trường category), \`newText\` PHẢI giữ format "Category1: skill1, skill2 | Category2: skill3". Nếu không có category, trả về comma-separated (VD: "skill1, skill2").
+- Đặc biệt với mục Ngoại ngữ ("languages"): Mỗi ngoại ngữ gồm "lang" (tên ngôn ngữ) và "level" (mức độ từ 1 đến 5). 
+  + Khi chỉnh sửa hoặc dịch tên ngoại ngữ: Trả về field "languages.{index}.lang".
+  + Khi chỉnh sửa mức độ: Trả về field "languages.{index}.level" (newText là chuỗi số từ "1" đến "5").
+  + Khi đề xuất đổi kiểu hiển thị ngoại ngữ: Trả về field "languages.style" và newText là một trong các giá trị: "bars" (thanh ngang), "dots" (chấm tròn), "stars" (ngôi sao), "text" (chỉ hiện chữ).
 - Score "before/after" phải hợp lý, chênh lệch phản ánh mức độ cải thiện thực sự
 - Nếu CV data trống, ưu tiên intent "collect_info" và hỏi thông tin
 `;

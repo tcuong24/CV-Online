@@ -48,10 +48,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <nav className="space-y-1">
             <NavItem
-              href="/admin"
+              href="/admin/stats"
+              icon={<BarChart3 size={18} />}
+              label="Thống kê"
+              active={pathname === '/admin/stats'}
+            />
+            <NavItem
+              href="/admin/users"
               icon={<Users size={18} />}
               label="Người dùng"
-              active={pathname === '/admin'}
+              active={pathname === '/admin/users'}
             />
             <NavItem
               href="/admin/templates"
@@ -60,23 +66,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               active={pathname === '/admin/templates'}
             />
             <NavItem
-              href="/admin/stats"
-              icon={<BarChart3 size={18} />}
-              label="Thống kê"
-              active={pathname === '/admin/stats'}
-            />
-            <NavItem
               href="/admin/settings"
               icon={<Settings size={18} />}
               label="Cài đặt"
               active={pathname === '/admin/settings'}
             />
-            <NavItem
+            {/* <NavItem
               href="/admin/logs"
               icon={<History size={18} />}
               label="Nhật ký"
               active={pathname === '/admin/logs'}
-            />
+            /> */}
           </nav>
         </div>
 
@@ -96,11 +96,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         <header className="h-16 flex items-center justify-between px-10 bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-gray-200">
-          <div className="flex items-center gap-8 text-sm font-medium text-gray-500">
-            <Link href="/admin" className={`${pathname === '/admin' ? 'text-[#1e3a3a] border-b-2 border-[#1e3a3a] h-16 flex items-center' : 'hover:text-[#1e3a3a] transition-colors cursor-pointer h-16 flex items-center'}`}>Tổng quan</Link>
-            <Link href="/admin/templates" className={`${pathname.startsWith('/admin/templates') ? 'text-[#1e3a3a] border-b-2 border-[#1e3a3a] h-16 flex items-center' : 'hover:text-[#1e3a3a] transition-colors cursor-pointer h-16 flex items-center'}`}>Mẫu CV</Link>
-            <Link href="/admin/logs" className="hover:text-[#1e3a3a] transition-colors cursor-pointer h-16 flex items-center">Nhật ký</Link>
-          </div>
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="text-xs text-gray-500 hover:text-[#1e3a3a] font-semibold transition-colors">Quay lại Dashboard</Link>
           </div>

@@ -102,35 +102,35 @@ export default function UsersManagementPage() {
           <p className="text-slate-400 text-sm font-medium">Theo dõi và quản lý quyền hạn của tất cả thành viên</p>
         </div>
         <div className="flex gap-3">
-            <button onClick={fetchUsers} className="p-2 hover:bg-slate-100 rounded-xl transition-colors border border-slate-100 bg-white shadow-sm">
-                <RefreshCw size={20} className="text-slate-500" />
-            </button>
-            <Button className="rounded-xl bg-violet-600 hover:bg-violet-700">
-                Thêm người dùng
-            </Button>
+          <button onClick={fetchUsers} className="p-2 hover:bg-slate-100 rounded-xl transition-colors border border-slate-100 bg-white shadow-sm">
+            <RefreshCw size={20} className="text-slate-500" />
+          </button>
+          <Button className="rounded-xl bg-violet-600 hover:bg-violet-700">
+            Thêm người dùng
+          </Button>
         </div>
       </div>
 
       <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-50">
         <div className="flex items-center justify-between mb-8 gap-4">
           <div className="flex items-center gap-3">
-             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm email, tên..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm w-80 focus:ring-2 focus:ring-violet-500 outline-none transition-all"
-                />
-              </div>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100 transition-all">
-                  <Filter size={14} /> Lọc
-              </button>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input
+                type="text"
+                placeholder="Tìm kiếm email, tên..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm w-80 focus:ring-2 focus:ring-violet-500 outline-none transition-all"
+              />
+            </div>
+            <button className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100 transition-all">
+              <Filter size={14} /> Lọc
+            </button>
           </div>
-          
+
           <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-              Tổng số: {filtered.length} người dùng
+            Tổng số: {filtered.length} người dùng
           </div>
         </div>
 
@@ -140,7 +140,7 @@ export default function UsersManagementPage() {
               <tr className="text-slate-400 font-bold border-b border-slate-50 uppercase text-[11px] tracking-wider">
                 <th className="text-left pb-5 pl-2">Người dùng</th>
                 <th className="text-left pb-5">Quyền hạn</th>
-                <th className="text-left pb-5">Gói dịch vụ</th>
+                {/* <th className="text-left pb-5">Gói dịch vụ</th> */}
                 <th className="text-left pb-5">CV đã tạo</th>
                 <th className="text-right pb-5 pr-2">Thao tác</th>
               </tr>
@@ -161,19 +161,19 @@ export default function UsersManagementPage() {
                   </td>
                   <td className="py-5">
                     <div className="flex items-center gap-1 group/select relative">
-                        <select
-                          value={user.role}
-                          disabled={actionLoading === user.id + 'role'}
-                          onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'admin')}
-                          className="appearance-none bg-transparent font-bold text-xs uppercase tracking-wider outline-none cursor-pointer text-violet-600 pr-5"
-                        >
-                          <option value="user">User</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                        <ChevronDown size={12} className="absolute right-0 text-violet-400 pointer-events-none" />
+                      <select
+                        value={user.role}
+                        disabled={actionLoading === user.id + 'role'}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'admin')}
+                        className="appearance-none bg-transparent font-bold text-xs uppercase tracking-wider outline-none cursor-pointer text-violet-600 pr-5"
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                      <ChevronDown size={12} className="absolute right-0 text-violet-400 pointer-events-none" />
                     </div>
                   </td>
-                  <td className="py-5">
+                  {/* <td className="py-5">
                      <select
                         value={user.subscriptionType}
                         disabled={actionLoading === user.id + 'sub'}
@@ -184,23 +184,23 @@ export default function UsersManagementPage() {
                         <option value="pro">Pro</option>
                         <option value="enterprise">Enterprise</option>
                      </select>
-                  </td>
+                  </td> */}
                   <td className="py-5">
-                      <span className="font-bold text-slate-700">{user._count.cvs}</span>
-                      <span className="text-slate-400 text-xs ml-1 font-medium">CV</span>
+                    <span className="font-bold text-slate-700">{user._count.cvs}</span>
+                    <span className="text-slate-400 text-xs ml-1 font-medium">CV</span>
                   </td>
                   <td className="py-5 pr-2 text-right">
                     <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 hover:bg-slate-100 text-slate-300 hover:text-slate-600 rounded-xl transition-all">
-                            <MoreHorizontal size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          disabled={!!actionLoading}
-                          className="p-2 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-xl transition-all"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                      <button className="p-2 hover:bg-slate-100 text-slate-300 hover:text-slate-600 rounded-xl transition-all">
+                        <MoreHorizontal size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        disabled={!!actionLoading}
+                        className="p-2 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-xl transition-all"
+                      >
+                        <Trash2 size={18} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -210,7 +210,7 @@ export default function UsersManagementPage() {
           {filtered.length === 0 && (
             <div className="py-24 text-center">
               <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users size={32} className="text-slate-200" />
+                <Users size={32} className="text-slate-200" />
               </div>
               <p className="text-slate-400 text-sm font-medium">Không tìm thấy người dùng nào phù hợp.</p>
             </div>

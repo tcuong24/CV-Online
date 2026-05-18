@@ -19,6 +19,7 @@ import {
   StylePicker,
   ExperienceSection,
   SkillsBlock,
+  LanguagesBlock,
   MainSectionBlocks,
   paginateSections,
 } from './CVTemplate';
@@ -417,6 +418,32 @@ export function SidebarLeftLayout({
       return;
     }
 
+    if (key === 'languages') {
+      const langStyle = ctx.sectionLayout.languages?.style ?? 'bars';
+      allMainSections.push({
+        key,
+        title: displayTitle,
+        icon: ctx.sectionLayout[key]?.icon,
+        onTitleChange,
+        content: <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />,
+        addButton: makeAddBtn(key, '+ Ngôn ngữ', () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }), !!data.languages?.length),
+        styleControls: (
+          <StylePicker
+            fs={fs}
+            value={langStyle}
+            options={[
+              { value: 'bars', label: 'Bars' },
+              { value: 'dots', label: 'Dots' },
+              { value: 'stars', label: 'Stars' },
+              { value: 'text', label: 'Text only' }
+            ]}
+            onChange={(v) => ctx.patchSectionLayout('languages', { style: v })}
+          />
+        ),
+      });
+      return;
+    }
+
     if (key === 'summary') {
       allMainSections.push({
         key,
@@ -590,6 +617,7 @@ export function SidebarLeftLayout({
     }
 
     if (key === 'languages') {
+      const langStyle = ctx.sectionLayout.languages?.style ?? 'bars';
       const addBtn = (
         <button style={sideBtnStyle} onClick={() => ctx.addEntry('languages', { lang: 'Ngôn ngữ mới', level: 1 })}>
           + Thêm
@@ -603,21 +631,22 @@ export function SidebarLeftLayout({
             fontSize={fs * 1.2}
             titleColor='#fff'
             addButton={addBtn}
+            styleControls={
+              <StylePicker
+                fs={fs}
+                value={langStyle}
+                options={[
+                  { value: 'bars', label: 'Bars' },
+                  { value: 'dots', label: 'Dots' },
+                  { value: 'stars', label: 'Stars' },
+                  { value: 'text', label: 'Text only' }
+                ]}
+                onChange={(v) => ctx.patchSectionLayout('languages', { style: v })}
+              />
+            }
             onTitleChange={(v) => ctx.patchSectionLayout(key, { title: v })}
           >
-            {data.languages?.map((l) => (
-              <div key={l.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 6 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: fs * 0.84, color: 'rgba(255,255,255,0.85)' }}>{l.lang || 'Ngôn ngữ'}</div>
-                  <div style={{ display: 'flex', gap: 2, marginTop: 2 }}>
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} style={{ flex: 1, height: 3, background: l.level >= i ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.2)', borderRadius: 1 }} />
-                    ))}
-                  </div>
-                </div>
-                <button style={sideDeleteStyle} onClick={() => ctx.removeEntry('languages', l.id)} title="Xóa">✕</button>
-              </div>
-            ))}
+            <LanguagesBlock data={data} ctx={ctx} dark={true} />
           </SideSection>
         ),
       }];

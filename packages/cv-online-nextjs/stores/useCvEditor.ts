@@ -359,6 +359,20 @@ export const useCvEditorStore = create<CvEditorState>()(
                       category: '',
                     };
                   }
+                  if (typeof item === 'string' && key === 'certifications') {
+                    // Convert string certification to object certification
+                    return {
+                      id: uid(),
+                      name: item,
+                      issuingOrganization: '',
+                      issueDate: '',
+                      expiryDate: '',
+                      credentialId: '',
+                      credentialUrl: '',
+                      description: '',
+                      open: false,
+                    };
+                  }
                   if (typeof item === 'object' && item !== null) {
                     return {
                       id: uid(),
@@ -379,6 +393,32 @@ export const useCvEditorStore = create<CvEditorState>()(
             const newOrder = [...state.order];
             const newSectionLayout = { ...state.sectionLayout };
             
+            // Queue all existing DB entries for deletion to prevent duplicate/stale entries after importing
+            const nextDeletedQueue = [...(state.deletedQueue || [])];
+            const sectionsToClear = [
+              'experiences',
+              'education',
+              'skills',
+              'projects',
+              'certifications',
+              'languages',
+              'awards',
+              'references',
+              'customSections',
+            ] as const;
+
+            sectionsToClear.forEach((key) => {
+              const items = (state.data as Record<string, unknown>)[key];
+              if (Array.isArray(items)) {
+                items.forEach((item: any) => {
+                  if (item._dbId) {
+                    const path = key === 'customSections' ? 'custom-sections' : key;
+                    nextDeletedQueue.push({ path, dbId: item._dbId });
+                  }
+                });
+              }
+            });
+            
             // Apply localized section titles if provided by AI
             if (sanitizedData.metadata?.sectionTitles) {
               const titles = sanitizedData.metadata.sectionTitles;
@@ -390,8 +430,16 @@ export const useCvEditorStore = create<CvEditorState>()(
             
             // Apply skill style if provided by AI
             if (sanitizedData.metadata?.skillStyle) {
-              if (!newSectionLayout.skills) newSectionLayout.skills = {};
-              newSectionLayout.skills = { ...newSectionLayout.skills, proficiencyStyle: sanitizedData.metadata.skillStyle as string };
+              const layoutAny = newSectionLayout as any;
+              if (!layoutAny.skills) layoutAny.skills = {};
+              layoutAny.skills = { ...layoutAny.skills, proficiencyStyle: sanitizedData.metadata.skillStyle };
+            }
+            
+            // Apply language style if provided by AI
+            if (sanitizedData.metadata?.languageStyle) {
+              const layoutAny = newSectionLayout as any;
+              if (!layoutAny.languages) layoutAny.languages = {};
+              layoutAny.languages = { ...layoutAny.languages, style: sanitizedData.metadata.languageStyle };
             }
             
             // Clean up metadata
@@ -417,7 +465,13 @@ export const useCvEditorStore = create<CvEditorState>()(
               });
             }
 
-            return { data: sanitizedData, order: newOrder, sectionLayout: newSectionLayout, isDirty: true };
+            return { 
+              data: sanitizedData, 
+              order: newOrder, 
+              sectionLayout: newSectionLayout, 
+              deletedQueue: nextDeletedQueue, 
+              isDirty: true 
+            };
           });
         },
 

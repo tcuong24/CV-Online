@@ -30,9 +30,9 @@ export const SECTION_META: Record<
   awards:         { label: 'Giải thưởng',    icon: <MdEmojiEvents />,       color: '#fff7ed', iconColor: '#ea580c' },
   certifications: { label: 'Chứng chỉ',      icon: <MdVerified />,          color: '#ecfdf5', iconColor: '#059669' },
   languages:      { label: 'Ngoại ngữ',      icon: <MdLanguage />,          color: '#e0f2fe', iconColor: '#0284c7' },
-  references:     { label: 'Tham chiếu',     icon: <MdGroups />,            color: '#f0fdf4', iconColor: '#15803d' },
-  interests:      { label: 'Quan tâm',       icon: <MdInterests />,         color: '#fdf4ff', iconColor: '#a21caf' },
-  activities:     { label: 'Hoạt động',      icon: <MdVolunteerActivism />, color: '#fff1f2', iconColor: '#be123c' },
+  // references:     { label: 'Tham chiếu',     icon: <MdGroups />,            color: '#f0fdf4', iconColor: '#15803d' },
+  // interests:      { label: 'Quan tâm',       icon: <MdInterests />,         color: '#fdf4ff', iconColor: '#a21caf' },
+  // activities:     { label: 'Hoạt động',      icon: <MdVolunteerActivism />, color: '#fff1f2', iconColor: '#be123c' },
 };
 
 // ─── Sections that must never be hidden ───

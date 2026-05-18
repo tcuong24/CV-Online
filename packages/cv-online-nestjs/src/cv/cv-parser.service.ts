@@ -68,6 +68,7 @@ export class CvParserService {
         "metadata": {
           "language": "en", // Output "en" for English or "vi" for Vietnamese based on the CV content
           "skillStyle": "tags", // Determine the visual style for skills based on the CV layout. Output "grouped" if skills are categorized into groups, "bars" if they have percentage/proficiency levels, or "tags" if it's a simple list.
+          "languageStyle": "bars", // Determine the visual style for languages. Output "bars" for horizontal rating bars, "dots" for dot ratings, "stars" for star ratings, or "text" for simple text list.
           "sectionTitles": { // Translate these to the detected language. e.g. "Học vấn" for vi, "Education" for en
             "personal": "Liên hệ",
             "contact": "Liên hệ",
@@ -86,7 +87,7 @@ export class CvParserService {
         "education": [{ "degree": "", "school": "", "location": "", "from": "", "to": "", "desc": "" }],
         "skills": [{ "name": "", "category": "" }],
         "projects": [{ "name": "", "from": "", "to": "", "desc": "", "link": "", "tech": "" }],
-        "certifications": [],
+        "certifications": [{ "name": "", "issuingOrganization": "", "issueDate": "", "expiryDate": "", "credentialId": "", "credentialUrl": "", "description": "" }],
         "languages": [{ "lang": "", "level": 1 }]
       }
       
@@ -95,6 +96,9 @@ export class CvParserService {
       - For projects, "tech" should be a comma-separated string of technologies used (e.g., "React, Node.js, MongoDB").
       - For skills, return an array of objects. Each object has "name" (skill name) and "category" (the group it belongs to, e.g. "Languages", "Frameworks", "Tools", "Databases"). If the CV groups skills by category, preserve that grouping. If no grouping is present, leave "category" as empty string.
       - For languages, "level" should be a number from 1 to 5.
+      - For certifications, return an array of objects matching the schema. Extract and split the certificate name, issuing organization (if any), and date/year of issue. For example, "English: TOEIC 650+ (certificate available May 22, 2026)" should be parsed as name: "TOEIC 650+", issuingOrganization: "ETS" (or appropriate issuer), issueDate: "2026", and description: "English: TOEIC 650+ (certificate available May 22, 2026)".
+      - Standardized language certificates or tests (e.g., TOEIC, IELTS, TOEFL, HSK, JLPT, DELF, TestDAF, etc.) listed in the CV (even if they are written under education, experience, or languages in the raw text) MUST only be put into the "certifications" array. They MUST NOT be included in the "languages" array or "education" array.
+      - CRITICAL: DO NOT automatically infer or generate a language entry (e.g., adding "English" or "Tiếng Anh" to the "languages" array) just because the candidate has a language certificate (e.g., TOEIC, IELTS) mentioned in their education or certificates. Only include languages in the "languages" array if they are EXPLICITLY and SEPARATELY listed as a spoken/written language in a designated languages section of the CV raw text. If the CV only mentions "TOEIC" or "IELTS" in the education or achievements section without separately listing "English" as a language, the "languages" array MUST NOT contain "English" (it should remain empty).
 
       RAW TEXT:
       ${text}
@@ -130,6 +134,7 @@ export class CvParserService {
         "metadata": {
           "language": "en", // Output "en" for English or "vi" for Vietnamese based on the CV content
           "skillStyle": "tags", // Determine the visual style for skills based on the CV layout. Output "grouped" if skills are categorized into groups, "bars" if they have percentage/proficiency levels, or "tags" if it's a simple list.
+          "languageStyle": "bars", // Determine the visual style for languages. Output "bars" for horizontal rating bars, "dots" for dot ratings, "stars" for star ratings, or "text" for simple text list.
           "sectionTitles": { // Translate these to the detected language. e.g. "Học vấn" for vi, "Education" for en
             "personal": "Liên hệ",
             "contact": "Liên hệ",
@@ -148,7 +153,7 @@ export class CvParserService {
         "education": [{ "degree": "", "school": "", "location": "", "from": "", "to": "", "desc": "" }],
         "skills": [{ "name": "", "category": "" }],
         "projects": [{ "name": "", "from": "", "to": "", "desc": "", "link": "", "tech": "" }],
-        "certifications": [],
+        "certifications": [{ "name": "", "issuingOrganization": "", "issueDate": "", "expiryDate": "", "credentialId": "", "credentialUrl": "", "description": "" }],
         "languages": [{ "lang": "", "level": 1 }]
       }
       
@@ -157,6 +162,9 @@ export class CvParserService {
       - For projects, "tech" should be a comma-separated string of technologies used (e.g., "React, Node.js, MongoDB").
       - For skills, return an array of objects. Each object has "name" (skill name) and "category" (the group it belongs to, e.g. "Languages", "Frameworks", "Tools", "Databases"). If the CV groups skills by category, preserve that grouping. If no grouping is present, leave "category" as empty string.
       - For languages, "level" should be a number from 1 to 5.
+      - For certifications, return an array of objects matching the schema. Extract and split the certificate name, issuing organization (if any), and date/year of issue. For example, "English: TOEIC 650+ (certificate available May 22, 2026)" should be parsed as name: "TOEIC 650+", issuingOrganization: "ETS" (or appropriate issuer), issueDate: "2026", and description: "English: TOEIC 650+ (certificate available May 22, 2026)".
+      - Standardized language certificates or tests (e.g., TOEIC, IELTS, TOEFL, HSK, JLPT, DELF, TestDAF, etc.) listed in the CV (even if they are written under education, experience, or languages in the raw text) MUST only be put into the "certifications" array. They MUST NOT be included in the "languages" array or "education" array.
+      - CRITICAL: DO NOT automatically infer or generate a language entry (e.g., adding "English" or "Tiếng Anh" to the "languages" array) just because the candidate has a language certificate (e.g., TOEIC, IELTS) mentioned in their education or certificates. Only include languages in the "languages" array if they are EXPLICITLY and SEPARATELY listed as a spoken/written language in a designated languages section of the CV raw text. If the CV only mentions "TOEIC" or "IELTS" in the education or achievements section without separately listing "English" as a language, the "languages" array MUST NOT contain "English" (it should remain empty).
     `;
 
     try {

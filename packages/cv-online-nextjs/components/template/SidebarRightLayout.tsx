@@ -11,6 +11,7 @@ import {
 import {
   ExperienceSection,
   SkillsBlock,
+  LanguagesBlock,
   MainSectionBlocks,
   getScaledDragStyle,
   StylePicker,
@@ -457,13 +458,33 @@ export function SidebarRightLayout({
         content = <CustomSection section={customSection} ctx={ctx} />;
         onTitleChange = (v) => ctx.updateCustomSection(customSection.id, { sectionTitle: v });
       }
+    } else if (key === 'languages') {
+      const langStyle = ctx.sectionLayout.languages?.style ?? 'bars';
+      content = sideKeys.includes(key) ? (
+        <LanguagesBlock data={data} ctx={ctx} dark={false} />
+      ) : (
+        <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />
+      );
+      addButton = makeAddBtn(key, '+', () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }), !!data.languages?.length);
+      styleControls = (
+        <StylePicker
+          fs={fs}
+          value={langStyle}
+          options={[
+            { value: 'bars', label: 'Bars' },
+            { value: 'dots', label: 'Dots' },
+            { value: 'stars', label: 'Stars' },
+            { value: 'text', label: 'Text only' },
+          ]}
+          onChange={(v) => ctx.patchSectionLayout('languages', { style: v })}
+        />
+      );
     } else {
       content = <MainSectionBlocks sectionKey={key} data={data} ctx={ctx} />;
       const addConf: any = {
         education: { action: () => ctx.addEntry('education', { degree: '', school: '', from: '', to: '', desc: '' }), has: !!data.education?.length },
         projects: { action: () => ctx.addEntry('projects', { name: '', link: '', tech: '', desc: '' }), has: !!data.projects?.length },
         awards: { action: () => ctx.addEntry('awards', { title: '', year: '', org: '' }), has: !!data.awards?.length },
-        languages: { action: () => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 }), has: !!data.languages?.length },
         certifications: { action: () => ctx.addEntry('certifications', { name: '', issuingOrganization: '', issueDate: '', description: '' }), has: !!data.certifications?.length },
       };
       if (addConf[key]) addButton = makeAddBtn(key, '+', addConf[key].action, addConf[key].has);

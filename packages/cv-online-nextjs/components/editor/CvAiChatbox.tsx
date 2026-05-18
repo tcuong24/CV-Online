@@ -414,6 +414,7 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
   const updatePersonalInfo = useCvEditorStore((s) => s.updatePersonalInfo);
   const updateEntry = useCvEditorStore((s) => s.updateEntry);
   const addSkill = useCvEditorStore((s) => s.addSkill);
+  const patchSectionLayout = useCvEditorStore((s) => s.patchSectionLayout);
   const openSections = useCvEditorStore((s) => s.openSections);
 
   const activeSection = Object.keys(openSections).find((key) => openSections[key]) || 'personal';
@@ -507,6 +508,15 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
       project: 'projects',
     };
     const section = sectionKeyMap[rawSection] ?? rawSection;
+
+    if (section === 'languages' && indexStr === 'style') {
+      patchSectionLayout('languages', { style: value as any });
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `✓ Đã cập nhật kiểu hiển thị Ngoại ngữ thành "${value}"` },
+      ]);
+      return;
+    }
 
     if (section === 'summary') {
       updatePersonalInfo({ summary: value });

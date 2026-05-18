@@ -704,6 +704,97 @@ export function SkillsBlock({
   );
 }
 
+/** Languages renderer — handles bars / dots / stars / text-only styles. */
+export function LanguagesBlock({
+  data,
+  ctx,
+  dark = false,
+}: {
+  data: CvData;
+  ctx: RenderCtx;
+  dark?: boolean;
+}) {
+  const langStyle = ctx.sectionLayout.languages?.style ?? 'bars';
+  const { fs, accentColor, textColor: dbText } = ctx;
+  const textColor = dark ? 'rgba(255,255,255,0.85)' : (dbText?.body || '#44403c');
+  const trackBg = dark ? 'rgba(255,255,255,0.2)' : '#e7e5e4';
+  const fillBg = dark ? 'rgba(255,255,255,0.85)' : accentColor;
+
+  const sideDeleteStyle: React.CSSProperties = {
+    padding: '0 4px',
+    fontSize: 9,
+    border: 'none',
+    borderRadius: 3,
+    cursor: 'pointer',
+    background: 'transparent',
+    color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.25)',
+    lineHeight: 1,
+    fontFamily: 'inherit',
+  };
+
+  if (!data.languages?.length) return null;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }} className="relative group pb-2">
+      {data.languages.map((l) => (
+        <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }} className="group/lang-item relative">
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: fs * 0.88, color: textColor }}>
+              <EditableText scale={ctx.scale} value={l.lang} onChange={(v) => ctx.updateEntry('languages', l.id, { lang: v })} placeholder="Ngoại ngữ" />
+            </div>
+            
+            {langStyle === 'bars' && (
+              <div style={{ display: 'flex', gap: 2, marginTop: 3 }}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    onClick={() => ctx.updateEntry('languages', l.id, { level: i })}
+                    style={{ flex: 1, height: 3, background: l.level >= i ? fillBg : trackBg, borderRadius: 1, cursor: 'pointer' }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {langStyle === 'dots' && (
+              <div style={{ display: 'flex', gap: 3, marginTop: 4 }}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    onClick={() => ctx.updateEntry('languages', l.id, { level: i })}
+                    style={{ width: 7, height: 7, borderRadius: '50%', background: l.level >= i ? fillBg : trackBg, cursor: 'pointer' }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {langStyle === 'stars' && (
+              <div style={{ display: 'flex', gap: 1, marginTop: 2 }}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <span
+                    key={i}
+                    onClick={() => ctx.updateEntry('languages', l.id, { level: i })}
+                    style={{ fontSize: fs * 0.85, lineHeight: 1, color: l.level >= i ? fillBg : trackBg, cursor: 'pointer', userSelect: 'none' }}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <button
+            style={sideDeleteStyle}
+            onClick={() => ctx.removeEntry('languages', l.id)}
+            title="Xóa"
+            className="opacity-0 group-hover/lang-item:opacity-100 transition-opacity"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function MainSectionBlocks({
   sectionKey,
   data,
@@ -862,6 +953,7 @@ export function MainSectionBlocks({
   }
 
   if (sectionKey === 'languages') {
+    const langStyle = ctx.sectionLayout.languages?.style ?? 'bars';
     if (!data.languages?.length) {
       return (
         <div className="flex h-6 flex-col relative group pb-4 cursor-pointer" onClick={() => ctx.addEntry('languages', { lang: 'Ngoại ngữ mới', level: 1 })}>
@@ -886,22 +978,65 @@ export function MainSectionBlocks({
                       <div className="group/item relative flex items-center" style={{ marginBottom: 7 }}>
                         <span {...dp.dragHandleProps} className="shrink-0 mr-1 cursor-grab opacity-0 group-hover/item:opacity-40 hover:opacity-100 transition-opacity text-gray-400 select-none text-xs" title="Kéo thả">⠿</span>
                         <span style={{ fontSize: fs * 0.95, fontWeight: 500, flex: 1 }}><EditableText scale={ctx.scale} value={l.lang} onChange={(v) => ctx.updateEntry('languages', l.id, { lang: v })} placeholder="Ngoại ngữ" /></span>
-                        <div style={{ display: 'flex', gap: 4 }}>
-                          {[1, 2, 3, 4, 5].map((i) => (
-                            <div
-                              key={i}
-                              onClick={() => ctx.updateEntry('languages', l.id, { level: i })}
-                              style={{
-                                width: 18,
-                                height: 4,
-                                borderRadius: 2,
-                                background: l.level >= i ? accentColor : '#e7e5e4',
-                                cursor: 'pointer',
-                              }}
-                              title={`Level ${i}`}
-                            />
-                          ))}
-                        </div>
+                        
+                        {langStyle === 'bars' && (
+                          <div style={{ display: 'flex', gap: 4 }}>
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <div
+                                key={i}
+                                onClick={() => ctx.updateEntry('languages', l.id, { level: i })}
+                                style={{
+                                  width: 18,
+                                  height: 4,
+                                  borderRadius: 2,
+                                  background: l.level >= i ? accentColor : '#e7e5e4',
+                                  cursor: 'pointer',
+                                }}
+                                title={`Level ${i}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {langStyle === 'dots' && (
+                          <div style={{ display: 'flex', gap: 3 }}>
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <div
+                                key={i}
+                                onClick={() => ctx.updateEntry('languages', l.id, { level: i })}
+                                style={{
+                                  width: 8,
+                                  height: 8,
+                                  borderRadius: '50%',
+                                  background: l.level >= i ? accentColor : '#e7e5e4',
+                                  cursor: 'pointer',
+                                }}
+                                title={`Level ${i}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {langStyle === 'stars' && (
+                          <div style={{ display: 'flex', gap: 1 }}>
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <span
+                                key={i}
+                                onClick={() => ctx.updateEntry('languages', l.id, { level: i })}
+                                style={{
+                                  fontSize: fs * 0.95,
+                                  lineHeight: 1,
+                                  color: l.level >= i ? accentColor : '#e7e5e4',
+                                  cursor: 'pointer',
+                                  userSelect: 'none',
+                                }}
+                                title={`Level ${i}`}
+                              >
+                                ★
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         <button onClick={() => ctx.removeEntry('languages', l.id)} className="ml-1 opacity-0 group-hover/item:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded" title="Xóa">✕</button>
                       </div>
                     </div>

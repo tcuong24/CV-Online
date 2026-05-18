@@ -195,6 +195,22 @@ export function SingleColumnPage({
                 />
               );
             }
+            if (sectionKey === 'languages') {
+              const cur = ctx.sectionLayout.languages?.style ?? 'bars';
+              return (
+                <StylePicker
+                  fs={fs}
+                  value={cur}
+                  options={[
+                    { value: 'bars', label: 'Bars' },
+                    { value: 'dots', label: 'Dots' },
+                    { value: 'stars', label: 'Stars' },
+                    { value: 'text', label: 'Text only' },
+                  ]}
+                  onChange={(v) => ctx.patchSectionLayout('languages', { style: v })}
+                />
+              );
+            }
             return undefined;
           };
 
