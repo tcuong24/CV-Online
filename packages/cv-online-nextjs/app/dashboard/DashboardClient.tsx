@@ -9,16 +9,25 @@ import { EditableText } from "@/components/utils/EditableText";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { TemplatesGrid } from "@/components/templates/TemplateGrid";
+import { toast } from "sonner";
+
 export default function DashboardClient() {
   const { data: session } = useSession();
   const [cvs, setCvs] = useState<any[]>([]);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [cvIdToDelete, setCvIdToDelete] = useState<string | null>(null);
+  
+  const [activeDropdownCvId, setActiveDropdownCvId] = useState<string | null>(null);
+  const [openShareModal, setOpenShareModal] = useState(false);
+  const [selectedCvForShare, setSelectedCvForShare] = useState<any | null>(null);
+  const [updatingShare, setUpdatingShare] = useState(false);
+
   const handleDeleteCv = async (id: string) => {
     try {
       await axiosInstance.delete(`/cvs/${id}`);
@@ -51,6 +60,49 @@ export default function DashboardClient() {
       setCvs(res.data);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleDownloadPdf = async (id: string, title: string) => {
+    try {
+      toast.loading("Đang tạo và tải xuống PDF...", { id: `download-${id}` });
+      const response = await axiosInstance.post(`/export/cv/${id}/pdf`, {}, { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${title || 'CV'}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("Tải xuống PDF thành công!", { id: `download-${id}` });
+    } catch (error) {
+      console.error(error);
+      toast.error("Lỗi khi tải xuống PDF", { id: `download-${id}` });
+    }
+  };
+
+  const handleTogglePublic = async (cv: any, isPublic: boolean) => {
+    setUpdatingShare(true);
+    try {
+      if (isPublic) {
+        const res = await axiosInstance.post(`/cvs/${cv.id}/publish`);
+        const updatedCv = res.data;
+        setSelectedCvForShare(updatedCv);
+        toast.success("Đã bật chế độ chia sẻ công khai!");
+      } else {
+        const res = await axiosInstance.post(`/cvs/${cv.id}/unpublish`);
+        const updatedCv = res.data;
+        setSelectedCvForShare(updatedCv);
+        toast.success("Đã tắt chế độ chia sẻ công khai!");
+      }
+      getCvs();
+    } catch (error) {
+      console.error(error);
+      toast.error("Không thể thay đổi trạng thái chia sẻ");
+    } finally {
+      setUpdatingShare(false);
     }
   };
 
@@ -164,8 +216,16 @@ export default function DashboardClient() {
                     <h3 className="text-sm font-semibold text-foreground truncate max-w-[200px]">
                       <EditableText value={cv.title || "CV chưa đặt tên"} onChange={(value) => handleChangeName(cv.id, value)} />
                     </h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Sửa đổi lúc {new Date(cv.updatedAt || cv.createdAt).toLocaleDateString('vi-VN')}
+                    <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
+                      <span>Sửa đổi lúc {new Date(cv.updatedAt || cv.createdAt).toLocaleDateString('vi-VN')}</span>
+                      {cv.isPublic && (
+                        <span title="Đang chia sẻ công khai" className="text-emerald-600 flex-shrink-0 animate-pulse">
+                          <svg className="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                          </svg>
+                        </span>
+                      )}
                     </p>
                   </div>
                   <div className="flex items-center space-x-3 text-gray-800">
@@ -193,11 +253,43 @@ export default function DashboardClient() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                       </svg>
                     </button>
-                    <button className="hover:text-black">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" strokeLinecap="round" strokeLinejoin="round"></path>
-                      </svg>
-                    </button>
+                    <div className="relative">
+                      <button
+                        className="hover:text-black p-1 hover:bg-gray-100 rounded-sm cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveDropdownCvId(activeDropdownCvId === cv.id ? null : cv.id);
+                        }}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" strokeLinecap="round" strokeLinejoin="round"></path>
+                        </svg>
+                      </button>
+                      
+                      {activeDropdownCvId === cv.id && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setActiveDropdownCvId(null)}
+                          />
+                          <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-20 font-sans text-sm text-left">
+                            <button
+                              onClick={() => {
+                                setActiveDropdownCvId(null);
+                                setSelectedCvForShare(cv);
+                                setOpenShareModal(true);
+                              }}
+                              className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 text-gray-700 cursor-pointer border-none bg-transparent"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                              </svg>
+                              <span>Chia sẻ online</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -205,6 +297,65 @@ export default function DashboardClient() {
           )}
         </div>
       </section>
+
+      {/* Share CV Modal */}
+      <Dialog open={openShareModal} onOpenChange={setOpenShareModal}>
+        <DialogContent className="sm:max-w-md font-sans">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-800">Chia sẻ CV online</DialogTitle>
+            <DialogDescription className="text-xs text-gray-400">
+              Thiết lập quyền truy cập công khai và lấy liên kết chia sẻ cho CV của bạn.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedCvForShare && (
+            <div className="space-y-6 pt-4">
+              {/* Toggle Public Option */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-lg">
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-800">Bật chia sẻ công khai</h4>
+                  <p className="text-xs text-gray-400 mt-1">Khi bật, bất kỳ ai có link đều có thể xem CV này mà không cần đăng nhập.</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedCvForShare.isPublic}
+                    disabled={updatingShare}
+                    onChange={(e) => handleTogglePublic(selectedCvForShare, e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1D283D]"></div>
+                </label>
+              </div>
+
+              {/* Show link if public */}
+              {selectedCvForShare.isPublic && (
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Đường dẫn chia sẻ</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={typeof window !== "undefined" ? `${window.location.origin}/preview/${selectedCvForShare.id}` : ""}
+                      className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-600 focus:outline-none"
+                    />
+                    <button
+                      onClick={() => {
+                        const link = `${window.location.origin}/preview/${selectedCvForShare.id}`;
+                        navigator.clipboard.writeText(link);
+                        toast.success("Đã sao chép link chia sẻ!");
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-white bg-[#1D283D] hover:bg-[#2c3d5a] rounded-md transition-colors shadow-sm cursor-pointer"
+                    >
+                      Sao chép
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <ConfirmDialog
         open={openDeleteDialog}
         onOpenChange={setOpenDeleteDialog}

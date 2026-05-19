@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, notFound } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { CVTemplate } from '@/components/template/CVTemplate';
 import { globalCss } from '@/styles/globalCss';
 import { CvData, LayoutType, SectionLayoutConfig } from '@/types/cvEditor';
@@ -100,21 +101,37 @@ function ErrorState({ message }: { message: string }) {
 export default function DynamicPreviewPage() {
   const params = useParams();
   const cvId = params.id as string;
+  const { status } = useSession();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isNotFound, setIsNotFound] = useState(false);
   const [cvData, setCvData] = useState<any>(null);
   const [downloading, setDownloading] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!cvId) return;
+    if (!cvId || status === 'loading') return;
 
     setLoading(true);
-    axiosInstance.get(`/cvs/${cvId}`)
-      .then(res => {
-        const cv = res.data;
-        
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9999/api";
+
+    // Try fetching from the public endpoint first
+    fetch(`${API_BASE_URL}/public-cvs/${cvId}`)
+      .then(async (publicRes) => {
+        if (!publicRes.ok) {
+          throw new Error('Not public');
+        }
+        return publicRes.json();
+      })
+      .catch((err) => {
+        // Fallback: try fetching with authenticated axios if the CV is not public but belongs to the logged-in user
+        if (status === 'authenticated') {
+          return axiosInstance.get(`/cvs/${cvId}`).then(res => res.data);
+        }
+        throw err;
+      })
+      .then(cv => {
         // Parse styles
         const baseStyle = cv.snapshotDesignConfig
           ? parseDesignConfig(cv.snapshotDesignConfig)
@@ -161,12 +178,12 @@ export default function DynamicPreviewPage() {
       })
       .catch(err => {
         console.error('Failed to fetch CV:', err);
-        setError(err.response?.data?.message || 'Không tìm thấy dữ liệu CV hoặc bạn không có quyền xem.');
+        setIsNotFound(true);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [cvId]);
+  }, [cvId, status]);
 
   const handleDownload = async () => {
     if (!cvData) return;
@@ -224,6 +241,10 @@ export default function DynamicPreviewPage() {
       setDownloading(false);
     }
   };
+
+  if (isNotFound) {
+    notFound();
+  }
 
   if (loading) return <LoadingSpinner />;
   if (error || !cvData) return <ErrorState message={error || 'Đã xảy ra lỗi không xác định'} />;
