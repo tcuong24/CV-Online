@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import axiosInstance from '@/lib/axios';
 import { 
   LayoutDashboard, Search, Plus, MoreVertical, 
@@ -33,6 +34,7 @@ interface Meta {
 }
 
 export default function TemplateManagementPage() {
+  const router = useRouter();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,11 +97,11 @@ export default function TemplateManagementPage() {
   };
 
   const handleAddTemplate = () => {
-    window.location.href = '/admin/templates/create';
+    router.push('/admin/templates/create');
   };
 
   const handleEditTemplate = (id: string) => {
-    window.location.href = `/admin/templates/${id}`;
+    router.push(`/admin/templates/${id}`);
   };
 
   return (
@@ -130,7 +132,7 @@ export default function TemplateManagementPage() {
                     placeholder="Tìm tên hoặc mô tả mẫu..."
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                    className="pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm w-full focus:ring-2 focus:ring-violet-500 outline-none transition-all"
+                    className="pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm w-full focus:ring-2 focus:ring-[#1D283D] outline-none transition-all"
                   />
               </div>
               <div className="flex items-center gap-2">
@@ -196,7 +198,7 @@ export default function TemplateManagementPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {templates.map(template => (
-            <div key={template.id} className="bg-white rounded-[32px] border border-slate-50 shadow-sm overflow-hidden group hover:shadow-xl hover:shadow-violet-100 transition-all duration-500 flex flex-col">
+            <div key={template.id} className="bg-white rounded-[32px] border border-slate-50 shadow-sm overflow-hidden group hover:shadow-xl hover:shadow-[#1D283D]/10 transition-all duration-500 flex flex-col">
                {/* Thumbnail Area */}
                <div className="h-64 bg-slate-50 relative overflow-hidden flex items-center justify-center p-6">
                    {template.thumbnailUrl ? (
@@ -225,10 +227,7 @@ export default function TemplateManagementPage() {
                    </div>
 
                    {/* Quick Actions Overlay */}
-                   <div className="absolute inset-0 bg-violet-900/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4 backdrop-blur-[2px]">
-                        <button onClick={() => window.open(`/preview/${template.id}`)} className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-700 hover:scale-110 active:scale-95 transition-all shadow-xl">
-                            <Eye size={20} />
-                        </button>
+                   <div className="absolute inset-0 bg-[#1D283D]/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4 backdrop-blur-[2px]">
                         <button onClick={() => handleEditTemplate(template.id)} className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-700 hover:scale-110 active:scale-95 transition-all shadow-xl">
                             <Edit3 size={20} />
                         </button>
@@ -301,7 +300,7 @@ export default function TemplateManagementPage() {
             </button>
             <div className="flex items-center gap-2 px-6 py-3 bg-white rounded-2xl border border-slate-100 shadow-sm text-sm font-black text-slate-600">
                 <span>Trang</span>
-                <span className="text-violet-600">{page}</span>
+                <span className="text-[#1D283D]">{page}</span>
                 <span className="text-slate-300">/</span>
                 <span>{meta.totalPages}</span>
             </div>

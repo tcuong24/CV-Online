@@ -57,6 +57,7 @@ export const LH_MAP: Record<string, number> = { tight: 1.4, normal: 1.65, loose:
 // ─── Section Meta (icons imported in component using this) ───
 export const SECTION_META_CONFIG = {
   personal: { label: 'Thông tin cá nhân', colorBg: '#dbeafe', iconColor: '#2563eb' },
+  contact: { label: 'Liên hệ', colorBg: '#eff6ff', iconColor: '#2563eb' },
   experiences: { label: 'Kinh nghiệm', colorBg: '#dcfce7', iconColor: '#16a34a' },
   education: { label: 'Học vấn', colorBg: '#fef3c7', iconColor: '#d97706' },
   skills: { label: 'Kỹ năng', colorBg: '#fce7f3', iconColor: '#db2777' },
@@ -79,6 +80,7 @@ export const DEFAULT_DATA: any = {
     location: 'Hà Nội, Việt Nam',
     website: 'github.com/cuongtv',
     summary: 'Frontend developer với 5+ năm kinh nghiệm xây dựng ứng dụng web hiệu suất cao. Đam mê UI/UX, clean code và các công nghệ hiện đại như React, Next.js, TypeScript.',
+    avatarUrl: 'https://i.pravatar.cc/300?img=68',
   },
   experiences: [
     {
@@ -157,7 +159,7 @@ export const DEFAULT_DATA: any = {
   customSections: [],
 };
 
-export const DEFAULT_ORDER = ['personal', 'experiences', 'education', 'skills', 'projects', 'awards', 'certifications', 'languages', 'references', 'interests', 'activities'];
+export const DEFAULT_ORDER = ['personal', 'contact', 'summary', 'experiences', 'education', 'skills', 'projects', 'awards', 'certifications', 'languages', 'references', 'interests', 'activities'];
 
 /** Maps DB Template.layoutType → editor template key */
 export const LAYOUT_MAP: Record<string, 'classic' | 'modern'> = {

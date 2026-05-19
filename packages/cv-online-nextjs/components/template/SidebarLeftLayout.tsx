@@ -69,7 +69,9 @@ export function SidebarLeftPage({
   const avatarMargin =  '0 auto 30px' ;
   const titleAlign = ctx.sectionLayout.global?.headerAlign || 'left';
   const borderStyle = ctx.sectionLayout.global?.headerBorder || 'bottom';
-  const [sidePart, mainPart] = (style.layout?.columnRatio || '30:70').split(':').map(Number);
+  const parts = (style.layout?.columnRatio || '30:70').split(':').map(Number);
+  const sidePart = Math.min(parts[0], parts[1]);
+  const mainPart = Math.max(parts[0], parts[1]);
   const gridColumns = `${sidePart}% ${mainPart}%`;
   const [isAvatarHovered, setIsAvatarHovered] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -808,7 +810,8 @@ export function SidebarLeftLayout({
   const mainKeys = allMainSections.map((s) => s.key);
 
   // ── Pagination state ──
-  const [sidePart] = (style.layout?.columnRatio || '30:70').split(':').map(Number);
+  const sidePartParts = (style.layout?.columnRatio || '30:70').split(':').map(Number);
+  const sidePart = Math.min(sidePartParts[0], sidePartParts[1]);
   const sidebarW = Math.round(794 * (sidePart / 100));
   const mainW = 794 - sidebarW;
 

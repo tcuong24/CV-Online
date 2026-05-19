@@ -113,4 +113,32 @@ export class OtpService {
     await this.redis.del([otpKey, attemptsKey, this.RATELIMIT_PREFIX + email]);
     return true;
   }
+
+  async checkOtp(email: string, otp: string): Promise<boolean> {
+    const attemptsKey = this.ATTEMPTS_PREFIX + email;
+    const attempts = await this.redis.get(attemptsKey);
+
+    if (attempts && parseInt(attempts, 10) >= this.MAX_ATTEMPTS) {
+      throw new BadRequestException('Nhập sai OTP quá 3 lần. Vui lòng gửi lại yêu cầu!');
+    }
+
+    const otpKey = this.OTP_PREFIX + email;
+    const storedOtp = await this.redis.get(otpKey);
+
+    if (!storedOtp) {
+      throw new BadRequestException('Mã OTP không tồn tại hoặc đã hết hạn!');
+    }
+
+    if (storedOtp !== otp) {
+      if (attempts) {
+        await this.redis.incr(attemptsKey);
+      } else {
+        await this.redis.set(attemptsKey, '1', this.OTP_EXPIRY);
+      }
+      const count = await this.redis.get(attemptsKey);
+      throw new BadRequestException(`Mã OTP không chính xác (${count}/${this.MAX_ATTEMPTS})`);
+    }
+
+    return true;
+  }
 }

@@ -75,11 +75,20 @@ export function SidebarRightPage({
   };
 
   const headerProps = { data, ctx, theme, fontFamily, align, fs };
-  const columnRatio = style?.layout?.columnRatio || '220px 1fr';
-  // If ratio is '35:65', convert to '35% 65%' for grid
-  const gridTemplateColumns = columnRatio.includes(':')
-    ? columnRatio.split(':').map((v: string) => `${v}%`).join(' ')
-    : columnRatio;
+  const columnRatio = style?.layout?.columnRatio || '1fr 220px';
+  let gridTemplateColumns = columnRatio;
+  if (columnRatio.includes(':')) {
+    const parts = columnRatio.split(':').map(Number);
+    if (parts.length === 2 && !parts.some(isNaN)) {
+      const mainPart = Math.max(parts[0], parts[1]);
+      const sidePart = Math.min(parts[0], parts[1]);
+      gridTemplateColumns = `${mainPart}% ${sidePart}%`;
+    } else {
+      gridTemplateColumns = columnRatio.split(':').reverse().map((v: string) => `${v}%`).join(' ');
+    }
+  } else if (columnRatio === '220px 1fr') {
+    gridTemplateColumns = '1fr 220px';
+  }
 
   const sidebarBg = style?.colors?.background.sidebar || theme.sidebar || theme.primary;
   const sidebarPadding = style?.spacing?.page.sidebarPadding || '28px 18px';
@@ -493,8 +502,8 @@ export function SidebarRightLayout({
     return { key, title: displayTitle, content, addButton, styleControls, onTitleChange };
   };
 
-  const allMainSections = mainKeyList.map(makeSection);
-  const sideSections = sideKeys.map(makeSection);
+  const allMainSections = mainKeyList.filter(k => !isPersonal(k)).map(makeSection);
+  const sideSections = sideKeys.filter(k => !isPersonal(k)).map(makeSection);
 
   return (
     <DragDropContext

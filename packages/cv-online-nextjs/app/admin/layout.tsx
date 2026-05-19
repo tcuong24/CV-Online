@@ -26,10 +26,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [status, session, router]);
 
+  // Khắc phục lỗi kẹt loading khi sử dụng nút Back/Quay lại của trình duyệt (bfcache)
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        window.location.reload();
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-[#f8faff] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-[#1D283D] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -65,12 +78,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               label="Mẫu CV"
               active={pathname === '/admin/templates'}
             />
-            <NavItem
+            {/* <NavItem
               href="/admin/settings"
               icon={<Settings size={18} />}
               label="Cài đặt"
               active={pathname === '/admin/settings'}
-            />
+            /> */}
             {/* <NavItem
               href="/admin/logs"
               icon={<History size={18} />}

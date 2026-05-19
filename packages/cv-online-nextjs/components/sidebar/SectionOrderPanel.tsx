@@ -194,32 +194,65 @@ export function SectionOrderPanel() {
     <div className="sc-panel flex flex-col h-full">
       {isSidebarLayout ? (
         <>
-          {/* ── Sidebar zone ── */}
-          <div className="sc-zone-label">Cột trái (sidebar CV)</div>
-          <div
-            className={`sc-zone${dropZoneActive === 'side' ? ' zone-active' : ''}`}
-            onDragOver={e => { e.preventDefault(); setDropZoneActive('side'); }}
-            onDragLeave={() => setDropZoneActive(null)}
-            onDrop={() => onDropToGrid('side')}
-          >
-            {sideVisible.length > 0
-              ? renderGrid(sideVisible, 'side')
-              : (
-                <div className="sc-zone-empty">Kéo mục vào đây</div>
-              )
-            }
-          </div>
+          {layoutType === 'sidebar-right' ? (
+            <>
+              {/* ── Main zone ── */}
+              <div className="sc-zone-label">Cột trái (main CV)</div>
+              <div
+                className={`sc-zone${dropZoneActive === 'main' ? ' zone-active' : ''}`}
+                onDragOver={e => { e.preventDefault(); setDropZoneActive('main'); }}
+                onDragLeave={() => setDropZoneActive(null)}
+                onDrop={() => onDropToGrid('main')}
+              >
+                {renderGrid(mainVisible, 'main')}
+              </div>
 
-          {/* ── Main zone ── */}
-          <div className="sc-zone-label" style={{ marginTop: 12 }}>Cột phải (main CV)</div>
-          <div
-            className={`sc-zone${dropZoneActive === 'main' ? ' zone-active' : ''}`}
-            onDragOver={e => { e.preventDefault(); setDropZoneActive('main'); }}
-            onDragLeave={() => setDropZoneActive(null)}
-            onDrop={() => onDropToGrid('main')}
-          >
-            {renderGrid(mainVisible, 'main')}
-          </div>
+              {/* ── Sidebar zone ── */}
+              <div className="sc-zone-label" style={{ marginTop: 12 }}>Cột phải (sidebar CV)</div>
+              <div
+                className={`sc-zone${dropZoneActive === 'side' ? ' zone-active' : ''}`}
+                onDragOver={e => { e.preventDefault(); setDropZoneActive('side'); }}
+                onDragLeave={() => setDropZoneActive(null)}
+                onDrop={() => onDropToGrid('side')}
+              >
+                {sideVisible.length > 0
+                  ? renderGrid(sideVisible, 'side')
+                  : (
+                    <div className="sc-zone-empty">Kéo mục vào đây</div>
+                  )
+                }
+              </div>
+            </>
+          ) : (
+            <>
+              {/* ── Sidebar zone ── */}
+              <div className="sc-zone-label">Cột trái (sidebar CV)</div>
+              <div
+                className={`sc-zone${dropZoneActive === 'side' ? ' zone-active' : ''}`}
+                onDragOver={e => { e.preventDefault(); setDropZoneActive('side'); }}
+                onDragLeave={() => setDropZoneActive(null)}
+                onDrop={() => onDropToGrid('side')}
+              >
+                {sideVisible.length > 0
+                  ? renderGrid(sideVisible, 'side')
+                  : (
+                    <div className="sc-zone-empty">Kéo mục vào đây</div>
+                  )
+                }
+              </div>
+
+              {/* ── Main zone ── */}
+              <div className="sc-zone-label" style={{ marginTop: 12 }}>Cột phải (main CV)</div>
+              <div
+                className={`sc-zone${dropZoneActive === 'main' ? ' zone-active' : ''}`}
+                onDragOver={e => { e.preventDefault(); setDropZoneActive('main'); }}
+                onDragLeave={() => setDropZoneActive(null)}
+                onDrop={() => onDropToGrid('main')}
+              >
+                {renderGrid(mainVisible, 'main')}
+              </div>
+            </>
+          )}
         </>
       ) : (
         /* ── Single column: one flat grid ── */

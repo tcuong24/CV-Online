@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import axiosInstance from '@/lib/axios';
 import {
   Users, Trash2, Search, RefreshCw, Filter, ChevronDown, MoreHorizontal, ShieldAlert, X
@@ -19,6 +19,12 @@ interface UserRow {
   createdAt: string;
   lastLoginAt: string | null;
   _count: { cvs: number };
+  cvs?: Array<{
+    id: string;
+    title: string;
+    thumbnailUrl: string | null;
+    updatedAt: string;
+  }>;
 }
 
 export default function UsersManagementPage() {
@@ -27,6 +33,14 @@ export default function UsersManagementPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [expandedUserCvs, setExpandedUserCvs] = useState<Record<string, boolean>>({});
+
+  const toggleUserCvs = (userId: string) => {
+    setExpandedUserCvs((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
+  };
 
   // States for Add User Modal
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -133,7 +147,7 @@ export default function UsersManagementPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-32">
-        <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <div className="w-10 h-10 border-4 border-[#1D283D] border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-slate-400 text-sm font-medium">Đang tải danh sách người dùng...</p>
       </div>
     );
@@ -150,7 +164,7 @@ export default function UsersManagementPage() {
           <button onClick={fetchUsers} className="p-2 hover:bg-slate-100 rounded-xl transition-colors border border-slate-100 bg-white shadow-sm">
             <RefreshCw size={20} className="text-slate-500" />
           </button>
-          <Button onClick={() => setAddModalOpen(true)} className="rounded-xl bg-violet-600 hover:bg-violet-700 font-bold px-5 py-2.5 transition-all">
+          <Button onClick={() => setAddModalOpen(true)} className="rounded-xl bg-[#1D283D] hover:bg-[#1D283D]/90 font-bold px-5 py-2.5 transition-all">
             Thêm người dùng
           </Button>
         </div>
@@ -166,7 +180,7 @@ export default function UsersManagementPage() {
                 placeholder="Tìm kiếm email, tên..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm w-80 focus:ring-2 focus:ring-violet-500 outline-none transition-all"
+                className="pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm w-80 focus:ring-2 focus:ring-[#1D283D] outline-none transition-all"
               />
             </div>
             <button className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100 transition-all">
@@ -191,54 +205,108 @@ export default function UsersManagementPage() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filtered.map((user) => (
-                <tr key={user.id} className="group hover:bg-slate-50/50 transition-colors">
-                  <td className="py-5 pl-2">
-                    <div className="flex items-center gap-4">
-                      <div className="w-11 h-11 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-black text-lg">
-                        {(user.fullName ?? user.email)[0].toUpperCase()}
+                <Fragment key={user.id}>
+                  <tr className="group hover:bg-slate-50/50 transition-colors">
+                    <td className="py-5 pl-2">
+                      <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 rounded-full bg-[#1D283D]/10 flex items-center justify-center text-[#1D283D] font-black text-lg">
+                          {(user.fullName ?? user.email)[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-800 text-[15px]">{user.fullName ?? '—'}</p>
+                          <p className="text-[12px] text-slate-400 font-medium">{user.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-slate-800 text-[15px]">{user.fullName ?? '—'}</p>
-                        <p className="text-[12px] text-slate-400 font-medium">{user.email}</p>
+                    </td>
+                    <td className="py-5">
+                      <div className="flex items-center gap-1 group/select relative">
+                        <select
+                          value={user.role}
+                          disabled={actionLoading === user.id + 'role'}
+                          onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'admin')}
+                          className="appearance-none bg-transparent font-bold text-xs uppercase tracking-wider outline-none cursor-pointer text-[#1D283D] pr-5"
+                        >
+                          <option value="user">User</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                        <ChevronDown size={12} className="absolute right-0 text-[#1D283D]/50 pointer-events-none" />
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-5">
-                    <div className="flex items-center gap-1 group/select relative">
-                      <select
-                        value={user.role}
-                        disabled={actionLoading === user.id + 'role'}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'admin')}
-                        className="appearance-none bg-transparent font-bold text-xs uppercase tracking-wider outline-none cursor-pointer text-violet-600 pr-5"
-                      >
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                      <ChevronDown size={12} className="absolute right-0 text-violet-400 pointer-events-none" />
-                    </div>
-                  </td>
-                  <td className="py-5">
-                    <span className="font-bold text-slate-700">{user._count.cvs}</span>
-                    <span className="text-slate-400 text-xs ml-1 font-medium">CV</span>
-                  </td>
-                  <td className="py-5 pr-2 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="p-2 hover:bg-slate-100 text-slate-300 hover:text-slate-650 rounded-xl transition-all">
-                        <MoreHorizontal size={18} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setUserToDelete(user);
-                          setDeleteConfirmOpen(true);
-                        }}
-                        disabled={!!actionLoading}
-                        className="p-2 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-xl transition-all"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                    </td>
+                    <td className="py-5">
+                      {user._count.cvs > 0 ? (
+                        <button
+                          onClick={() => toggleUserCvs(user.id)}
+                          className="flex items-center gap-1 font-bold text-[#1D283D] hover:text-[#1D283D]/80 transition-colors cursor-pointer group/cv"
+                        >
+                          <ChevronDown 
+                            size={14} 
+                            className={`text-[#1D283D]/40 group-hover/cv:text-[#1D283D] transition-transform duration-300 ${
+                              expandedUserCvs[user.id] ? 'rotate-180' : ''
+                            }`} 
+                          />
+                          <span>{user._count.cvs}</span>
+                          <span className="text-slate-400 text-xs font-medium ml-0.5">CV</span>
+                        </button>
+                      ) : (
+                        <div className="flex items-center gap-1 font-bold text-slate-400 select-none">
+                          <span>0</span>
+                          <span className="text-xs font-medium ml-0.5">CV</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-5 pr-2 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button className="p-2 hover:bg-slate-100 text-slate-300 hover:text-slate-650 rounded-xl transition-all">
+                          <MoreHorizontal size={18} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setUserToDelete(user);
+                            setDeleteConfirmOpen(true);
+                          }}
+                          disabled={!!actionLoading}
+                          className="p-2 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-xl transition-all"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {expandedUserCvs[user.id] && user.cvs && user.cvs.length > 0 && (
+                    <tr>
+                      <td colSpan={4} className="bg-slate-50/40 px-8 py-5 border-y border-slate-100">
+                        <div className="flex flex-col gap-2">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 text-left">
+                            Danh sách CV của {user.fullName || user.email} ({user.cvs.length})
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {user.cvs.map((cv) => (
+                              <div key={cv.id} className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 hover:border-[#1D283D]/30 hover:shadow-sm transition-all group">
+                                <div className="w-10 h-12 bg-slate-50 rounded-lg overflow-hidden border border-slate-100 flex items-center justify-center shrink-0">
+                                  {cv.thumbnailUrl ? (
+                                    <img src={cv.thumbnailUrl} alt={cv.title} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="text-slate-350 font-bold text-[9px] uppercase tracking-wider">CV</div>
+                                  )}
+                                </div>
+                                <div className="min-w-0 flex-1 text-left">
+                                  <p className="font-bold text-slate-800 text-xs truncate group-hover:text-[#1D283D] transition-colors">{cv.title}</p>
+                                  <p className="text-[10px] text-slate-400 font-medium">Cập nhật: {new Date(cv.updatedAt).toLocaleDateString()}</p>
+                                </div>
+                                <button 
+                                  onClick={() => window.open(`/preview/${cv.id}`)}
+                                  className="text-xs font-black text-[#1D283D] hover:text-[#1D283D]/85 hover:underline shrink-0 pr-1 cursor-pointer"
+                                >
+                                  Xem
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -272,7 +340,7 @@ export default function UsersManagementPage() {
               </label>
               <input
                 type="text"
-                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
+                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1D283D] dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
                 placeholder="Ví dụ: Trần Văn Cường"
                 value={newFullName}
                 onChange={(e) => setNewFullName(e.target.value)}
@@ -286,7 +354,7 @@ export default function UsersManagementPage() {
               <input
                 type="email"
                 required
-                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
+                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1D283D] dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
                 placeholder="cuongtran@gmail.com"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
@@ -300,7 +368,7 @@ export default function UsersManagementPage() {
               <input
                 type="password"
                 required
-                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
+                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1D283D] dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
                 placeholder="Tối thiểu 6 ký tự..."
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -314,7 +382,7 @@ export default function UsersManagementPage() {
               <select
                 value={newRole}
                 onChange={(e) => setNewRole(e.target.value as 'user' | 'admin')}
-                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
+                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1D283D] dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
               >
                 <option value="user">Người dùng thông thường (User)</option>
                 <option value="admin">Quản trị viên (Admin)</option>
@@ -333,7 +401,7 @@ export default function UsersManagementPage() {
               <Button
                 type="submit"
                 disabled={createLoading}
-                className="flex-1 py-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold transition-all cursor-pointer shadow-md shadow-violet-600/10"
+                className="flex-1 py-5 rounded-xl bg-[#1D283D] hover:bg-[#1D283D]/90 text-white font-bold transition-all cursor-pointer shadow-md shadow-[#1D283D]/10"
               >
                 {createLoading ? 'Đang tạo...' : 'Tạo tài khoản'}
               </Button>

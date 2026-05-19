@@ -84,11 +84,11 @@ export class CvController {
     return this.cvService.findByPublicToken(token);
   }
 
-  // ── Dynamic :id routes sau cùng ───────────────────────────
   @Get(':id')              // ← sau tất cả static routes
   async findOne(@Param('id') id: string, @Request() req) {
     const userId = req.user?.id || 'user-001';
-    return this.cvService.findOne(id, userId);
+    const userRole = req.user?.role;
+    return this.cvService.findOne(id, userId, userRole);
   }
 
 

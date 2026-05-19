@@ -166,4 +166,9 @@ export class AuthService {
       message: 'Đặt lại mật khẩu thành công! Hãy đăng nhập lại bằng mật khẩu mới.',
     };
   }
+
+  async verifyOtpOnly(email: string, otp: string) {
+    await this.otpService.checkOtp(email, otp);
+    return { success: true, message: 'Mã OTP chính xác!' };
+  }
 }

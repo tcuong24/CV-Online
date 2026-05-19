@@ -148,10 +148,17 @@ export function TwoColumnPage({
   };
 
   const columnRatio = style?.layout?.columnRatio || '220px 1fr';
-  // If ratio is '35:65', convert to '35% 65%' for grid
-  const gridTemplateColumns = columnRatio.includes(':')
-    ? columnRatio.split(':').map((v: string) => `${v}%`).join(' ')
-    : columnRatio;
+  let gridTemplateColumns = columnRatio;
+  if (columnRatio.includes(':')) {
+    const parts = columnRatio.split(':').map(Number);
+    if (parts.length === 2 && !parts.some(isNaN)) {
+      const sidePart = Math.min(parts[0], parts[1]);
+      const mainPart = Math.max(parts[0], parts[1]);
+      gridTemplateColumns = `${sidePart}% ${mainPart}%`;
+    } else {
+      gridTemplateColumns = columnRatio.split(':').map((v: string) => `${v}%`).join(' ');
+    }
+  }
 
   const sidebarBg = style?.colors?.background.sidebar || theme.sidebar || theme.primary;
   const pageBg = style?.colors?.background.page || '#ffffff';

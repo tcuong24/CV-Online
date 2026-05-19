@@ -36,6 +36,15 @@ export class AdminController {
         createdAt: true,
         lastLoginAt: true,
         _count: { select: { cvs: true } },
+        cvs: {
+          select: {
+            id: true,
+            title: true,
+            thumbnailUrl: true,
+            updatedAt: true,
+          },
+          orderBy: { updatedAt: 'desc' },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -69,6 +78,15 @@ export class AdminController {
         createdAt: true,
         lastLoginAt: true,
         _count: { select: { cvs: true } },
+        cvs: {
+          select: {
+            id: true,
+            title: true,
+            thumbnailUrl: true,
+            updatedAt: true,
+          },
+          orderBy: { updatedAt: 'desc' },
+        },
       }
     });
   }

@@ -128,7 +128,7 @@ export class CvService {
   /**
    * Get CV by ID with all relations
    */
-  async findOne(id: string, userId?: string) {
+  async findOne(id: string, userId?: string, userRole?: string) {
     const cv = await this.prisma.cV.findUnique({
       where: { id },
       include: {
@@ -168,8 +168,8 @@ export class CvService {
       throw new NotFoundException(`CV with ID ${id} not found`);
     }
 
-    // Check ownership if userId is provided
-    if (userId && cv.userId !== userId && !cv.isPublic) {
+    // Check ownership if userId is provided and the user is not an admin
+    if (userId && cv.userId !== userId && !cv.isPublic && userRole !== 'admin') {
       throw new ForbiddenException('You do not have access to this CV');
     }
 
