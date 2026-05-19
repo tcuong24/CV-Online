@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, HttpException } from '@nestjs/common';
 import { GoogleGenAI } from '@google/genai';
 import * as mammoth from 'mammoth';
 const pdfParse = require('pdf-parse');
@@ -63,7 +63,16 @@ export class CvParserService {
   private async parseTextWithAI(text: string): Promise<any> {
     const prompt = `
       You are a world-class CV parsing assistant. Your task is to extract structured information from the following raw text of a resume/CV.
-      IMPORTANT: You MUST return a JSON object that matches the following EXACT structure:
+      
+      CRITICAL VALIDATION RULE:
+      Evaluate if the provided content is actually a CV, Resume, or Professional Candidate Profile. 
+      If it is not a CV/Resume (e.g. it is programming code, a generic tutorial/guide, a food recipe, a general book chapter, a product description, random chatter, or any document unrelated to a person's professional history and contact details), you MUST return a JSON object with this exact format:
+      {
+        "error": "INVALID_CV",
+        "message": "Nội dung tài liệu không giống một CV hoặc Lý lịch ứng viên. Vui lòng kiểm tra lại file của bạn."
+      }
+
+      IMPORTANT: If the content is indeed a CV/Resume, you MUST return a JSON object that matches the following EXACT structure:
       {
         "metadata": {
           "language": "en", // Output "en" for English or "vi" for Vietnamese based on the CV content
@@ -118,8 +127,16 @@ export class CvParserService {
         throw new Error('Empty AI response');
       }
 
-      return JSON.parse(jsonString);
+      const parsed = JSON.parse(jsonString);
+      if (parsed && parsed.error === 'INVALID_CV') {
+        throw new BadRequestException(parsed.message);
+      }
+
+      return parsed;
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       this.logger.error('Error parsing text with AI', error);
       throw new Error('AI parsing failed');
     }
@@ -129,7 +146,16 @@ export class CvParserService {
     const prompt = `
       You are a world-class CV parsing assistant. Below is an image of a resume/CV. 
       Analyze the image and extract all relevant information.
-      IMPORTANT: You MUST return a JSON object that matches the following EXACT structure:
+
+      CRITICAL VALIDATION RULE:
+      Evaluate if the provided image content is actually a CV, Resume, or Professional Candidate Profile. 
+      If it is not a CV/Resume (e.g. it is programming code, a generic tutorial/guide, a food recipe, a general book chapter, a product description, random chatter, or any document unrelated to a person's professional history and contact details), you MUST return a JSON object with this exact format:
+      {
+        "error": "INVALID_CV",
+        "message": "Nội dung tài liệu không giống một CV hoặc Lý lịch ứng viên. Vui lòng kiểm tra lại file của bạn."
+      }
+
+      IMPORTANT: If the image content is indeed a CV/Resume, you MUST return a JSON object that matches the following EXACT structure:
       {
         "metadata": {
           "language": "en", // Output "en" for English or "vi" for Vietnamese based on the CV content
@@ -194,8 +220,16 @@ export class CvParserService {
         throw new Error('Empty AI response');
       }
 
-      return JSON.parse(jsonString);
+      const parsed = JSON.parse(jsonString);
+      if (parsed && parsed.error === 'INVALID_CV') {
+        throw new BadRequestException(parsed.message);
+      }
+
+      return parsed;
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       this.logger.error('Error parsing image with AI', error);
       throw new Error('AI Image parsing failed');
     }

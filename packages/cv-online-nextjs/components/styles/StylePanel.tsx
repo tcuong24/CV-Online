@@ -104,8 +104,9 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
       });
       setData(res.data);
       toast.success('Xong!', { id: toastId });
-    } catch {
-      toast.error('Lỗi!', { id: toastId });
+    } catch (err: any) {
+      const errMsg = err?.response?.data?.message || 'Có lỗi xảy ra khi nhập file!';
+      toast.error(errMsg, { id: toastId });
     } finally {
       setIsImporting(false);
       e.target.value = ''; // Reset file input so selecting the same file again triggers onChange
