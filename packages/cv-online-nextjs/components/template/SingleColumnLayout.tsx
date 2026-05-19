@@ -346,17 +346,31 @@ export function SingleColumnLayout({
 
   // ── Measurement refs ─────────────────────────────────────────────────
   const measureRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [pages, setPages] = useState<RenderUnit[][]>([[...units]]);
   const HEADER_H = 220;
   const BODY_PAD = 72;
   const FIRST_AVAIL = PAGE_HEIGHT_PX - HEADER_H - BODY_PAD;
   const REST_AVAIL = PAGE_HEIGHT_PX - BODY_PAD;
+
+  const [recalcNonce, setRecalcNonce] = useState(0);
+
+  // Recalculate whenever size of hidden container changes
+  useLayoutEffect(() => {
+    if (!containerRef.current || typeof window === 'undefined' || !('ResizeObserver' in window)) return;
+    const observer = new window.ResizeObserver(() => {
+      setRecalcNonce(n => n + 1);
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   useLayoutEffect(() => {
     const heights = measureRefs.current.map(el => el?.getBoundingClientRect().height ?? 0);
     if (heights.every(h => h === 0)) return;
     setPages(paginateUnits(units, heights, FIRST_AVAIL, REST_AVAIL));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order.join(','), data, JSON.stringify(ctx.sectionLayout)]);
+  }, [order.join(','), data, JSON.stringify(ctx.sectionLayout), recalcNonce]);
 
   return (
     <DragDropContext
@@ -369,7 +383,7 @@ export function SingleColumnLayout({
       }}
     >
       {/* ── Hidden measurement container ── */}
-      <div style={{ position: 'absolute', visibility: 'hidden', pointerEvents: 'none', width: 706, fontFamily, fontSize: fs, lineHeight: lh }}>
+      <div ref={containerRef} style={{ position: 'absolute', visibility: 'hidden', pointerEvents: 'none', width: 706, fontFamily, fontSize: fs, lineHeight: lh }}>
         {units.map((u, i) => (
           <div key={i} ref={el => { measureRefs.current[i] = el; }}>
             {u.kind === 'section-header'

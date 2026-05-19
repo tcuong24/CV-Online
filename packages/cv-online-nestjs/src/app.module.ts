@@ -8,6 +8,8 @@ import { RenderingModule } from './rendering/rendering.module';
 import { ExportModule } from './export/export.module';
 import { AuthModule } from './auth/auth.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { RedisModule } from './redis/redis.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -23,7 +25,9 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     RenderingModule, 
     ExportModule, 
     AuthModule, 
-    CloudinaryModule
+    CloudinaryModule,
+    RedisModule,
+    EmailModule
   ],
 })
 export class AppModule {}

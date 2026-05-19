@@ -119,7 +119,7 @@ function ScoreHeader({ score }: { score: { before: number; after: number } }) {
       <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1">
         <span className="text-[11px] font-bold text-slate-300 line-through">{score.before}</span>
         <ArrowRight size={10} className="text-slate-200" />
-        <span className="text-[11px] font-bold text-green-500">{score.after}/10</span>
+        <span className="text-[11px] font-bold text-green-500">{score.after}/100</span>
       </div>
     </div>
   );
@@ -455,7 +455,7 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
       try {
         aiResult = JSON.parse(aiResult);
         isJson = true;
-        
+
         if (aiResult.intent === 'need_clarification') {
           setPendingIntent(aiResult.pendingIntent);
           setClarificationQuestions(aiResult.questions || []);
@@ -531,8 +531,8 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
             const skillsStr = parts[1].trim();
             const incoming = skillsStr.split(',').map(s => s.trim()).filter(Boolean);
             incoming.forEach(name => {
-              const exists = ((cvData as any).skills ?? []).some((s: any) => 
-                (s.name ?? '').toLowerCase() === name.toLowerCase() && 
+              const exists = ((cvData as any).skills ?? []).some((s: any) =>
+                (s.name ?? '').toLowerCase() === name.toLowerCase() &&
                 s.category === category
               );
               if (!exists) {
@@ -636,11 +636,10 @@ export function CvAiChatbox({ onClose }: { onClose?: () => void }) {
                       return (
                         <button
                           key={opt}
-                          className={`px-3 py-1.5 text-[12px] font-medium rounded-full border transition-all ${
-                            isSelected
-                              ? 'bg-[#2563eb] text-white border-[#2563eb] shadow-sm' 
+                          className={`px-3 py-1.5 text-[12px] font-medium rounded-full border transition-all ${isSelected
+                              ? 'bg-[#2563eb] text-white border-[#2563eb] shadow-sm'
                               : 'bg-white text-slate-600 border-slate-200 hover:border-[#93c5fd] hover:bg-[#f8fafc]'
-                          }`}
+                            }`}
                           onClick={() => handleAnswerQuestion(q.id, opt)}
                         >
                           {opt}

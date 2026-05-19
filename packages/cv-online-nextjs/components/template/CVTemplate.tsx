@@ -742,7 +742,7 @@ export function LanguagesBlock({
             <div style={{ fontSize: fs * 0.88, color: textColor }}>
               <EditableText scale={ctx.scale} value={l.lang} onChange={(v) => ctx.updateEntry('languages', l.id, { lang: v })} placeholder="Ngoại ngữ" />
             </div>
-            
+
             {langStyle === 'bars' && (
               <div style={{ display: 'flex', gap: 2, marginTop: 3 }}>
                 {[1, 2, 3, 4, 5].map((i) => (
@@ -978,7 +978,7 @@ export function MainSectionBlocks({
                       <div className="group/item relative flex items-center" style={{ marginBottom: 7 }}>
                         <span {...dp.dragHandleProps} className="shrink-0 mr-1 cursor-grab opacity-0 group-hover/item:opacity-40 hover:opacity-100 transition-opacity text-gray-400 select-none text-xs" title="Kéo thả">⠿</span>
                         <span style={{ fontSize: fs * 0.95, fontWeight: 500, flex: 1 }}><EditableText scale={ctx.scale} value={l.lang} onChange={(v) => ctx.updateEntry('languages', l.id, { lang: v })} placeholder="Ngoại ngữ" /></span>
-                        
+
                         {langStyle === 'bars' && (
                           <div style={{ display: 'flex', gap: 4 }}>
                             {[1, 2, 3, 4, 5].map((i) => (

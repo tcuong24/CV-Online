@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { globalCss } from '@/styles/globalCss';
 import { SectionOrderPanel } from '@/components/sidebar/SectionOrderPanel';
 import { StylePanel } from '@/components/styles/StylePanel';
@@ -10,6 +11,16 @@ import { useCvEditorStore } from '@/stores/useCvEditor';
 import { Slider } from '@/components/ui/slider';
 import { TemplatePickerPanel } from '@/components/sidebar/TemplatePickerPanel';
 import { CvAiChatbox } from '@/components/editor/CvAiChatbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const AI_PANEL_MIN = 260;
 const AI_PANEL_MAX = 600;
@@ -31,6 +42,45 @@ export function CvEditorWorkspace({ onSave }: CvEditorWorkspaceProps) {
   const lastSavedAt = useCvEditorStore((s) => s.lastSavedAt);
   const visibility = useCvEditorStore((s) => s.visibility);
   const syncToDb = useCvEditorStore((s) => s.syncToDb);
+
+  const router = useRouter();
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  // Warn user on close/reload if dirty
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = 'Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn rời đi?';
+        return e.returnValue;
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
+  // Intercept browser back button / swipe back if dirty
+  useEffect(() => {
+    if (!isDirty) return;
+
+    window.history.pushState(null, '', window.location.href);
+
+    const handlePopState = () => {
+      setShowExitConfirm(true);
+      window.history.pushState(null, '', window.location.href);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isDirty]);
+
+  const confirmExit = () => {
+    setShowExitConfirm(false);
+    // Directly go to dashboard
+    router.push('/dashboard');
+  };
 
   // ── Store actions ─────────────────────────────────────────────────────────────
   const patchStyle = useCvEditorStore((s) => s.patchStyle);
@@ -133,6 +183,13 @@ export function CvEditorWorkspace({ onSave }: CvEditorWorkspaceProps) {
             isSaving={isSaving}
             isDirty={isDirty}
             lastSavedAt={lastSavedAt}
+            onBackClick={() => {
+              if (isDirty) {
+                setShowExitConfirm(true);
+              } else {
+                router.push('/dashboard');
+              }
+            }}
           />
 
           <div className="preview-area" style={{ position: 'relative' }}>
@@ -256,6 +313,21 @@ export function CvEditorWorkspace({ onSave }: CvEditorWorkspaceProps) {
       <style>{`
         div:has(> .resize-grip):hover .resize-grip { opacity: 1 !important; }
       `}</style>
+
+      <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bạn có chắc chắn muốn rời đi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tất cả thay đổi chưa lưu trên CV của bạn sẽ bị mất. Hãy chắc chắn rằng bạn đã lưu các chỉnh sửa của mình trước khi thoát.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowExitConfirm(false)}>Hủy bỏ</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmExit} className="bg-red-600 hover:bg-red-700 text-white">Rời khỏi trang</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

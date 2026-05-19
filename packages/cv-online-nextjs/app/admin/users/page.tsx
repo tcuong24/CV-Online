@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import axiosInstance from '@/lib/axios';
 import {
-  Users, Trash2, Search, RefreshCw, Filter, ChevronDown, MoreHorizontal
+  Users, Trash2, Search, RefreshCw, Filter, ChevronDown, MoreHorizontal, ShieldAlert, X
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 interface UserRow {
   id: string;
@@ -25,6 +27,18 @@ export default function UsersManagementPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // States for Add User Modal
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newFullName, setNewFullName] = useState('');
+  const [newRole, setNewRole] = useState<'user' | 'admin'>('user');
+  const [newPassword, setNewPassword] = useState('');
+  const [createLoading, setCreateLoading] = useState(false);
+
+  // States for Confirm Delete Modal
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserRow | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -59,29 +73,60 @@ export default function UsersManagementPage() {
     try {
       await axiosInstance.patch(`/admin/users/${userId}`, { role });
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role } : u)));
+      toast.success('Cập nhật quyền hạn thành công!');
     } finally {
       setActionLoading(null);
     }
   };
 
-  const handleSubChange = async (userId: string, subscriptionType: string) => {
-    setActionLoading(userId + 'sub');
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEmail.trim() || !newPassword.trim()) {
+      toast.error('Vui lòng điền đầy đủ Email và Mật khẩu!');
+      return;
+    }
+    setCreateLoading(true);
     try {
-      await axiosInstance.patch(`/admin/users/${userId}`, { subscriptionType });
-      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, subscriptionType } : u)));
+      const res = await axiosInstance.post('/admin/users', {
+        email: newEmail,
+        password: newPassword,
+        fullName: newFullName,
+        role: newRole,
+      });
+      setUsers((prev) => [res.data, ...prev]);
+      toast.success('Thêm người dùng mới thành công!');
+      setAddModalOpen(false);
+      // Reset form states
+      setNewEmail('');
+      setNewFullName('');
+      setNewRole('user');
+      setNewPassword('');
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.response?.data?.message || 'Có lỗi xảy ra khi tạo người dùng!');
     } finally {
-      setActionLoading(null);
+      setCreateLoading(false);
     }
   };
 
-  const handleDelete = async (userId: string) => {
-    if (!confirm('Bạn có chắc muốn xóa user này?')) return;
+  const handleDelete = async () => {
+    if (!userToDelete) return;
+    const userId = userToDelete.id;
     setActionLoading(userId + 'del');
+    setDeleteConfirmOpen(false);
     try {
-      await axiosInstance.delete(`/admin/users/${userId}`);
-      setUsers((prev) => prev.filter((u) => u.id !== userId));
+      const res = await axiosInstance.delete(`/admin/users/${userId}`);
+      if (res.data?.error) {
+        toast.error(res.data.error);
+      } else {
+        setUsers((prev) => prev.filter((u) => u.id !== userId));
+        toast.success(`Đã xóa thành công người dùng ${userToDelete.fullName || userToDelete.email}`);
+      }
+    } catch (e: any) {
+      toast.error('Có lỗi xảy ra khi xóa người dùng!');
     } finally {
       setActionLoading(null);
+      setUserToDelete(null);
     }
   };
 
@@ -105,7 +150,7 @@ export default function UsersManagementPage() {
           <button onClick={fetchUsers} className="p-2 hover:bg-slate-100 rounded-xl transition-colors border border-slate-100 bg-white shadow-sm">
             <RefreshCw size={20} className="text-slate-500" />
           </button>
-          <Button className="rounded-xl bg-violet-600 hover:bg-violet-700">
+          <Button onClick={() => setAddModalOpen(true)} className="rounded-xl bg-violet-600 hover:bg-violet-700 font-bold px-5 py-2.5 transition-all">
             Thêm người dùng
           </Button>
         </div>
@@ -140,7 +185,6 @@ export default function UsersManagementPage() {
               <tr className="text-slate-400 font-bold border-b border-slate-50 uppercase text-[11px] tracking-wider">
                 <th className="text-left pb-5 pl-2">Người dùng</th>
                 <th className="text-left pb-5">Quyền hạn</th>
-                {/* <th className="text-left pb-5">Gói dịch vụ</th> */}
                 <th className="text-left pb-5">CV đã tạo</th>
                 <th className="text-right pb-5 pr-2">Thao tác</th>
               </tr>
@@ -173,29 +217,20 @@ export default function UsersManagementPage() {
                       <ChevronDown size={12} className="absolute right-0 text-violet-400 pointer-events-none" />
                     </div>
                   </td>
-                  {/* <td className="py-5">
-                     <select
-                        value={user.subscriptionType}
-                        disabled={actionLoading === user.id + 'sub'}
-                        onChange={(e) => handleSubChange(user.id, e.target.value)}
-                        className="px-3 py-1 bg-violet-50 text-violet-600 rounded-full text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer hover:bg-violet-100 transition-colors"
-                     >
-                        <option value="free">Free</option>
-                        <option value="pro">Pro</option>
-                        <option value="enterprise">Enterprise</option>
-                     </select>
-                  </td> */}
                   <td className="py-5">
                     <span className="font-bold text-slate-700">{user._count.cvs}</span>
                     <span className="text-slate-400 text-xs ml-1 font-medium">CV</span>
                   </td>
                   <td className="py-5 pr-2 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button className="p-2 hover:bg-slate-100 text-slate-300 hover:text-slate-600 rounded-xl transition-all">
+                      <button className="p-2 hover:bg-slate-100 text-slate-300 hover:text-slate-650 rounded-xl transition-all">
                         <MoreHorizontal size={18} />
                       </button>
                       <button
-                        onClick={() => handleDelete(user.id)}
+                        onClick={() => {
+                          setUserToDelete(user);
+                          setDeleteConfirmOpen(true);
+                        }}
                         disabled={!!actionLoading}
                         className="p-2 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-xl transition-all"
                       >
@@ -217,6 +252,135 @@ export default function UsersManagementPage() {
           )}
         </div>
       </div>
+
+      {/* Add User Modal */}
+      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
+        <DialogContent className="!max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl overflow-hidden p-6">
+          <DialogHeader className="mb-5">
+            <DialogTitle className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+              Thêm người dùng mới
+            </DialogTitle>
+            <DialogDescription className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+              Tạo tài khoản thành viên mới và thiết lập phân quyền trực tiếp trên hệ thống.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateUser} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Họ và Tên
+              </label>
+              <input
+                type="text"
+                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
+                placeholder="Ví dụ: Trần Văn Cường"
+                value={newFullName}
+                onChange={(e) => setNewFullName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Địa chỉ Email <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                required
+                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
+                placeholder="cuongtran@gmail.com"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Mật khẩu đăng nhập <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                required
+                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
+                placeholder="Tối thiểu 6 ký tự..."
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Vai trò phân quyền
+              </label>
+              <select
+                value={newRole}
+                onChange={(e) => setNewRole(e.target.value as 'user' | 'admin')}
+                className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-white transition-all bg-slate-50 dark:bg-slate-800"
+              >
+                <option value="user">Người dùng thông thường (User)</option>
+                <option value="admin">Quản trị viên (Admin)</option>
+              </select>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setAddModalOpen(false)}
+                className="flex-1 py-5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-650 font-bold transition-all cursor-pointer bg-white"
+              >
+                Hủy bỏ
+              </Button>
+              <Button
+                type="submit"
+                disabled={createLoading}
+                className="flex-1 py-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold transition-all cursor-pointer shadow-md shadow-violet-600/10"
+              >
+                {createLoading ? 'Đang tạo...' : 'Tạo tài khoản'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Premium Confirm Delete Modal */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="!max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl overflow-hidden p-6 text-center">
+          <div className="w-14 h-14 bg-red-50 dark:bg-red-950/30 text-red-650 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100 dark:border-red-900/30">
+            <ShieldAlert size={28} />
+          </div>
+          
+          <DialogHeader className="space-y-2 mb-6">
+            <DialogTitle className="text-xl font-black text-slate-800 dark:text-white text-center">
+              Xác nhận xóa tài khoản?
+            </DialogTitle>
+            <DialogDescription className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed text-center">
+              Bạn có chắc chắn muốn xóa tài khoản <span className="font-extrabold text-slate-800 dark:text-slate-200">{userToDelete?.fullName || userToDelete?.email}</span>? 
+              Tất cả các CV và dữ liệu liên quan sẽ bị xóa vĩnh viễn và không thể hoàn tác.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setDeleteConfirmOpen(false);
+                setUserToDelete(null);
+              }}
+              className="flex-1 py-5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-650 font-bold transition-all cursor-pointer bg-white"
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              type="button"
+              onClick={handleDelete}
+              className="flex-1 py-5 rounded-xl bg-red-650 hover:bg-red-750 text-white font-bold transition-all cursor-pointer shadow-md shadow-red-600/10"
+            >
+              Đồng ý xóa
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

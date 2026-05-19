@@ -109,8 +109,8 @@ ${GFONTS}
 .template-pills { display: flex; gap: 5px; }
 .template-pill { padding: 4px 11px; border-radius: 99px; font-size: 11px; font-weight: 600; border: 1.5px solid var(--border); background: white; cursor: pointer; color: var(--muted); transition: all 0.12s; font-family: inherit; }
 .template-pill.active { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
-/* Each .cv-paper represents one A4 page. overflow:visible is intentional —
-   content is distributed by the pagination algorithm, not clipped. */
+/* Each .cv-paper represents one A4 page. min-height ensures visual A4 boundary.
+   overflow:visible — pagination distributes content, overflow is a visual cue to tune constants. */
 .cv-paper { width: 100%; max-width: 794px; background: white; box-shadow: var(--shadow-lg); border-radius: 3px; min-height: 1123px; overflow: visible; position: relative; }
 /* Wrapper when multiple pages are stacked */
 .cv-pages-wrapper { display: flex; flex-direction: column; gap: 24px; align-items: center; width: 100%; padding: 24px 0; }

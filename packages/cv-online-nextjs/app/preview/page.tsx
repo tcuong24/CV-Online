@@ -155,7 +155,7 @@ export default function PreviewPage() {
 
     setDownloading(true);
     try {
-      const [{ toPng }, { default: jsPDF }] = await Promise.all([
+      const [{ toJpeg }, { default: jsPDF }] = await Promise.all([
         import('html-to-image'),
         import('jspdf'),
       ]);
@@ -167,46 +167,35 @@ export default function PreviewPage() {
       const A4_H = 297;
 
       for (let i = 0; i < pages.length; i++) {
-        const dataUrl = await toPng(pages[i], {
+        // Each .cv-paper is now exactly 1 A4 page (DOM pagination)
+        const dataUrl = await toJpeg(pages[i], {
+          quality: 0.92,
           pixelRatio: 2,
+          width: 794,
+          height: 1123,
           backgroundColor: '#ffffff',
           skipFonts: false,
           filter: (node) => {
             if (node instanceof HTMLElement) {
               if (node.tagName === 'BUTTON') return false;
               if (node.getAttribute('title')?.includes('Kéo')) return false;
-              if (node.classList.contains('cursor-pointer') &&
-                node.classList.contains('group')) return false;
             }
             return true;
           },
         });
 
+        // Load image to get actual dimensions for proper aspect ratio
+        const img = new Image();
+        img.src = dataUrl;
         await new Promise<void>((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => {
-            const imgWidth = A4_W;
-            const imgHeight = (img.height * A4_W) / img.width;
-
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            if (i > 0) pdf.addPage();
-            pdf.addImage(img, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= A4_H;
-
-            // Slice the long image into subsequent pages
-            while (heightLeft > 0) {
-              position -= A4_H;
-              pdf.addPage();
-              pdf.addImage(img, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= A4_H;
-            }
-            resolve();
-          };
+          img.onload = () => resolve();
           img.onerror = reject;
-          img.src = dataUrl;
         });
+
+        const imgHeight = (img.naturalHeight * A4_W) / img.naturalWidth;
+
+        if (i > 0) pdf.addPage();
+        pdf.addImage(dataUrl, 'JPEG', 0, 0, A4_W, Math.min(imgHeight, A4_H));
       }
 
       const name = data.personal?.name?.replace(/\s+/g, '_') ?? 'CV';

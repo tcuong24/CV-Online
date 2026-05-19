@@ -338,6 +338,10 @@ export function SidebarLeftLayout({
       >{label}</button>
     ) : undefined;
 
+  // ── Measurement refs for pagination ──
+  const mainMeasureRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const sideMeasureRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   // Build main sections list
   const allMainSections: {
     key: string;
@@ -803,9 +807,108 @@ export function SidebarLeftLayout({
 
   const mainKeys = allMainSections.map((s) => s.key);
 
+  // ── Pagination state ──
+  const [sidePart] = (style.layout?.columnRatio || '30:70').split(':').map(Number);
+  const sidebarW = Math.round(794 * (sidePart / 100));
+  const mainW = 794 - sidebarW;
+
+  // Conservative estimates — better to push to page 2 than to overflow
+  const SIDE_HEADER_H = 400; // avatar(150) + margins(60) + contact section(~150) + padding(40)
+  const MAIN_HEADER_H = 140; // name(~55) + role(~25) + margins(~60)
+  const PAD = 56;            // top + bottom padding per page
+
+  const FIRST_SIDE_AVAIL = PAGE_HEIGHT_PX - SIDE_HEADER_H;
+  const FIRST_MAIN_AVAIL = PAGE_HEIGHT_PX - MAIN_HEADER_H - PAD;
+  const REST_SIDE_AVAIL = PAGE_HEIGHT_PX - PAD;
+  const REST_MAIN_AVAIL = PAGE_HEIGHT_PX - PAD;
+
+  type DualPage = {
+    mainSections: typeof allMainSections;
+    sideSections: typeof sideSectionNodes;
+  };
+  const [pages, setPages] = useState<DualPage[]>([{
+    mainSections: allMainSections,
+    sideSections: sideSectionNodes,
+  }]);
+
+  const mainContainerRef = useRef<HTMLDivElement>(null);
+  const [recalcNonce, setRecalcNonce] = useState(0);
+
+  // Recalculate whenever size of hidden container changes
+  useLayoutEffect(() => {
+    if (!mainContainerRef.current || typeof window === 'undefined' || !('ResizeObserver' in window)) return;
+    const observer = new window.ResizeObserver(() => {
+      setRecalcNonce(n => n + 1);
+    });
+    observer.observe(mainContainerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    // SectionShell adds: title row (~30px) + border/padding (~8px) + Draggable marginBottom (24px)
+    const SECTION_OVERHEAD = 62;
+    const mainHeights = mainMeasureRefs.current.slice(0, allMainSections.length).map(el =>
+      (el?.getBoundingClientRect().height ?? 0) + SECTION_OVERHEAD
+    );
+    const sideHeights = sideMeasureRefs.current.slice(0, sideSectionNodes.length).map(el => el?.getBoundingClientRect().height ?? 0);
+
+    console.log('[SidebarLeft Pagination]', {
+      mainHeights,
+      sideHeights,
+      FIRST_MAIN_AVAIL,
+      FIRST_SIDE_AVAIL,
+      mainSectionCount: allMainSections.length,
+      sideSectionCount: sideSectionNodes.length,
+      mainRefCount: mainMeasureRefs.current.length,
+      sideRefCount: sideMeasureRefs.current.length,
+    });
+
+    if (mainHeights.every(h => h === 0) && sideHeights.every(h => h === 0)) {
+      console.log('[SidebarLeft Pagination] All heights are 0, skipping');
+      return;
+    }
+
+    const mainPages = paginateSections(mainHeights, FIRST_MAIN_AVAIL, REST_MAIN_AVAIL);
+    const sidePages = paginateSections(sideHeights, FIRST_SIDE_AVAIL, REST_SIDE_AVAIL);
+
+    console.log('[SidebarLeft Pagination] Result:', {
+      mainPages,
+      sidePages,
+      totalPages: Math.max(mainPages.length, sidePages.length, 1),
+    });
+
+    const totalPages = Math.max(mainPages.length, sidePages.length, 1);
+    const result: DualPage[] = [];
+    for (let p = 0; p < totalPages; p++) {
+      result.push({
+        mainSections: (mainPages[p] ?? []).map(i => allMainSections[i]),
+        sideSections: (sidePages[p] ?? []).map(i => sideSectionNodes[i]),
+      });
+    }
+    setPages(result);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order.join(','), sideKeys.join(','), data, JSON.stringify(ctx.sectionLayout), recalcNonce]);
+
   return (
     <>
-      {/* DragDropContext bao ngoài — xử lý cả main và sidebar zones */}
+      {/* ── Hidden measurement containers ── */}
+      <div ref={mainContainerRef} style={{ position: 'absolute', visibility: 'hidden', pointerEvents: 'none', width: mainW - 52, fontFamily, fontSize: fs, lineHeight: lh }}>
+        {allMainSections.map((s, i) => (
+          <div key={s.key} ref={el => { mainMeasureRefs.current[i] = el; }} style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: fs * 0.84, fontWeight: 700, paddingBottom: 5, marginBottom: 12 }}>{s.title}</div>
+            {s.content}
+          </div>
+        ))}
+      </div>
+      <div style={{ position: 'absolute', visibility: 'hidden', pointerEvents: 'none', width: sidebarW - 36, fontFamily, fontSize: fs * 0.88, lineHeight: lh }}>
+        {sideSectionNodes.map((s, i) => (
+          <div key={s.key} ref={el => { sideMeasureRefs.current[i] = el; }}>
+            {s.content}
+          </div>
+        ))}
+      </div>
+
+      {/* ── DragDropContext + paginated output ── */}
       <DragDropContext
         onDragEnd={(result: DropResult) => {
           if (!result.destination) return;
@@ -827,24 +930,27 @@ export function SidebarLeftLayout({
         }}
       >
         <div className="cv-pages-wrapper">
-          <SidebarLeftPage
-            key="pageless"
-            style={style}
-            isFirst={true}
-            mainSections={allMainSections}
-            sideSections={sideSectionNodes}
-            data={data}
-            theme={theme}
-            fontFamily={fontFamily}
-            align={align}
-            fs={fs}
-            lh={lh}
-            accentColor={accentColor}
-            ctx={ctx}
-            scale={scale}
-          />
+          {pages.map((page, pageIdx) => (
+            <SidebarLeftPage
+              key={pageIdx}
+              style={style}
+              isFirst={pageIdx === 0}
+              mainSections={page.mainSections}
+              sideSections={page.sideSections}
+              data={data}
+              theme={theme}
+              fontFamily={fontFamily}
+              align={align}
+              fs={fs}
+              lh={lh}
+              accentColor={accentColor}
+              ctx={ctx}
+              scale={scale}
+            />
+          ))}
         </div>
       </DragDropContext>
     </>
   );
 }
+

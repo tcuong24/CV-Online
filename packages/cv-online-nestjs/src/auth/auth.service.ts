@@ -1,15 +1,18 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { OtpService } from './otp.service';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly otpService: OtpService,
   ) { }
 
   async register(dto: RegisterDto) {
@@ -137,5 +140,30 @@ export class AuthService {
         lastLoginAt: true,
       },
     });
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy tài khoản với email này.');
+    }
+    return this.otpService.sendOtp(email);
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    // Verify OTP first
+    await this.otpService.verifyOtp(dto.email, dto.otp);
+
+    // Hash the new password and update in DB
+    const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({
+      where: { email: dto.email },
+      data: { passwordHash },
+    });
+
+    return {
+      success: true,
+      message: 'Đặt lại mật khẩu thành công! Hãy đăng nhập lại bằng mật khẩu mới.',
+    };
   }
 }

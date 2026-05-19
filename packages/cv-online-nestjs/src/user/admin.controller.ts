@@ -1,7 +1,8 @@
-import { Controller, Get, Patch, Delete, Param, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../auth/admin.guard';
 import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
@@ -37,6 +38,38 @@ export class AdminController {
         _count: { select: { cvs: true } },
       },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /** POST /admin/users — tạo người dùng mới */
+  @Post('users')
+  async createUser(
+    @Body() body: { email: string; password?: string; fullName?: string; role?: 'user' | 'admin' },
+  ) {
+    let passwordHash = '';
+    if (body.password) {
+      passwordHash = await bcrypt.hash(body.password, 10);
+    }
+    
+    return this.prisma.user.create({
+      data: {
+        email: body.email,
+        passwordHash,
+        fullName: body.fullName || null,
+        role: body.role || 'user',
+        subscriptionType: 'free',
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        avatarUrl: true,
+        role: true,
+        subscriptionType: true,
+        createdAt: true,
+        lastLoginAt: true,
+        _count: { select: { cvs: true } },
+      }
     });
   }
 

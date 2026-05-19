@@ -16,7 +16,8 @@ import {
   Columns,
   Minus,
   Plus,
-  RefreshCcw
+  RefreshCcw,
+  ArrowLeft
 } from 'lucide-react';
 import { COLOR_THEMES, FONT_OPTIONS } from '@/constants/cvEditor';
 import { StyleConfig } from '@/types/cvEditor';
@@ -26,11 +27,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from '../ui/button';
 import { useStore } from 'zustand';
 import { useCvEditorStore } from '@/stores/useCvEditor';
 import axiosInstance from '@/lib/axios';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 import { resolveTheme } from '@/lib/mappers/templateMapper';
 
@@ -51,9 +63,10 @@ interface StylePanelProps {
   isSaving?: boolean;
   isDirty?: boolean;
   lastSavedAt?: number | null;
+  onBackClick?: () => void;
 }
 
-export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPanelOpen, onToggleAiPanel, onSave, isSaving, isDirty, lastSavedAt }: StylePanelProps) {
+export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPanelOpen, onToggleAiPanel, onSave, isSaving, isDirty, lastSavedAt, onBackClick }: StylePanelProps) {
   const set = (k: keyof StyleConfig, v: string | number) =>
     onChange({ ...style, [k]: v });
 
@@ -64,6 +77,16 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
   const [savedFontId, setSavedFontId] = useState(style.fontId);
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const router = useRouter();
+
+  const handleBack = () => {
+    if (onBackClick) {
+      onBackClick();
+    } else {
+      router.push('/dashboard');
+    }
+  };
   
   const setData = useCvEditorStore((s) => s.setData);
   const setOrder = useCvEditorStore((s) => s.setOrder);
@@ -85,6 +108,7 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
       toast.error('Lỗi!', { id: toastId });
     } finally {
       setIsImporting(false);
+      e.target.value = ''; // Reset file input so selecting the same file again triggers onChange
     }
   };
 
@@ -104,11 +128,23 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
       borderBottom: '1px solid #e2e8f0',
       width: '100%',
       position: 'relative',
-      zIndex: 100,
+      zIndex: 30,
       userSelect: 'none',
       overflowX: 'auto',
       scrollbarWidth: 'none',
     }}>
+      {/* Quay lại Dashboard */}
+      <ToolGroup>
+        <Button
+          variant="ghost" size="icon"
+          onClick={handleBack}
+          className="w-9 h-9 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-md"
+          title="Quay lại Dashboard"
+        >
+          <ArrowLeft size={18} />
+        </Button>
+      </ToolGroup>
+
       {/* Group 1: Navigation & Structure */}
       <ToolGroup>
         <Button

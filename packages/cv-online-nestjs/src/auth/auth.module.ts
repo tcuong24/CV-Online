@@ -6,18 +6,19 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PrismaModule } from '../prisma/prisma.module';
 import { StringValue } from 'ms';
+import { OtpService } from './otp.service';
 
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
     JwtModule.register({
-  secret: process.env.JWT_SECRET!,
-  signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as StringValue },
-}),
+      secret: process.env.JWT_SECRET!,
+      signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as StringValue },
+    }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
+  providers: [AuthService, JwtStrategy, OtpService],
+  exports: [AuthService, OtpService],
 })
 export class AuthModule {}
