@@ -1055,7 +1055,7 @@ export const useCvEditorStore = create<CvEditorState>()(
 
         resetCV: () => {
           set({
-            data: DEFAULT_DATA,
+            data: mapDbCvToCvData(DEFAULT_DATA),
             order: DEFAULT_ORDER,
             style: DEFAULT_STYLE,
             sectionLayout: {},

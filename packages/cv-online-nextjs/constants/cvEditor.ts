@@ -70,10 +70,10 @@ export const SECTION_META_CONFIG = {
 };
 
 // ─── Default Data ───
-export const DEFAULT_DATA: CvData = {
-  personal: {
-    name: 'Trần Văn A',
-    role: 'Senior Frontend Developer',
+export const DEFAULT_DATA: any = {
+  personalInfo: {
+    fullName: 'Trần Văn A',
+    jobTitle: 'Senior Frontend Developer',
     email: 'cuongtv@email.com',
     phone: '0912 345 678',
     location: 'Hà Nội, Việt Nam',
@@ -81,33 +81,75 @@ export const DEFAULT_DATA: CvData = {
     summary: 'Frontend developer với 5+ năm kinh nghiệm xây dựng ứng dụng web hiệu suất cao. Đam mê UI/UX, clean code và các công nghệ hiện đại như React, Next.js, TypeScript.',
   },
   experiences: [
-    { id: uid(), title: 'Senior Frontend Developer', company: 'FPT Software', location: 'Hà Nội', from: '2021', to: 'Hiện tại', desc: 'Phát triển và tối ưu ứng dụng web với React/Next.js. Cải thiện hiệu suất tải trang lên 40%. Mentor 3 junior developers.', open: false },
-    { id: uid(), title: 'Frontend Developer', company: 'VNG Corporation', location: 'TP.HCM', from: '2019', to: '2021', desc: 'Xây dựng các tính năng mới cho nền tảng e-commerce với 2M+ người dùng.', open: false },
+    {
+      id: uid(),
+      position: 'Senior Frontend Developer',
+      companyName: 'FPT Software',
+      location: 'Hà Nội',
+      startDate: '2021-01-01',
+      endDate: null,
+      isCurrent: true,
+      description: 'Phát triển và tối ưu ứng dụng web với React/Next.js. Cải thiện hiệu suất tải trang lên 40%. Mentor 3 junior developers.',
+    },
+    {
+      id: uid(),
+      position: 'Frontend Developer',
+      companyName: 'VNG Corporation',
+      location: 'TP.HCM',
+      startDate: '2019-01-01',
+      endDate: '2021-01-01',
+      isCurrent: false,
+      description: 'Xây dựng các tính năng mới cho nền tảng e-commerce với 2M+ người dùng.',
+    },
   ],
   education: [
-    { id: uid(), degree: 'Kỹ sư Công nghệ Thông tin', school: 'Đại học Bách Khoa Hà Nội', from: '2015', to: '2019', desc: 'GPA: 3.6/4.0 — Tốt nghiệp loại Giỏi', open: false },
+    {
+      id: uid(),
+      degree: 'Kỹ sư Công nghệ Thông tin',
+      institutionName: 'Đại học Bách Khoa Hà Nội',
+      startDate: '2015-09-01',
+      endDate: '2019-06-30',
+      isCurrent: false,
+      description: 'GPA: 3.6/4.0 — Tốt nghiệp loại Giỏi',
+    },
   ],
   skills: [
-    { id: uid(), name: 'React', proficiencyLevel: 'advanced', proficiencyPercentage: 90, category: 'Frontend' },
-    { id: uid(), name: 'Next.js', proficiencyLevel: 'advanced', proficiencyPercentage: 85, category: 'Frontend' },
-    { id: uid(), name: 'TypeScript', proficiencyLevel: 'advanced', proficiencyPercentage: 88, category: 'Language' },
-    { id: uid(), name: 'Tailwind CSS', proficiencyLevel: 'intermediate', proficiencyPercentage: 75, category: 'Frontend' },
-    { id: uid(), name: 'Node.js', proficiencyLevel: 'intermediate', proficiencyPercentage: 70, category: 'Backend' },
-    { id: uid(), name: 'Git', proficiencyLevel: 'advanced', proficiencyPercentage: 85, category: 'Tool' },
-    { id: uid(), name: 'Figma', proficiencyLevel: 'intermediate', proficiencyPercentage: 65, category: 'Design' },
+    { id: uid(), skillName: 'React', proficiencyLevel: 'advanced', proficiencyPercentage: 90, category: 'Frontend' },
+    { id: uid(), skillName: 'Next.js', proficiencyLevel: 'advanced', proficiencyPercentage: 85, category: 'Frontend' },
+    { id: uid(), skillName: 'TypeScript', proficiencyLevel: 'advanced', proficiencyPercentage: 88, category: 'Language' },
+    { id: uid(), skillName: 'Tailwind CSS', proficiencyLevel: 'intermediate', proficiencyPercentage: 75, category: 'Frontend' },
+    { id: uid(), skillName: 'Node.js', proficiencyLevel: 'intermediate', proficiencyPercentage: 70, category: 'Backend' },
+    { id: uid(), skillName: 'Git', proficiencyLevel: 'advanced', proficiencyPercentage: 85, category: 'Tool' },
+    { id: uid(), skillName: 'Figma', proficiencyLevel: 'intermediate', proficiencyPercentage: 65, category: 'Design' },
   ],
   projects: [
-    { id: uid(), name: 'CV Builder Online', role: 'Lead Developer', tech: 'Next.js, dnd-kit', link: 'github.com/project', desc: 'Ứng dụng tạo CV online với drag & drop, preview realtime và export PDF.', open: false },
+    {
+      id: uid(),
+      projectName: 'CV Builder Online',
+      role: 'Lead Developer',
+      technologies: ['Next.js', 'dnd-kit'],
+      projectUrl: 'github.com/project',
+      description: 'Ứng dụng tạo CV online với drag & drop, preview realtime và export PDF.',
+    },
   ],
   awards: [
-    { id: uid(), title: 'Top 3 — Hackathon FPT 2022', org: 'FPT Software', year: '2022', open: false },
+    { id: uid(), title: 'Top 3 — Hackathon FPT 2022', issuer: 'FPT Software', dateReceived: '2022-10-01' },
   ],
   certifications: [
-    { id: uid(), name: 'AWS Certified Developer', issuingOrganization: 'Amazon Web Services', issueDate: '2023', expiryDate: '', credentialId: '', credentialUrl: '', description: '', open: false },
+    {
+      id: uid(),
+      name: 'AWS Certified Developer',
+      issuingOrganization: 'Amazon Web Services',
+      issueDate: '2023-01-01',
+      expiryDate: null,
+      credentialId: '',
+      credentialUrl: '',
+      description: '',
+    },
   ],
   languages: [
-    { id: uid(), lang: 'Tiếng Anh', level: 4 },
-    { id: uid(), lang: 'Tiếng Nhật', level: 2 },
+    { id: uid(), languageName: 'Tiếng Anh', proficiencyLevel: 'upper-intermediate' },
+    { id: uid(), languageName: 'Tiếng Nhật', proficiencyLevel: 'elementary' },
   ],
   references: [],
   interests: [],

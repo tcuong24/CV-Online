@@ -187,7 +187,7 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
 
       {/* Group 3: Style & Font */}
       <ToolGroup>
-        <DropdownMenu onOpenChange={(open) => !open && set('themeId', savedThemeId)}>
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 px-2 h-9 hover:bg-slate-50 rounded-md transition-colors group">
               <div className="w-4 h-4 rounded-full border border-slate-300" style={{ background: theme.primary }} />
@@ -195,13 +195,12 @@ export function StylePanel({ style, onChange, sidebarOpen, onToggleSidebar, aiPa
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="p-3 border shadow-xl rounded-lg bg-white w-56">
-            <div onMouseLeave={() => { set('themeId', savedThemeId); useCvEditorStore.temporal.getState().resume(); }} className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-5 gap-2">
               {COLOR_THEMES.map((t) => (
                 <DropdownMenuItem
                   key={t.id}
-                  onMouseEnter={() => { useCvEditorStore.temporal.getState().pause(); set('themeId', t.id); }}
-                  onClick={() => { useCvEditorStore.temporal.getState().resume(); set('themeId', t.id); setSavedThemeId(t.id); }}
-                  className="p-0 m-0 w-8 h-8 rounded-full cursor-pointer hover:ring-2 ring-slate-400"
+                  onClick={() => set('themeId', t.id)}
+                  className="p-0 m-0 w-8 h-8 rounded-full cursor-pointer hover:ring-2 ring-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400"
                   style={{ background: t.primary, border: style.themeId === t.id ? '2px solid #000' : 'none' }}
                 />
               ))}

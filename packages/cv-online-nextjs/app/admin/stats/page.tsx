@@ -63,7 +63,7 @@ export default function AdminStatsPage() {
         <StatCard title="Tổng người dùng" value={stats.totalUsers} icon={Users} color="#1e3a3a" />
         <StatCard title="Tổng số CV" value={stats.totalCvs} icon={FileText} color="#0d9488" />
         {/* <StatCard title="Người dùng Pro" value={stats.proUsers} icon={Crown} color="#b45309" /> */}
-        <StatCard title="Tỷ lệ chuyển đổi" value={stats.totalUsers > 0 ? ((stats.proUsers / stats.totalUsers) * 100).toFixed(1) + '%' : '0%'} icon={TrendingUp} color="#115e59" />
+        {/* <StatCard title="Tỷ lệ chuyển đổi" value={stats.totalUsers > 0 ? ((stats.proUsers / stats.totalUsers) * 100).toFixed(1) + '%' : '0%'} icon={TrendingUp} color="#115e59" /> */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

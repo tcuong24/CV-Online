@@ -374,7 +374,7 @@ export default function UsersManagementPage() {
             <Button
               type="button"
               onClick={handleDelete}
-              className="flex-1 py-5 rounded-xl bg-red-650 hover:bg-red-750 text-white font-bold transition-all cursor-pointer shadow-md shadow-red-600/10"
+              className="flex-1 py-5 rounded-xl bg-red-650 hover:bg-red-750 text-red-500 font-bold transition-all cursor-pointer shadow-md shadow-red-600/10"
             >
               Đồng ý xóa
             </Button>
