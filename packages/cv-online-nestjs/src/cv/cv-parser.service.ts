@@ -195,7 +195,7 @@ export class CvParserService {
 
     try {
       const result = await this.client.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3.1-flash-lite',
         contents: [
           {
             role: 'user',

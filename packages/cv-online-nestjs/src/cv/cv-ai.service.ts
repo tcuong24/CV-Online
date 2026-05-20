@@ -9,7 +9,9 @@ export class CvAiService {
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      this.logger.error('GEMINI_API_KEY is not defined in environment variables');
+      this.logger.error(
+        'GEMINI_API_KEY is not defined in environment variables',
+      );
     }
     this.client = new GoogleGenAI({
       apiKey,
@@ -25,13 +27,12 @@ export class CvAiService {
     clarificationContext?: {
       pendingIntent: string;
       answeredQuestions: { id: string; answer: string }[];
-    }
+    },
   ): Promise<string> {
-
     let enrichedMessage = message;
     if (clarificationContext?.answeredQuestions?.length) {
       const answers = clarificationContext.answeredQuestions
-        .map(q => `${q.id}: ${q.answer}`)
+        .map((q) => `${q.id}: ${q.answer}`)
         .join('\n');
       enrichedMessage = `
 [CONTEXT - Người dùng đã trả lời các câu hỏi làm rõ]
@@ -211,22 +212,22 @@ Section đang focus: ${activeSection || 'personal'}
 `;
 
     try {
-      const contents = history.map(h => ({
+      const contents = history.map((h) => ({
         role: h.role === 'user' ? 'user' : 'model',
-        parts: [{ text: h.content }]
+        parts: [{ text: h.content }],
       }));
 
       contents.push({ role: 'user', parts: [{ text: enrichedMessage }] });
 
       const result = await this.client.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3.1-flash-lite',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt }] },
-          ...contents
+          ...contents,
         ],
         config: {
           responseMimeType: 'application/json',
-        }
+        },
       });
 
       return result.text || '{}';
