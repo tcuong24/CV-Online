@@ -11,7 +11,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     
     if (redisUrl) {
       this.logger.log('🌐 Connecting to Remote Redis...');
-      this.client = createClient({ url: redisUrl });
+      const isTls = redisUrl.startsWith('rediss://');
+      this.client = createClient({ 
+        url: redisUrl,
+        socket: isTls ? { tls: true, rejectUnauthorized: false } : undefined
+      });
     } else {
       this.logger.log('💻 Connecting to Local Redis...');
       this.client = createClient({
@@ -22,7 +26,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.client.on('error', (err) => this.logger.error(`❌ Redis Client Error: ${err.message}`));
     this.client.on('connect', () => this.logger.log('✅ Redis connected successfully!'));
 
-    await this.client.connect();
+    try {
+      await this.client.connect();
+    } catch (error) {
+      this.logger.error(`❌ Failed to connect to Redis during startup: ${error.message}`);
+    }
   }
 
   async onModuleDestroy() {
