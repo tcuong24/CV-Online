@@ -38,18 +38,18 @@ export function CvCard({
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow duration-300 hover:shadow-md">
       <div className="aspect-3/4 w-full bg-muted p-2 flex items-center justify-center">
-        {sourceType === 'UPLOADED' ? (
-          <div className="flex flex-col items-center justify-center text-muted-foreground opacity-50">
-            <FileText className="h-16 w-16 mb-2" />
-            <span className="text-sm font-medium">PDF Document</span>
-          </div>
-        ) : (
+        {thumbnailUrl ? (
           <img
             className="h-full w-full rounded-md object-cover object-top"
             src={thumbnailUrl}
             alt={`CV preview thumbnail for ${title}`}
           />
-        )}
+        ) : sourceType === 'UPLOADED' ? (
+          <div className="flex flex-col items-center justify-center text-muted-foreground opacity-50">
+            <FileText className="h-16 w-16 mb-2" />
+            <span className="text-sm font-medium">PDF Document</span>
+          </div>
+        ) : null}
       </div>
 
       <div className="flex flex-1 flex-col p-4">

@@ -72,10 +72,12 @@ export class CvController {
     // Upload to Cloudinary
     const uploadResult = await this.cloudinaryService.uploadPdf(file);
     const fileUrl = uploadResult.secure_url;
+    // Cloudinary automatically generates an image thumbnail of the PDF if we append .jpg
+    const thumbnailUrl = fileUrl.replace(/\.pdf$/i, '.jpg');
 
     // Create CV record
     const cvTitle = title || file.originalname.replace('.pdf', '');
-    return this.cvService.createUploadedCv(userId, cvTitle, fileUrl);
+    return this.cvService.createUploadedCv(userId, cvTitle, fileUrl, thumbnailUrl);
   }
 
   @Post()

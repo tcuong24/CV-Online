@@ -51,7 +51,7 @@ export class CvService {
   /**
    * Create new Uploaded CV (PDF)
    */
-  async createUploadedCv(userId: string, title: string, attachedFileUrl: string) {
+  async createUploadedCv(userId: string, title: string, attachedFileUrl: string, thumbnailUrl?: string) {
     const existingCount = await this.prisma.cV.count({ where: { userId } });
 
     const cv = await this.prisma.cV.create({
@@ -60,6 +60,7 @@ export class CvService {
         title: title || 'Uploaded CV',
         sourceType: 'UPLOADED',
         attachedFileUrl,
+        thumbnailUrl,
         status: 'published', // Make it ready to be viewed
         isDefault: existingCount === 0,
       },
