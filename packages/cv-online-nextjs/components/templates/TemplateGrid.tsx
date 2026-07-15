@@ -77,6 +77,7 @@ export function TemplatesGrid() {
       title: `CV mới - ${template.name}`,
       isPublic: false,
       status: "DRAFT",
+      sourceType: "EDITOR",
       viewCount: 0,
       downloadCount: 0,
       createdAt: new Date(),
