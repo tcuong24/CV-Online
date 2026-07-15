@@ -240,6 +240,8 @@ export interface CVWithRelations {
   updatedAt: Date;
   publishedAt?: Date | null;
   thumbnailUrl?: string | null;
+  sourceType: 'EDITOR' | 'UPLOADED';
+  attachedFileUrl?: string | null;
 
   // ── Style & layout ────────────────────────────────────────────────────────
   /**

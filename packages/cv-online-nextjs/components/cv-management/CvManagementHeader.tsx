@@ -1,5 +1,6 @@
 import { Plus, User } from "lucide-react";
 import React from "react";
+import { UploadCvModal } from "./UploadCvModal";
 
 export function CvManagementHeader() {
   return (
@@ -36,6 +37,8 @@ export function CvManagementHeader() {
           Tài khoản
         </a>
 
+        <UploadCvModal />
+        
         <button className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
           Tạo CV Mới
         </button>

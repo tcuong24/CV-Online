@@ -105,6 +105,8 @@ model CV {
   publicUrlToken     String?  @unique @map("public_url_token")
   status             String   @default("draft")
   isDefault          Boolean  @default(false) @map("is_default")
+  sourceType         String   @default("EDITOR") @map("source_type") // EDITOR or UPLOADED
+  attachedFileUrl    String?  @map("attached_file_url")
   customStyles       Json?    @map("custom_styles")
   sectionsVisibility Json?    @map("sections_visibility")
   sectionsOrder      Json?    @map("sections_order")

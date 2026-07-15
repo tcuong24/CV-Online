@@ -132,6 +132,15 @@ export default function DynamicPreviewPage() {
         throw err;
       })
       .then(cv => {
+        if (cv.sourceType === 'UPLOADED') {
+          setCvData({
+            isUploaded: true,
+            attachedFileUrl: cv.attachedFileUrl,
+            title: cv.title || 'Uploaded CV',
+          });
+          return;
+        }
+
         // Parse styles
         const baseStyle = cv.snapshotDesignConfig
           ? parseDesignConfig(cv.snapshotDesignConfig)
@@ -187,6 +196,19 @@ export default function DynamicPreviewPage() {
 
   const handleDownload = async () => {
     if (!cvData) return;
+    
+    if (cvData.isUploaded && cvData.attachedFileUrl) {
+      // Create a temporary link to download the PDF
+      const link = document.createElement('a');
+      link.href = cvData.attachedFileUrl;
+      link.download = `${cvData.title}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+
     const pages = document.querySelectorAll<HTMLElement>('.cv-paper');
     if (!pages.length) return;
 
@@ -255,34 +277,48 @@ export default function DynamicPreviewPage() {
       <style>{PREVIEW_READONLY_CSS}</style>
 
       <div className="preview-page">
-        <div className="preview-bar">
-          <div className="preview-bar-left">
-            <div>
-              <div className="preview-title">{cvData.data.personal?.name || 'CV'}</div>
-              <div className="preview-subtitle">Xem trước CV</div>
+        {!cvData.isUploaded && (
+          <div className="preview-bar">
+            <div className="preview-bar-left">
+              <div>
+                <div className="preview-title">
+                  {cvData.data?.personal?.name || 'CV'}
+                </div>
+                <div className="preview-subtitle">Xem trước CV</div>
+              </div>
             </div>
+
+            <button
+              className="preview-pdf-btn"
+              onClick={handleDownload}
+              disabled={downloading}
+            >
+              <MdDownload size={17} />
+              {downloading ? 'Đang tạo PDF…' : 'Tải xuống PDF'}
+            </button>
           </div>
+        )}
 
-          <button
-            className="preview-pdf-btn"
-            onClick={handleDownload}
-            disabled={downloading}
-          >
-            <MdDownload size={17} />
-            {downloading ? 'Đang tạo PDF…' : 'Tải xuống PDF'}
-          </button>
-        </div>
-
-        <div className="preview-content preview-readonly" ref={contentRef}>
-          <CVTemplate
-            data={cvData.data as CvData}
-            order={cvData.order}
-            style={cvData.style}
-            layoutType={cvData.layoutType}
-            sideKeys={cvData.sideKeys}
-            zoom={100}
-          />
-        </div>
+        {cvData.isUploaded ? (
+          <div className="w-full h-screen bg-gray-100">
+            <iframe
+              src={cvData.attachedFileUrl}
+              className="w-full h-full border-none"
+              title="CV PDF Preview"
+            />
+          </div>
+        ) : (
+          <div className="preview-content preview-readonly" ref={contentRef}>
+            <CVTemplate
+              data={cvData.data as CvData}
+              order={cvData.order}
+              style={cvData.style}
+              layoutType={cvData.layoutType}
+              sideKeys={cvData.sideKeys}
+              zoom={100}
+            />
+          </div>
+        )}
       </div>
     </>
   );

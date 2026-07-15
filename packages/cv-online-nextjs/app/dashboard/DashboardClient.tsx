@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { TemplatesGrid } from "@/components/templates/TemplateGrid";
 import { toast } from "sonner";
+import { UploadCvModal } from "@/components/cv-management/UploadCvModal";
 
 export default function DashboardClient() {
   const { data: session } = useSession();
@@ -125,22 +126,26 @@ export default function DashboardClient() {
       <section className="mb-12" data-purpose="hero-section">
         <p className="text-lg font-normal mb-1">{getTimeLable()}, {session?.user?.name}</p>
         <h1 className="text-6xl font-headline italic mb-8 text-foreground">Những bản CV của bạn trông thật chuyên nghiệp.</h1>
-        <Dialog>
-          <DialogTrigger asChild>
-            <button className="flex items-center space-x-2 border border-[#1e3a3a] text-[#1e3a3a] px-5 py-2.5 rounded-sm hover:bg-gray-200 transition-colors text-sm font-medium">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 4.5v15m7.5-7.5h-15" strokeLinecap="round" strokeLinejoin="round"></path>
-              </svg>
-              <span>Tạo CV mới</span>
-            </button>
-          </DialogTrigger>
-          <DialogContent className="max-w-7xl sm:max-w-5xl md:max-w-6xl lg:max-w-7xl h-[85vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-headline mb-4">Chọn mẫu CV để bắt đầu</DialogTitle>
-            </DialogHeader>
-            <TemplatesGrid />
-          </DialogContent>
-        </Dialog>
+        <div className="flex items-center space-x-4">
+          <Dialog>
+            <DialogTrigger asChild>
+              <button className="flex items-center space-x-2 border border-[#1e3a3a] text-[#1e3a3a] px-5 py-2.5 rounded-sm hover:bg-gray-200 transition-colors text-sm font-medium">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4.5v15m7.5-7.5h-15" strokeLinecap="round" strokeLinejoin="round"></path>
+                </svg>
+                <span>Tạo CV mới</span>
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-7xl sm:max-w-5xl md:max-w-6xl lg:max-w-7xl h-[85vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-headline mb-4">Chọn mẫu CV để bắt đầu</DialogTitle>
+              </DialogHeader>
+              <TemplatesGrid />
+            </DialogContent>
+          </Dialog>
+          
+          <UploadCvModal />
+        </div>
       </section>
 
       {/* Stats Section */}
@@ -178,9 +183,16 @@ export default function DashboardClient() {
           ) : (
             cvs.map((cv) => (
               <div key={cv.id} className="group" data-purpose="cv-item">
-                <Link href={`/cvs/${cv.id}/edit`}>
+                <Link href={cv.sourceType === 'UPLOADED' ? `/preview/${cv.id}` : `/cvs/${cv.id}/edit`}>
                   <div className="bg-[#e5e7eb] aspect-[1/1.1] p-0 rounded-sm mb-4 flex items-center justify-center overflow-hidden border border-gray-200 relative hover:border-gray-400 transition-colors cursor-pointer">
-                    {cv.thumbnailUrl ? (
+                    {cv.sourceType === 'UPLOADED' ? (
+                      <div className="flex flex-col items-center justify-center text-gray-500 opacity-60">
+                        <svg className="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span className="text-sm font-medium">PDF Document</span>
+                      </div>
+                    ) : cv.thumbnailUrl ? (
                       <img
                         src={cv.thumbnailUrl}
                         alt={cv.title || "CV Thumbnail"}
@@ -238,13 +250,15 @@ export default function DashboardClient() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
                       </svg>
                     </button>
-                    <Link href={`/cvs/${cv.id}/edit`}>
-                      <button className="hover:text-black">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" strokeLinecap="round" strokeLinejoin="round"></path>
-                        </svg>
-                      </button>
-                    </Link>
+                    {cv.sourceType !== 'UPLOADED' && (
+                      <Link href={`/cvs/${cv.id}/edit`}>
+                        <button className="hover:text-black" title="Chỉnh sửa">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" strokeLinecap="round" strokeLinejoin="round"></path>
+                          </svg>
+                        </button>
+                      </Link>
+                    )}
                     <button className="hover:text-black cursor-pointer" onClick={() => {
                       setCvIdToDelete(cv.id);
                       setOpenDeleteDialog(true);

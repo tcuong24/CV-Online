@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Edit, Eye, MoreVertical, Trash } from "lucide-react";
+import { Download, Edit, Eye, MoreVertical, Trash, FileText } from "lucide-react";
 import React from "react";
 import {
   DropdownMenu,
@@ -15,9 +15,11 @@ interface CvCardProps {
   title: string;
   lastEdited: string;
   thumbnailUrl: string;
+  sourceType?: 'EDITOR' | 'UPLOADED';
+  attachedFileUrl?: string | null;
   onEdit?: (id: string) => void;
   onPreview?: (id: string) => void;
-  onDownload?: (id: string) => void;
+  onDownload?: (id: string, url?: string | null) => void;
   onDelete?: (id: string) => void;
 }
 
@@ -26,6 +28,8 @@ export function CvCard({
   title,
   lastEdited,
   thumbnailUrl,
+  sourceType = 'EDITOR',
+  attachedFileUrl,
   onEdit,
   onPreview,
   onDownload,
@@ -33,12 +37,19 @@ export function CvCard({
 }: CvCardProps) {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow duration-300 hover:shadow-md">
-      <div className="aspect-3/4 w-full bg-muted p-2">
-        <img
-          className="h-full w-full rounded-md object-cover object-top"
-          src={thumbnailUrl}
-          alt={`CV preview thumbnail for ${title}`}
-        />
+      <div className="aspect-3/4 w-full bg-muted p-2 flex items-center justify-center">
+        {sourceType === 'UPLOADED' ? (
+          <div className="flex flex-col items-center justify-center text-muted-foreground opacity-50">
+            <FileText className="h-16 w-16 mb-2" />
+            <span className="text-sm font-medium">PDF Document</span>
+          </div>
+        ) : (
+          <img
+            className="h-full w-full rounded-md object-cover object-top"
+            src={thumbnailUrl}
+            alt={`CV preview thumbnail for ${title}`}
+          />
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-4">
@@ -54,13 +65,15 @@ export function CvCard({
             <MoreVertical className="h-4 w-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem
-              onClick={() => onEdit?.(id)}
-              className="cursor-pointer"
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Chỉnh sửa
-            </DropdownMenuItem>
+            {sourceType === 'EDITOR' && (
+              <DropdownMenuItem
+                onClick={() => onEdit?.(id)}
+                className="cursor-pointer"
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Chỉnh sửa
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               onClick={() => onPreview?.(id)}
               className="cursor-pointer"
@@ -69,7 +82,13 @@ export function CvCard({
               Xem trước
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onDownload?.(id)}
+              onClick={() => {
+                if (sourceType === 'UPLOADED' && attachedFileUrl) {
+                  window.open(attachedFileUrl, '_blank');
+                } else {
+                  onDownload?.(id, attachedFileUrl);
+                }
+              }}
               className="cursor-pointer"
             >
               <Download className="mr-2 h-4 w-4" />

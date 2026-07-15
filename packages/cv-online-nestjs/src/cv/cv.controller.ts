@@ -18,6 +18,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CvService } from './cv.service';
 import { CvParserService } from './cv-parser.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import {
   CreateCVDto,
   UpdateCVDto,
@@ -33,6 +34,7 @@ export class CvController {
   constructor(
     private readonly cvService: CvService,
     private readonly cvParserService: CvParserService,
+    private readonly cloudinaryService: CloudinaryService,
   ) { }
 
   @Post('import')
@@ -49,6 +51,31 @@ export class CvController {
     file: Express.Multer.File,
   ) {
     return this.cvParserService.parseFile(file);
+  }
+
+  @Post('upload-pdf')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadPdf(
+    @Request() req,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }), // 5MB limit
+          new FileTypeValidator({ fileType: 'application/pdf' }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @Body('title') title?: string,
+  ) {
+    const userId = req.user?.id || 'user-001';
+    // Upload to Cloudinary
+    const uploadResult = await this.cloudinaryService.uploadPdf(file);
+    const fileUrl = uploadResult.secure_url;
+
+    // Create CV record
+    const cvTitle = title || file.originalname.replace('.pdf', '');
+    return this.cvService.createUploadedCv(userId, cvTitle, fileUrl);
   }
 
   @Post()

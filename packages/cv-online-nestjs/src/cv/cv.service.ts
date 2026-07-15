@@ -49,6 +49,26 @@ export class CvService {
   }
 
   /**
+   * Create new Uploaded CV (PDF)
+   */
+  async createUploadedCv(userId: string, title: string, attachedFileUrl: string) {
+    const existingCount = await this.prisma.cV.count({ where: { userId } });
+
+    const cv = await this.prisma.cV.create({
+      data: {
+        userId,
+        title: title || 'Uploaded CV',
+        sourceType: 'UPLOADED',
+        attachedFileUrl,
+        status: 'published', // Make it ready to be viewed
+        isDefault: existingCount === 0,
+      },
+    });
+
+    return cv;
+  }
+
+  /**
    * Get all CVs for a user
    */
   async findAllByUser(userId: string) {

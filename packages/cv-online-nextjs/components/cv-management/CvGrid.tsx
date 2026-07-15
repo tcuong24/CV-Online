@@ -25,6 +25,14 @@ const mockCvs = [
     thumbnailUrl:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuCVYlpPHK1gQ5IIBRfDDD2SRXjfIKsKiVMYrYjrjiIVjSOu554ZI93yceWxl5NPM4_FBWdg0a9MLfgBeg9hPh1HnjqXnRjt8gfNqZ4j_xLSWMixKe-PW8m8L2UHoIlGImShOFDi9f9bU_PsskTp67hsTNcumgkbQEE2V_XRC72g9h1pt87IUHPbKUA2-5bLtUEeJk3FYS3UFiHUW_NI9GuBX5nwI8W2VPbp4_1J2sqHRTAu5HnnRW3Zc8guB1N0Zqp3_5HquWT85R0",
   },
+  {
+    id: "4",
+    title: "CV Frontend PDF (Tải lên)",
+    lastEdited: "Chỉnh sửa: Vừa xong",
+    thumbnailUrl: "",
+    sourceType: "UPLOADED" as const,
+    attachedFileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+  },
 ];
 
 export function CvGrid() {
@@ -57,6 +65,8 @@ export function CvGrid() {
           title={cv.title}
           lastEdited={cv.lastEdited}
           thumbnailUrl={cv.thumbnailUrl}
+          sourceType={cv.sourceType}
+          attachedFileUrl={cv.attachedFileUrl}
           onEdit={handleEdit}
           onPreview={handlePreview}
           onDownload={handleDownload}
