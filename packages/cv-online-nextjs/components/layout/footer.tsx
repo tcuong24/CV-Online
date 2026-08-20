@@ -3,7 +3,7 @@ export function Footer() {
     <footer className="border-t">
       <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-6 py-10 sm:flex-row">
         <p className="text-sm text-muted-foreground">
-          © 2024 CVBuilder, Inc. All rights reserved.
+          © 2026 CVision, Inc. All rights reserved.
         </p>
         <div className="flex items-center gap-4">
           <a

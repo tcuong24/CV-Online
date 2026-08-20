@@ -369,10 +369,6 @@ export default function ProfileClient() {
                 <DropdownMenuItem>Báo cáo</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <button className="flex items-center space-x-2 border border-[#1e3a3a] text-[#1e3a3a] px-5 py-2 rounded-sm hover:bg-gray-100 transition-colors text-sm font-medium">
-              <MessageCircle size={15} />
-              <span>Nhắn tin</span>
-            </button>
           </div>
         </div>
 

@@ -10,13 +10,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
   constructor(configService: ConfigService) {
     const connectionString = configService.get<string>('DATABASE_URL');
-    const nodeEnv = configService.get<string>('NODE_ENV', 'development');
+    const databaseSSL = configService.get<string>('DATABASE_SSL');
     
     // Tự động bật SSL nếu là Cloud DB hoặc môi trường production
     const needsSSL = 
       connectionString?.includes('supabase.com') || 
       connectionString?.includes('render.com') ||
-      nodeEnv === 'production';
+      databaseSSL === 'true';
 
     const pool = new Pool({
       connectionString,

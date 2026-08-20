@@ -1,252 +1,140 @@
+import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/layout/header";
 
-async function getTemplates() {
+interface Template {
+  id: string;
+  name: string;
+  thumbnailUrl?: string | null;
+  category: string;
+  layoutType: string;
+}
+
+const features = [
+  ["Tạo CV trực quan", "Chỉnh sửa nội dung và theo dõi ngay kết quả trên mẫu CV bạn đã chọn.", "/templates/modern-blue.png"],
+  ["Mẫu CV chuyên nghiệp", "Lựa chọn bố cục phù hợp với ngành nghề, kinh nghiệm và phong cách của bạn.", "/templates/creative-pro.png"],
+  ["Sẵn sàng xuất bản", "Hoàn thiện hồ sơ với bố cục rõ ràng và tải xuống để gửi đến nhà tuyển dụng.", "/templates/ats-optimized.png"],
+] as const;
+
+async function getFeaturedTemplates(): Promise<Template[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9999/api";
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:9999/api"}/templates`, {
-      next: { revalidate: 60 }
-    });
-    if (!res.ok) return [];
-    return res.json();
-  } catch (e) {
-    console.error("Failed to fetch templates:", e);
+    const response = await fetch(
+      `${apiUrl}/templates?page=1&limit=3&sortBy=popularityScore&sortOrder=desc`,
+      { next: { revalidate: 60 } },
+    );
+    if (!response.ok) throw new Error(`Templates API returned ${response.status}`);
+    const data = (await response.json()) as { items: Template[] } | Template[];
+    return Array.isArray(data) ? data.slice(0, 3) : data.items;
+  } catch (error) {
+    console.error("Không thể tải các mẫu CV nổi bật:", error);
     return [];
   }
 }
 
 export default async function Home() {
-  const btnEditorial =
-    "border border-foreground px-8 py-3 font-label uppercase tracking-widest text-[0.75rem] transition-colors duration-100 hover:bg-foreground hover:text-background";
-
-  const templates = await getTemplates();
-  const displayTemplates = templates.slice(0, 3); // Chỉ hiển thị 3 mẫu nổi bật
+  const templates = await getFeaturedTemplates();
+  const buttonClass = "border border-foreground px-8 py-3 font-label uppercase tracking-widest text-[0.75rem] transition-colors hover:bg-foreground hover:text-background";
 
   return (
-    <div className="bg-background text-foreground font-body antialiased selection:bg-foreground selection:text-background min-h-screen">
+    <div className="min-h-screen bg-background font-body text-foreground antialiased">
       <Header />
       <main className="pt-32">
-        {/* 2. Hero Section */}
-        <section className="px-6 md:px-12 py-24 md:py-48 text-center max-w-5xl mx-auto">
-          <h1 className="font-headline text-5xl md:text-8xl font-black tracking-tighter leading-tight mb-8">
-            Sự nghiệp của bạn,<br />Được viết bằng sự Tinh tế.
+        <section className="mx-auto max-w-5xl px-6 py-24 text-center md:px-12 md:py-48">
+          <h1 className="mb-8 font-headline text-5xl font-black leading-tight tracking-tighter md:text-8xl">
+            Sự nghiệp của bạn,<br />được viết bằng sự tinh tế.
           </h1>
-          <p className="font-body text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-            CV chuyên nghiệp dành cho những ai trân trọng sự rõ ràng và tỉ mỉ. Hãy từ bỏ những điều bình thường; xây dựng một bộ hồ sơ phản ánh quyền uy của bạn.
+          <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+            Tạo một bản CV chuyên nghiệp, rõ ràng và phản ánh đúng năng lực của bạn. Bắt đầu nhanh chóng với những mẫu được thiết kế chỉn chu.
           </p>
-          <div className="flex flex-col md:flex-row justify-center items-center gap-8">
-            <Link href="/templates" className={`w-full md:w-auto px-12 text-center ${btnEditorial}`}>
-              Tạo CV của bạn
-            </Link>
-            <Link className="font-label uppercase tracking-widest text-[0.75rem] border-b border-foreground pb-1 hover:border-transparent transition-all" href="/templates">
-              Xem các mẫu CV
-            </Link>
+          <div className="flex flex-col items-center justify-center gap-8 md:flex-row">
+            <Link href="/templates" className={`w-full px-12 text-center md:w-auto ${buttonClass}`}>Tạo CV của bạn</Link>
+            <Link href="/templates" className="border-b border-foreground pb-1 font-label text-[0.75rem] uppercase tracking-widest hover:border-transparent">Xem các mẫu CV</Link>
           </div>
           <hr className="mt-24 border-foreground/10" />
         </section>
 
-        {/* 3. Template Showcase */}
-        <section className="px-6 md:px-12 py-24 max-w-[1440px] mx-auto">
+        <section className="mx-auto max-w-[1440px] px-6 py-24 md:px-12">
           <div className="mb-16">
-            <span className="block w-12 h-px bg-foreground mb-4"></span>
-            <h2 className="font-headline text-3xl md:text-5xl font-black italic tracking-tight">Mẫu CV</h2>
+            <span className="mb-4 block h-px w-12 bg-foreground" />
+            <h2 className="font-headline text-3xl font-black italic tracking-tight md:text-5xl">Mẫu CV nổi bật</h2>
           </div>
-          
-          {displayTemplates.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              {displayTemplates.map((tpl: any) => (
-                <div key={tpl.id} className="group cursor-pointer">
+          {templates.length ? (
+            <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
+              {templates.map((template) => (
+                <article key={template.id} className="group">
                   <Link href="/templates">
-                    <div className="border border-border bg-card p-1 mb-6 overflow-hidden aspect-[3/4] relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img 
-                        alt={tpl.name} 
-                        className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-300" 
-                        src={tpl.thumbnailUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuDPv9NB95-6dRCvso_rHPO6jweiorZbebZqzuYAj79YMzjtJU-aqqZuQi9wDiQNaWoMF7OK4NNe020FWISUejrizqsfAaoxSBlZLmPpyYoVRVGaLnKNwVygOeV2aeug8fWyJP-zM_opy2cOob3q8UHm47CFTy5sPpRZ6Deq02W0-rUBFGxDV9Qoy-XuUC-ugSq8wXPrfnhTbB9a6lSnKHgJqiZyUPn__OoffuZLYg1XdG4CytWAKwEfTCChwQj1HyUoncREmKaB93E"} 
-                      />
+                    <div className="relative mb-6 aspect-[3/4] overflow-hidden border border-border bg-card p-1">
+                      <Image alt={`Mẫu CV ${template.name}`} className="object-cover grayscale transition-all group-hover:grayscale-0" src={template.thumbnailUrl || "/templates/minimal-bw-thumb.png"} fill sizes="(min-width: 768px) 33vw, 100vw" />
                     </div>
-                    <h3 className="font-headline text-xl mb-2">{tpl.name}</h3>
-                    <p className="font-label text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">
-                      {tpl.category} • {tpl.layoutType}
-                    </p>
+                    <h3 className="mb-2 font-headline text-xl">{template.name}</h3>
+                    <p className="font-label text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">{template.category} • {template.layoutType}</p>
                   </Link>
-                </div>
+                </article>
               ))}
             </div>
-          ) : (
-            <div className="text-center text-muted-foreground py-12">
-              Đang cập nhật các mẫu CV...
-            </div>
-          )}
+          ) : <div className="py-12 text-center text-muted-foreground">Chưa có mẫu CV nào được công bố.</div>}
         </section>
 
-        {/* 4. Features Section (Alternating) */}
-        <section className="px-6 md:px-12 py-24 bg-muted/30">
-          <div className="max-w-[1440px] mx-auto space-y-32">
-            {/* Feature 1 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div className="border-l border-foreground pl-8">
-                <h3 className="font-headline text-3xl mb-6">Precise Typography Control</h3>
-                <p className="font-body text-muted-foreground leading-relaxed">
-                  Fine-tune kerning, line-height, and margins with the precision of a professional typesetter. Every character is curated for readability.
-                </p>
-              </div>
-              <div className="border border-border bg-card">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="Type Control" className="w-full aspect-video object-cover filter grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBX4nHO3qNreayUqdTA594FLpOySh4WF5OlX7p731aVkD6QmSbKEDGAlH_Jywe6CX7r1i-YSmS_Yt02ndL2OxtlZouirU8ISI8a9zhAbifMYtzLPRWqGahploLO5QTEI1yHSDi5erj8qYx5ZeJHya-h2P2bB5AKPvF5UhS2i4ydbDaiLDyQhdzSYi4vccuQovyM0SRprGudT2IrFrEGBQOEYqXahbPorf21Cr34RESqQj7jikgOTDhpYXc0xc2P5I1SUIY9vmeCVSs" />
-              </div>
-            </div>
-            {/* Feature 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div className="order-2 md:order-1 border border-border bg-card">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="Canvas Focus" className="w-full aspect-video object-cover filter grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpKD0UHJWpfeUKElvWXcLVJwh5ufJMLKHzYEd5GECUbEOhS4MWBcS_1frr-PSIAcuHtkFAoyM4sVzLPflRubOEDnHNF-Dto1w453vzJcdLgoMs_A1OGdLb8GWwre42NFh_EhuYGGEW7LJAhtbRxhddIoTzjIWQtaSyV4YzlwzMn6NCgmNqN05ZhbIHdhbWx6QylrEBaupTb6LmW_Wl44zTUi3mRrwiGDGS2mVMaWebMn45AUMbeVWhOXWUzLkiM_Smis6Zv7EQSUY" />
-              </div>
-              <div className="order-1 md:order-2 border-l border-foreground pl-8">
-                <h3 className="font-headline text-3xl mb-6">The Distraction-Free Canvas</h3>
-                <p className="font-body text-muted-foreground leading-relaxed">
-                  A writing environment that mirrors the final document. No cluttered sidebars, just you and your narrative on digital paper.
-                </p>
-              </div>
-            </div>
-            {/* Feature 3 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div className="border-l border-foreground pl-8">
-                <h3 className="font-headline text-3xl mb-6">Export with Integrity</h3>
-                <p className="font-body text-muted-foreground leading-relaxed">
-                  Direct-to-PDF export that maintains pixel-perfect alignment. Guaranteed to pass through ATS while retaining its visual soul.
-                </p>
-              </div>
-              <div className="border border-border bg-card">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="Export Quality" className="w-full aspect-video object-cover filter grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_pk1ga6Wfj8Se-SlN4_W6Kv4wzyl6mrTzo1CxhXeid1m_IU-iRhIAqzteBCmVzzrVNoo1ioF7J4n3rMf3SzHs3nQvI_ChSezPTurQG57FJ23osXpiyQVfWIsy5ReatG4GXHiA1z1yjtwfMVfg9ixXaw2oGGIDTgzU6EmkdScWw8qTg531Y0HifIw95XZ3ftJplBYPpUl0a26btoLGS9DCQQiVUr5QEUk8aXN7TDcSie2v89gf3bSHH5fEGHgqNIRXsTO6xaFmuUo" />
-              </div>
-            </div>
+        <section className="bg-muted/30 px-6 py-24 md:px-12">
+          <div className="mx-auto max-w-[1440px] space-y-32">
+            {features.map(([title, description, image], index) => (
+              <article key={title} className="grid grid-cols-1 items-center gap-16 md:grid-cols-2">
+                <div className={`border-l border-foreground pl-8 ${index % 2 ? "md:order-2" : ""}`}>
+                  <h3 className="mb-6 font-headline text-3xl">{title}</h3>
+                  <p className="leading-relaxed text-muted-foreground">{description}</p>
+                </div>
+                <div className={`relative aspect-video overflow-hidden border border-border bg-card ${index % 2 ? "md:order-1" : ""}`}>
+                  <Image src={image} alt={title} className="object-cover object-top grayscale" fill sizes="(min-width: 768px) 50vw, 100vw" />
+                </div>
+              </article>
+            ))}
           </div>
         </section>
 
-        {/* 5. How It Works */}
-        <section className="px-6 md:px-12 py-32 max-w-[1440px] mx-auto border-b border-foreground/10">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
-            <div className="p-12 border-b md:border-b-0 md:border-r border-foreground/20">
-              <span className="font-headline text-6xl block mb-8 font-black opacity-20">01</span>
-              <h4 className="font-headline text-2xl mb-4">Choose a Shell</h4>
-              <p className="font-body text-muted-foreground text-sm leading-relaxed">Select from our library of editorial structures designed for specific industries and seniority levels.</p>
-            </div>
-            <div className="p-12 border-b md:border-b-0 md:border-r border-foreground/20">
-              <span className="font-headline text-6xl block mb-8 font-black opacity-20">02</span>
-              <h4 className="font-headline text-2xl mb-4">Input Narrative</h4>
-              <p className="font-body text-muted-foreground text-sm leading-relaxed">Compose your experience within our refined interface. Focus on your story while we handle the aesthetic.</p>
-            </div>
-            <div className="p-12">
-              <span className="font-headline text-6xl block mb-8 font-black opacity-20">03</span>
-              <h4 className="font-headline text-2xl mb-4">Curate &amp; Print</h4>
-              <p className="font-body text-muted-foreground text-sm leading-relaxed">Export a document that commands attention in any boardroom or digital application portal.</p>
-            </div>
+        <section className="mx-auto max-w-[1440px] border-b border-foreground/10 px-6 py-32 md:px-12">
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            {[
+              ["01", "Chọn mẫu", "Khám phá thư viện và chọn mẫu phù hợp với mục tiêu nghề nghiệp."],
+              ["02", "Nhập nội dung", "Điền thông tin, kinh nghiệm và kỹ năng trong giao diện trực quan."],
+              ["03", "Hoàn thiện CV", "Kiểm tra bố cục, hoàn thiện hồ sơ và tải CV của bạn."],
+            ].map(([number, title, description], index) => (
+              <article key={number} className={`p-12 ${index < 2 ? "border-b border-foreground/20 md:border-b-0 md:border-r" : ""}`}>
+                <span className="mb-8 block font-headline text-6xl font-black opacity-20">{number}</span>
+                <h3 className="mb-4 font-headline text-2xl">{title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
+              </article>
+            ))}
           </div>
         </section>
 
-        {/* 6. Testimonials */}
-        <section className="px-6 md:px-12 py-32 bg-background text-center">
-          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16">
-            <div className="space-y-6">
-              <p className="font-headline italic text-lg leading-relaxed">&quot;The most sophisticated tool I&apos;ve used. It treats a CV as a piece of design, not just data.&quot;</p>
-              <p className="font-label text-[0.65rem] uppercase tracking-widest text-foreground font-bold">ALEXA VANCE • DESIGN DIRECTOR</p>
-            </div>
-            <div className="space-y-6">
-              <p className="font-headline italic text-lg leading-relaxed">&quot;Elegant in its simplicity. It allowed me to stand out in a sea of generic LinkedIn-style resumes.&quot;</p>
-              <p className="font-label text-[0.65rem] uppercase tracking-widest text-foreground font-bold">MARCUS REED • VP OF PRODUCT</p>
-            </div>
-            <div className="space-y-6">
-              <p className="font-headline italic text-lg leading-relaxed">&quot;Absolute clarity. THE MANUSCRIPT is for those who understand that less is significantly more.&quot;</p>
-              <p className="font-label text-[0.65rem] uppercase tracking-widest text-foreground font-bold">SARAH CHEN • SENIOR PARTNER</p>
-            </div>
-          </div>
-        </section>
-
-        {/* 7. Pricing */}
-        {/* <section className="px-6 md:px-12 py-32 max-w-[1440px] mx-auto">
-          <div className="mb-16 text-center">
-            <h2 className="font-headline text-4xl font-black">Investment</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 border border-foreground divide-y md:divide-y-0 md:divide-x divide-foreground">
-            <div className="p-12 space-y-8 flex flex-col">
-              <div>
-                <h4 className="font-label uppercase tracking-widest text-[0.7rem] mb-2">Starter</h4>
-                <p className="font-headline text-4xl">$0</p>
-              </div>
-              <ul className="space-y-4 font-body text-sm flex-grow">
-                <li className="flex items-center gap-2"><Check size={16} /> 1 Professional Template</li>
-                <li className="flex items-center gap-2"><Check size={16} /> PDF Export (Watermarked)</li>
-                <li className="flex items-center gap-2 text-muted-foreground/40"><X size={16} /> Custom Typography</li>
-              </ul>
-              <button className={btnEditorial}>Select Plan</button>
-            </div>
-            <div className="p-12 space-y-8 flex flex-col bg-muted/40">
-              <div>
-                <h4 className="font-label uppercase tracking-widest text-[0.7rem] mb-2">Professional</h4>
-                <p className="font-headline text-4xl">$12</p>
-              </div>
-              <ul className="space-y-4 font-body text-sm flex-grow">
-                <li className="flex items-center gap-2"><Check size={16} /> All Templates</li>
-                <li className="flex items-center gap-2"><Check size={16} /> No Watermarks</li>
-                <li className="flex items-center gap-2"><Check size={16} /> Typography Control</li>
-              </ul>
-              <button className={`${btnEditorial} bg-foreground text-background`}>Current Standard</button>
-            </div>
-            <div className="p-12 space-y-8 flex flex-col">
-              <div>
-                <h4 className="font-label uppercase tracking-widest text-[0.7rem] mb-2">Executive</h4>
-                <p className="font-headline text-4xl">$29</p>
-              </div>
-              <ul className="space-y-4 font-body text-sm flex-grow">
-                <li className="flex items-center gap-2"><Check size={16} /> Everything in Pro</li>
-                <li className="flex items-center gap-2"><Check size={16} /> Multiple Versions</li>
-                <li className="flex items-center gap-2"><Check size={16} /> Personalized Review</li>
-              </ul>
-              <button className={btnEditorial}>Select Plan</button>
-            </div>
-          </div>
-        </section> */}
-
-        {/* 8. CTA Banner */}
-        <section className="px-6 md:px-12 py-32 bg-foreground text-background text-center">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="font-headline text-4xl md:text-6xl font-black mb-12 tracking-tight">Ready to write your next chapter?</h2>
-            <Link href="/editor" className="inline-block border border-background text-background px-16 py-4 font-label uppercase tracking-widest text-[0.8rem] hover:bg-background hover:text-foreground transition-all">
-              Get started
-            </Link>
-          </div>
+        <section className="bg-foreground px-6 py-32 text-center text-background md:px-12">
+          <h2 className="mb-12 font-headline text-4xl font-black tracking-tight md:text-6xl">Sẵn sàng tạo CV của riêng bạn?</h2>
+          <Link href="/templates" className="inline-block border border-background px-16 py-4 font-label text-[0.8rem] uppercase tracking-widest hover:bg-background hover:text-foreground">Bắt đầu tạo CV</Link>
         </section>
       </main>
 
-      {/* 9. Footer */}
-      <footer className="w-full border-t border-border mt-24 bg-background">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-12 py-12 w-full max-w-[1440px] mx-auto gap-12">
+      <footer className="w-full border-t border-border bg-background">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col items-start justify-between gap-12 px-12 py-12 md:flex-row md:items-center">
           <div className="space-y-4">
-            <div className="text-xl font-headline text-foreground font-black">THE MANUSCRIPT</div>
-            <p className="font-body text-[0.75rem] max-w-xs text-muted-foreground">The editorial standard for modern career documentation.</p>
+            <div className="font-headline text-xl font-black">CV Online</div>
+            <p className="max-w-xs text-[0.75rem] text-muted-foreground">Công cụ tạo CV chuyên nghiệp, đơn giản và trực quan.</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-16">
+          <nav className="grid grid-cols-2 gap-16" aria-label="Liên kết cuối trang">
             <div className="flex flex-col space-y-2">
-              <span className="font-label text-[0.75rem] font-bold uppercase mb-2">Product</span>
-              <Link className="font-label text-[0.75rem] uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground transition-all" href="#">Templates</Link>
-              <Link className="font-label text-[0.75rem] uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground transition-all" href="#">Features</Link>
-              <Link className="font-label text-[0.75rem] uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground transition-all" href="#">Pricing</Link>
+              <span className="mb-2 text-[0.75rem] font-bold uppercase">Sản phẩm</span>
+              <Link className="text-[0.75rem] text-muted-foreground hover:text-foreground" href="/templates">Mẫu CV</Link>
+              <Link className="text-[0.75rem] text-muted-foreground hover:text-foreground" href="/about">Giới thiệu</Link>
             </div>
             <div className="flex flex-col space-y-2">
-              <span className="font-label text-[0.75rem] font-bold uppercase mb-2">Legal</span>
-              <Link className="font-label text-[0.75rem] uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground transition-all" href="#">Privacy Policy</Link>
-              <Link className="font-label text-[0.75rem] uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground transition-all" href="#">Terms of Service</Link>
+              <span className="mb-2 text-[0.75rem] font-bold uppercase">Tài khoản</span>
+              <Link className="text-[0.75rem] text-muted-foreground hover:text-foreground" href="/auth">Đăng nhập</Link>
+              <Link className="text-[0.75rem] text-muted-foreground hover:text-foreground" href="/dashboard">Quản lý CV</Link>
             </div>
-            <div className="flex flex-col space-y-2">
-              <span className="font-label text-[0.75rem] font-bold uppercase mb-2">Social</span>
-              <Link className="font-label text-[0.75rem] uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground transition-all" href="#">Instagram</Link>
-              <Link className="font-label text-[0.75rem] uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground transition-all" href="#">Contact</Link>
-            </div>
-          </div>
+          </nav>
         </div>
-        <div className="px-12 pb-12 w-full max-w-[1440px] mx-auto">
-          <p className="font-label text-[0.65rem] uppercase tracking-[0.05em] text-muted-foreground">© 2024 THE MANUSCRIPT. ALL RIGHTS RESERVED.</p>
+        <div className="mx-auto w-full max-w-[1440px] px-12 pb-12">
+          <p className="text-[0.65rem] uppercase tracking-[0.05em] text-muted-foreground">© {new Date().getFullYear()} CV Online. All rights reserved.</p>
         </div>
       </footer>
     </div>

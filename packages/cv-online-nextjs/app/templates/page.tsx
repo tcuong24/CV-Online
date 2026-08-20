@@ -22,7 +22,7 @@ export default function TemplatesPage() {
               </div>
 
               <TemplatesGrid />
-              <Pagination />
+              {/* <Pagination /> */}
             </div>
           </div>
         </div>
