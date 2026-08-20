@@ -34,7 +34,7 @@ interface Template {
 export function TemplatesGrid() {
   const router = useRouter();
   const { setCV } = useCvEditorStore();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,8 +52,10 @@ export function TemplatesGrid() {
         t.tags?.includes(activeTag)
       );
   const handleSelectTemplate = (template: Template) => {
+    if (status === "loading") return;
+
     if (!session?.user) {
-      router.push("/auth");
+      router.push("/auth?type=login&callbackUrl=%2Ftemplates&reason=create-cv");
       return;
     }
     const { order, sideKeys: _sideKeys } = parseSectionsConfig(template.sectionsConfig);

@@ -57,7 +57,7 @@ export class CvService {
     const cv = await this.prisma.cV.create({
       data: {
         userId,
-        title: title || 'Uploaded CV',
+        title,
         sourceType: 'UPLOADED',
         attachedFileUrl,
         thumbnailUrl,

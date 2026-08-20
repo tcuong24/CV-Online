@@ -35,13 +35,19 @@ export function CvCard({
   onDownload,
   onDelete,
 }: CvCardProps) {
+  const previewUrl =
+    thumbnailUrl ||
+    (sourceType === "UPLOADED" && attachedFileUrl
+      ? attachedFileUrl.replace(/\.pdf(?=$|\?)/i, ".jpg")
+      : null);
+
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow duration-300 hover:shadow-md">
       <div className="aspect-3/4 w-full bg-muted p-2 flex items-center justify-center">
-        {thumbnailUrl ? (
+        {previewUrl ? (
           <img
             className="h-full w-full rounded-md object-cover object-top"
-            src={thumbnailUrl}
+            src={previewUrl}
             alt={`CV preview thumbnail for ${title}`}
           />
         ) : sourceType === 'UPLOADED' ? (

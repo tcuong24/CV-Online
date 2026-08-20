@@ -17,16 +17,35 @@ import {
 import { TemplatesGrid } from "@/components/templates/TemplateGrid";
 import { toast } from "sonner";
 import { UploadCvModal } from "@/components/cv-management/UploadCvModal";
+import { FileUp } from "lucide-react";
+
+function getCvThumbnailUrl(cv: {
+  thumbnailUrl?: string | null;
+  sourceType?: string;
+  attachedFileUrl?: string | null;
+}) {
+  if (cv.thumbnailUrl) return cv.thumbnailUrl;
+
+  if (cv.sourceType === "UPLOADED" && cv.attachedFileUrl) {
+    return cv.attachedFileUrl.replace(/\.pdf(?=$|\?)/i, ".jpg");
+  }
+
+  return null;
+}
 
 export default function DashboardClient() {
   const { data: session } = useSession();
   const [cvs, setCvs] = useState<any[]>([]);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [cvIdToDelete, setCvIdToDelete] = useState<string | null>(null);
-  
-  const [activeDropdownCvId, setActiveDropdownCvId] = useState<string | null>(null);
+
+  const [activeDropdownCvId, setActiveDropdownCvId] = useState<string | null>(
+    null,
+  );
   const [openShareModal, setOpenShareModal] = useState(false);
-  const [selectedCvForShare, setSelectedCvForShare] = useState<any | null>(null);
+  const [selectedCvForShare, setSelectedCvForShare] = useState<any | null>(
+    null,
+  );
   const [updatingShare, setUpdatingShare] = useState(false);
 
   const handleDeleteCv = async (id: string) => {
@@ -38,7 +57,7 @@ export default function DashboardClient() {
     }
     setOpenDeleteDialog(false);
     setCvIdToDelete(null);
-  }
+  };
   const handleChangeName = async (id: string, title: string) => {
     try {
       await axiosInstance.put(`/cvs/${id}`, { title });
@@ -46,7 +65,7 @@ export default function DashboardClient() {
     } catch (error) {
       console.error(error);
     }
-  }
+  };
   const handleSetDefault = async (id: string) => {
     try {
       await axiosInstance.patch(`/cvs/${id}/set-default`);
@@ -54,7 +73,7 @@ export default function DashboardClient() {
     } catch (error) {
       console.error(error);
     }
-  }
+  };
   const getCvs = async () => {
     try {
       const res = await axiosInstance.get("/cvs");
@@ -67,12 +86,16 @@ export default function DashboardClient() {
   const handleDownloadPdf = async (id: string, title: string) => {
     try {
       toast.loading("Đang tạo và tải xuống PDF...", { id: `download-${id}` });
-      const response = await axiosInstance.post(`/export/cv/${id}/pdf`, {}, { responseType: 'blob' });
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const response = await axiosInstance.post(
+        `/export/cv/${id}/pdf`,
+        {},
+        { responseType: "blob" },
+      );
+      const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `${title || 'CV'}.pdf`);
+      link.setAttribute("download", `${title || "CV"}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
@@ -119,37 +142,57 @@ export default function DashboardClient() {
     } else {
       return "Chào buổi tối";
     }
-  }
+  };
   return (
     <main className="flex-grow w-full max-w-7xl mx-auto px-6 pt-32 pb-12">
       {/* Welcome Section */}
       <section className="mb-12" data-purpose="hero-section">
-        <p className="text-lg font-normal mb-1">{getTimeLable()}, {session?.user?.name}</p>
-        <h1 className="text-6xl font-headline italic mb-8 text-foreground">Những bản CV của bạn trông thật chuyên nghiệp.</h1>
+        <p className="text-lg font-normal mb-1">
+          {getTimeLable()}, {session?.user?.name}
+        </p>
+        <h1 className="text-6xl font-headline italic mb-8 text-foreground">
+          Những bản CV của bạn trông thật chuyên nghiệp.
+        </h1>
         <div className="flex items-center space-x-4">
           <Dialog>
             <DialogTrigger asChild>
               <button className="flex items-center space-x-2 border border-[#1e3a3a] text-[#1e3a3a] px-5 py-2.5 rounded-sm hover:bg-gray-200 transition-colors text-sm font-medium">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 4.5v15m7.5-7.5h-15" strokeLinecap="round" strokeLinejoin="round"></path>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 4.5v15m7.5-7.5h-15"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  ></path>
                 </svg>
                 <span>Tạo CV mới</span>
               </button>
             </DialogTrigger>
             <DialogContent className="max-w-7xl sm:max-w-5xl md:max-w-6xl lg:max-w-7xl h-[85vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-headline mb-4">Chọn mẫu CV để bắt đầu</DialogTitle>
+                <DialogTitle className="text-2xl font-headline mb-4">
+                  Chọn mẫu CV để bắt đầu
+                </DialogTitle>
               </DialogHeader>
               <TemplatesGrid />
             </DialogContent>
           </Dialog>
-          
+
           <UploadCvModal />
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12" data-purpose="statistics-grid">
+      <section
+        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
+        data-purpose="statistics-grid"
+      >
         {/* Total CVs */}
         <div className="border border-gray-200 bg-white p-6 rounded-sm">
           <p className="text-sm font-medium text-gray-500 mb-2">Tổng số CV</p>
@@ -164,10 +207,23 @@ export default function DashboardClient() {
         <div className="border border-gray-200 bg-white p-6 rounded-sm flex flex-col justify-between">
           <p className="text-sm font-medium text-gray-500 mb-2">Mẫu phổ biến</p>
           <div className="flex items-center justify-between mt-4">
-            <p className="text-3xl font-medium text-gray-900">Chuyên nghiệp hiện đại</p>
+            <p className="text-3xl font-medium text-gray-900">
+              Chuyên nghiệp hiện đại
+            </p>
             <button className="p-1 text-gray-700 hover:text-black">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" strokeLinecap="round" strokeLinejoin="round"></path>
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                ></path>
               </svg>
             </button>
           </div>
@@ -183,37 +239,138 @@ export default function DashboardClient() {
           ) : (
             cvs.map((cv) => (
               <div key={cv.id} className="group" data-purpose="cv-item">
-                <Link href={cv.sourceType === 'UPLOADED' ? `/preview/${cv.id}` : `/cvs/${cv.id}/edit`}>
+                <Link
+                  href={
+                    cv.sourceType === "UPLOADED"
+                      ? `/preview/${cv.id}`
+                      : `/cvs/${cv.id}/edit`
+                  }
+                >
                   <div className="bg-[#e5e7eb] aspect-[1/1.1] p-0 rounded-sm mb-4 flex items-center justify-center overflow-hidden border border-gray-200 relative hover:border-gray-400 transition-colors cursor-pointer">
-                    {cv.sourceType === 'UPLOADED' ? (
-                      <div className="flex flex-col items-center justify-center text-gray-500 opacity-60">
-                        <svg className="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <span className="text-sm font-medium">PDF Document</span>
-                      </div>
-                    ) : cv.thumbnailUrl ? (
+                    {cv.sourceType === "UPLOADED" && (
+                      <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50/95 px-2.5 py-1 text-[11px] font-semibold text-blue-700 shadow-sm backdrop-blur-sm">
+                        <FileUp className="h-3 w-3" />
+                        PDF tải lên
+                      </span>
+                    )}
+
+                    {getCvThumbnailUrl(cv) ? (
                       <img
-                        src={cv.thumbnailUrl}
-                        alt={cv.title || "CV Thumbnail"}
-                        className="w-full h-full object-cover object-top"
+                        src={getCvThumbnailUrl(cv) ?? undefined}
+                        alt={cv.title || "CV PDF"}
+                        className="h-full w-full object-cover object-top"
                       />
                     ) : (
-                      <svg className="w-3/4 h-auto drop-shadow-md" fill="white" viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
+                      <svg
+                        className="w-3/4 h-auto drop-shadow-md"
+                        fill="white"
+                        viewBox="0 0 210 297"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
                         <rect fill="white" height="297" width="210"></rect>
-                        <rect fill="#4b5563" height="297" width="60" x="0" y="0"></rect>
-                        <rect fill="#9ca3af" height="30" rx="15" width="30" x="15" y="20"></rect>
-                        <rect fill="#d1d5db" height="4" rx="2" width="30" x="15" y="60"></rect>
-                        <rect fill="#d1d5db" height="4" rx="2" width="20" x="15" y="70"></rect>
-                        <rect fill="#111827" height="8" rx="2" width="80" x="80" y="30"></rect>
-                        <rect fill="#9ca3af" height="6" rx="2" width="40" x="80" y="45"></rect>
-                        <rect fill="#e5e7eb" height="3" rx="1.5" width="100" x="80" y="70"></rect>
-                        <rect fill="#e5e7eb" height="3" rx="1.5" width="100" x="80" y="80"></rect>
-                        <rect fill="#e5e7eb" height="3" rx="1.5" width="80" x="80" y="90"></rect>
-                        <rect fill="#111827" height="6" rx="2" width="50" x="80" y="120"></rect>
-                        <rect fill="#e5e7eb" height="3" rx="1.5" width="100" x="80" y="140"></rect>
-                        <rect fill="#e5e7eb" height="3" rx="1.5" width="100" x="80" y="150"></rect>
-                        <rect fill="#e5e7eb" height="3" rx="1.5" width="90" x="80" y="160"></rect>
+                        <rect
+                          fill="#4b5563"
+                          height="297"
+                          width="60"
+                          x="0"
+                          y="0"
+                        ></rect>
+                        <rect
+                          fill="#9ca3af"
+                          height="30"
+                          rx="15"
+                          width="30"
+                          x="15"
+                          y="20"
+                        ></rect>
+                        <rect
+                          fill="#d1d5db"
+                          height="4"
+                          rx="2"
+                          width="30"
+                          x="15"
+                          y="60"
+                        ></rect>
+                        <rect
+                          fill="#d1d5db"
+                          height="4"
+                          rx="2"
+                          width="20"
+                          x="15"
+                          y="70"
+                        ></rect>
+                        <rect
+                          fill="#111827"
+                          height="8"
+                          rx="2"
+                          width="80"
+                          x="80"
+                          y="30"
+                        ></rect>
+                        <rect
+                          fill="#9ca3af"
+                          height="6"
+                          rx="2"
+                          width="40"
+                          x="80"
+                          y="45"
+                        ></rect>
+                        <rect
+                          fill="#e5e7eb"
+                          height="3"
+                          rx="1.5"
+                          width="100"
+                          x="80"
+                          y="70"
+                        ></rect>
+                        <rect
+                          fill="#e5e7eb"
+                          height="3"
+                          rx="1.5"
+                          width="100"
+                          x="80"
+                          y="80"
+                        ></rect>
+                        <rect
+                          fill="#e5e7eb"
+                          height="3"
+                          rx="1.5"
+                          width="80"
+                          x="80"
+                          y="90"
+                        ></rect>
+                        <rect
+                          fill="#111827"
+                          height="6"
+                          rx="2"
+                          width="50"
+                          x="80"
+                          y="120"
+                        ></rect>
+                        <rect
+                          fill="#e5e7eb"
+                          height="3"
+                          rx="1.5"
+                          width="100"
+                          x="80"
+                          y="140"
+                        ></rect>
+                        <rect
+                          fill="#e5e7eb"
+                          height="3"
+                          rx="1.5"
+                          width="100"
+                          x="80"
+                          y="150"
+                        ></rect>
+                        <rect
+                          fill="#e5e7eb"
+                          height="3"
+                          rx="1.5"
+                          width="90"
+                          x="80"
+                          y="160"
+                        ></rect>
                       </svg>
                     )}
                   </div>
@@ -226,15 +383,41 @@ export default function DashboardClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-sm font-semibold text-foreground truncate max-w-[200px]">
-                      <EditableText value={cv.title || "CV chưa đặt tên"} onChange={(value) => handleChangeName(cv.id, value)} />
+                      <EditableText
+                        value={cv.title || "CV chưa đặt tên"}
+                        onChange={(value) => handleChangeName(cv.id, value)}
+                      />
                     </h3>
                     <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
-                      <span>Sửa đổi lúc {new Date(cv.updatedAt || cv.createdAt).toLocaleDateString('vi-VN')}</span>
+                      <span>
+                        Sửa đổi lúc{" "}
+                        {new Date(
+                          cv.updatedAt || cv.createdAt,
+                        ).toLocaleDateString("vi-VN")}
+                      </span>
                       {cv.isPublic && (
-                        <span title="Đang chia sẻ công khai" className="text-emerald-600 flex-shrink-0 animate-pulse">
-                          <svg className="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        <span
+                          title="Đang chia sẻ công khai"
+                          className="text-emerald-600 flex-shrink-0 animate-pulse"
+                        >
+                          <svg
+                            className="w-3.5 h-3.5 inline-block"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                            />
                           </svg>
                         </span>
                       )}
@@ -242,29 +425,72 @@ export default function DashboardClient() {
                   </div>
                   <div className="flex items-center space-x-3 text-gray-800">
                     <button
-                      title={cv.isDefault ? 'Đang là hồ sơ chính' : 'Đặt làm hồ sơ chính'}
+                      title={
+                        cv.isDefault
+                          ? "Đang là hồ sơ chính"
+                          : "Đặt làm hồ sơ chính"
+                      }
                       onClick={() => !cv.isDefault && handleSetDefault(cv.id)}
-                      className={cv.isDefault ? 'text-[#1e3a3a] cursor-default' : 'text-gray-300 hover:text-[#1e3a3a] cursor-pointer'}
+                      className={
+                        cv.isDefault
+                          ? "text-[#1e3a3a] cursor-default"
+                          : "text-gray-300 hover:text-[#1e3a3a] cursor-pointer"
+                      }
                     >
-                      <svg className="w-4 h-4" fill={cv.isDefault ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                      <svg
+                        className="w-4 h-4"
+                        fill={cv.isDefault ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"
+                        />
                       </svg>
                     </button>
-                    {cv.sourceType !== 'UPLOADED' && (
+                    {cv.sourceType !== "UPLOADED" && (
                       <Link href={`/cvs/${cv.id}/edit`}>
                         <button className="hover:text-black" title="Chỉnh sửa">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            ></path>
                           </svg>
                         </button>
                       </Link>
                     )}
-                    <button className="hover:text-black cursor-pointer" onClick={() => {
-                      setCvIdToDelete(cv.id);
-                      setOpenDeleteDialog(true);
-                    }}>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    <button
+                      className="hover:text-black cursor-pointer"
+                      onClick={() => {
+                        setCvIdToDelete(cv.id);
+                        setOpenDeleteDialog(true);
+                      }}
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                        />
                       </svg>
                     </button>
                     <div className="relative">
@@ -272,14 +498,27 @@ export default function DashboardClient() {
                         className="hover:text-black p-1 hover:bg-gray-100 rounded-sm cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setActiveDropdownCvId(activeDropdownCvId === cv.id ? null : cv.id);
+                          setActiveDropdownCvId(
+                            activeDropdownCvId === cv.id ? null : cv.id,
+                          );
                         }}
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" strokeLinecap="round" strokeLinejoin="round"></path>
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          ></path>
                         </svg>
                       </button>
-                      
+
                       {activeDropdownCvId === cv.id && (
                         <>
                           <div
@@ -295,8 +534,18 @@ export default function DashboardClient() {
                               }}
                               className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 text-gray-700 cursor-pointer border-none bg-transparent"
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"
+                                />
                               </svg>
                               <span>Chia sẻ online</span>
                             </button>
@@ -316,9 +565,12 @@ export default function DashboardClient() {
       <Dialog open={openShareModal} onOpenChange={setOpenShareModal}>
         <DialogContent className="sm:max-w-md font-sans">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-800">Chia sẻ CV online</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-gray-800">
+              Chia sẻ CV online
+            </DialogTitle>
             <DialogDescription className="text-xs text-gray-400">
-              Thiết lập quyền truy cập công khai và lấy liên kết chia sẻ cho CV của bạn.
+              Thiết lập quyền truy cập công khai và lấy liên kết chia sẻ cho CV
+              của bạn.
             </DialogDescription>
           </DialogHeader>
           {selectedCvForShare && (
@@ -326,15 +578,22 @@ export default function DashboardClient() {
               {/* Toggle Public Option */}
               <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-lg">
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-800">Bật chia sẻ công khai</h4>
-                  <p className="text-xs text-gray-400 mt-1">Khi bật, bất kỳ ai có link đều có thể xem CV này mà không cần đăng nhập.</p>
+                  <h4 className="text-sm font-semibold text-gray-800">
+                    Bật chia sẻ công khai
+                  </h4>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Khi bật, bất kỳ ai có link đều có thể xem CV này mà không
+                    cần đăng nhập.
+                  </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
                     checked={selectedCvForShare.isPublic}
                     disabled={updatingShare}
-                    onChange={(e) => handleTogglePublic(selectedCvForShare, e.target.checked)}
+                    onChange={(e) =>
+                      handleTogglePublic(selectedCvForShare, e.target.checked)
+                    }
                     className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1D283D]"></div>
@@ -344,12 +603,18 @@ export default function DashboardClient() {
               {/* Show link if public */}
               {selectedCvForShare.isPublic && (
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Đường dẫn chia sẻ</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                    Đường dẫn chia sẻ
+                  </label>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       readOnly
-                      value={typeof window !== "undefined" ? `${window.location.origin}/preview/${selectedCvForShare.id}` : ""}
+                      value={
+                        typeof window !== "undefined"
+                          ? `${window.location.origin}/preview/${selectedCvForShare.id}`
+                          : ""
+                      }
                       className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-600 focus:outline-none"
                     />
                     <button
@@ -374,7 +639,10 @@ export default function DashboardClient() {
         open={openDeleteDialog}
         onOpenChange={setOpenDeleteDialog}
         onConfirm={() => cvIdToDelete && handleDeleteCv(cvIdToDelete)}
-        onCancel={() => { setOpenDeleteDialog(false); setCvIdToDelete(null) }}
+        onCancel={() => {
+          setOpenDeleteDialog(false);
+          setCvIdToDelete(null);
+        }}
         title="Xóa CV?"
         description="Bạn có chắc chắn muốn xóa CV này không?"
         confirmText="Xóa"

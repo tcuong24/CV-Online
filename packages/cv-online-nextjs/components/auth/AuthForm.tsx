@@ -4,8 +4,17 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { clsx } from 'clsx';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface FormState {
@@ -68,6 +77,10 @@ export function AuthForm() {
   const [errors, setErrors]   = useState<FormErrors>({});
   const [showPw, setShowPw]   = useState(false);
   const [loading, setLoading] = useState(false);
+  const loginReason = searchParams.get('reason');
+  const [showLoginRequired, setShowLoginRequired] = useState(
+    () => loginReason === 'auth-required' || loginReason === 'create-cv',
+  );
 
   // ── Patch field + clear its error ──────────────────────────────────────────
   const patch = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,7 +198,34 @@ export function AuthForm() {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div
+    <>
+      <AlertDialog open={showLoginRequired} onOpenChange={setShowLoginRequired}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#3b5bdb]">
+              <AlertCircle size={24} />
+            </div>
+            <AlertDialogTitle className="text-center">
+              Bạn cần đăng nhập
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              {loginReason === 'create-cv'
+                ? 'Vui lòng đăng nhập trước để tạo và lưu CV của bạn.'
+                : 'Vui lòng đăng nhập trước để truy cập trang Dashboard.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sm:justify-center">
+            <AlertDialogAction
+              autoFocus
+              className="bg-[#3b5bdb] hover:bg-[#2f4ac7]"
+            >
+              Đã hiểu
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div
       className="min-h-screen grid grid-cols-1 lg:grid-cols-2 text-gray-900 antialiased"
       style={{
         backgroundColor: '#e8eef8',
@@ -422,6 +462,7 @@ export function AuthForm() {
 
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
