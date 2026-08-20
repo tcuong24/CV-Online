@@ -101,7 +101,7 @@ function ErrorState({ message }: { message: string }) {
 export default function DynamicPreviewPage() {
   const params = useParams();
   const cvId = params.id as string;
-  const { status } = useSession();
+  const { data: session, status } = useSession();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
