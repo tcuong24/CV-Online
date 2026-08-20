@@ -117,7 +117,11 @@ export default function DynamicPreviewPage() {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9999/api";
 
     // Try fetching from the public endpoint first
-    fetch(`${API_BASE_URL}/public-cvs/${cvId}`)
+    fetch(`${API_BASE_URL}/public-cvs/${cvId}`, {
+      headers: session?.user?.accessToken
+        ? { Authorization: `Bearer ${session.user.accessToken}` }
+        : {},
+    })
       .then(async (publicRes) => {
         if (!publicRes.ok) {
           throw new Error('Not public');
@@ -192,7 +196,7 @@ export default function DynamicPreviewPage() {
       .finally(() => {
         setLoading(false);
       });
-  }, [cvId, status]);
+  }, [cvId, status, session?.user?.accessToken]);
 
   const handleDownload = async () => {
     if (!cvData) return;

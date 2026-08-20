@@ -198,6 +198,28 @@ export class CvService {
   }
 
   /**
+   * Get a public CV and count the visit when the viewer is not its owner.
+   */
+  async findPublicById(id: string, viewerUserId?: string) {
+    const cv = await this.findOne(id);
+
+    if (!cv.isPublic) {
+      throw new NotFoundException('CV not found or not public');
+    }
+
+    if (!viewerUserId || viewerUserId !== cv.userId) {
+      await this.prisma.cV.update({
+        where: { id: cv.id },
+        data: { viewCount: { increment: 1 } },
+      });
+
+      return { ...cv, viewCount: cv.viewCount + 1 };
+    }
+
+    return cv;
+  }
+
+  /**
    * Get CV by public URL token
    */
   async findByPublicToken(token: string) {

@@ -143,6 +143,19 @@ export default function DashboardClient() {
       return "Chào buổi tối";
     }
   };
+
+  const editorCvCount = cvs.filter(
+    (cv) => cv.sourceType === "EDITOR",
+  ).length;
+  const uploadedCvCount = cvs.filter(
+    (cv) => cv.sourceType === "UPLOADED",
+  ).length;
+  const publicCvCount = cvs.filter((cv) => cv.isPublic).length;
+  const totalViews = cvs.reduce(
+    (total, cv) => total + Number(cv.viewCount || 0),
+    0,
+  );
+
   return (
     <main className="flex-grow w-full max-w-7xl mx-auto px-6 pt-32 pb-12">
       {/* Welcome Section */}
@@ -197,36 +210,25 @@ export default function DashboardClient() {
         <div className="border border-gray-200 bg-white p-6 rounded-sm">
           <p className="text-sm font-medium text-gray-500 mb-2">Tổng số CV</p>
           <p className="text-4xl font-normal text-foreground">{cvs.length}</p>
+          <p className="mt-3 text-sm text-gray-500">
+            {editorCvCount} thiết kế · {uploadedCvCount} PDF tải lên
+          </p>
         </div>
-        {/* Downloads */}
+        {/* Public CVs */}
         <div className="border border-gray-200 bg-white p-6 rounded-sm">
-          <p className="text-sm font-medium text-gray-500 mb-2">Lượt tải</p>
-          <p className="text-4xl font-normal text-foreground">142</p>
+          <p className="text-sm font-medium text-gray-500 mb-2">CV công khai</p>
+          <p className="text-4xl font-normal text-foreground">{publicCvCount}</p>
+          <p className="mt-3 text-sm text-gray-500">
+            {cvs.length - publicCvCount} CV riêng tư
+          </p>
         </div>
-        {/* Top Template */}
-        <div className="border border-gray-200 bg-white p-6 rounded-sm flex flex-col justify-between">
-          <p className="text-sm font-medium text-gray-500 mb-2">Mẫu phổ biến</p>
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-3xl font-medium text-gray-900">
-              Chuyên nghiệp hiện đại
-            </p>
-            <button className="p-1 text-gray-700 hover:text-black">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></path>
-              </svg>
-            </button>
-          </div>
+        {/* Total views */}
+        <div className="border border-gray-200 bg-white p-6 rounded-sm">
+          <p className="text-sm font-medium text-gray-500 mb-2">Tổng lượt xem</p>
+          <p className="text-4xl font-normal text-foreground">{totalViews}</p>
+          <p className="mt-3 text-sm text-gray-500">
+            Trên tất cả CV được chia sẻ
+          </p>
         </div>
       </section>
 

@@ -1,16 +1,17 @@
-import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { CvService } from './cv.service';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 
 @Controller('public-cvs')
 export class PublicCvController {
   constructor(private readonly cvService: CvService) {}
 
   @Get(':id')
-  async getPublicCv(@Param('id') id: string) {
-    const cv = await this.cvService.findOne(id);
-    if (!cv || !cv.isPublic) {
-      throw new NotFoundException('CV not found or not public');
-    }
-    return cv;
+  @UseGuards(OptionalJwtAuthGuard)
+  async getPublicCv(
+    @Param('id') id: string,
+    @Req() req: { user?: { id?: string } },
+  ) {
+    return this.cvService.findPublicById(id, req.user?.id);
   }
 }
