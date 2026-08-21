@@ -87,10 +87,14 @@ interface CVUser {
   email: string;
   phone?: string;
   avatarUrl?: string;
+  profileIsPublic: boolean;
+  profileViewCount: number;
 }
 
 interface CVData {
   id: string;
+  userId: string;
+  isPublic: boolean;
   user: CVUser;
   personalInfo?: CVPersonalInfo;
   experiences: CVExperience[];
@@ -114,14 +118,6 @@ function formatPeriod(startDate?: string, endDate?: string, isCurrent?: boolean)
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-function CoverPhoto() {
-  return (
-    <div className="h-40 md:h-52 w-full relative overflow-hidden bg-[#e5e7eb]">
-      <div className="absolute inset-0" style={{ background: 'repeating-linear-gradient(45deg, #d1d5db 0px, #d1d5db 1px, transparent 1px, transparent 12px)' }} />
-    </div>
-  );
-}
-
 function ExperienceCard({ exp }: { exp: CVExperience }) {
   return (
     <div className="border border-gray-200 bg-white p-5 rounded-sm flex flex-col gap-3 hover:border-gray-400 transition-colors">
@@ -161,17 +157,32 @@ function EducationCard({ edu }: { edu: CVEducation }) {
   );
 }
 
+function ProfileLink({ href, label, external = false }: { href: string; label: string; external?: boolean }) {
+  const normalizedHref = external && !href.startsWith('http') ? `https://${href}` : href;
+  return (
+    <a
+      href={normalizedHref}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
+      className="group inline-flex items-center gap-1.5 text-[#1e3a3a] underline-offset-4 hover:underline"
+    >
+      {label}
+      {external && <ExternalLink size={12} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />}
+    </a>
+  );
+}
+
 function LoadingSkeleton() {
   return (
     <div className="min-h-[calc(100vh-56px)] bg-[#faf9f6] animate-pulse">
-      <div className="h-40 md:h-52 bg-gray-200" />
-      <div className="max-w-5xl mx-auto px-6 -mt-14">
-        <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-gray-200 border-4 border-white" />
-        <div className="mt-4 space-y-3">
-          <div className="h-8 w-48 bg-gray-200 rounded" />
-          <div className="h-4 w-64 bg-gray-200 rounded" />
+      <div className="border-b border-gray-200 bg-[#f4f4f0]">
+        <div className="max-w-6xl mx-auto px-6 py-12 flex items-center gap-8">
+          <div className="h-28 w-28 rounded-full bg-gray-200" />
+          <div className="space-y-3"><div className="h-8 w-48 bg-gray-200 rounded" /><div className="h-4 w-64 bg-gray-200 rounded" /></div>
         </div>
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-10">
+      </div>
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_320px] gap-12">
           <div className="md:col-span-2 space-y-6">
             <div className="h-32 bg-gray-200 rounded-sm" />
             <div className="h-24 bg-gray-200 rounded-sm" />
@@ -198,19 +209,21 @@ function EmptySection({ label }: { label: string }) {
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export default function ProfileClient() {
+export default function ProfileClient({ publicUserId }: { publicUserId?: string }) {
   const { data: session, status, update } = useSession();
   const router = useRouter();
+  const isPublicView = Boolean(publicUserId);
 
   const [cv, setCv] = useState<CVData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [visibilityUpdating, setVisibilityUpdating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarClick = () => {
-    if (!isUploading) fileInputRef.current?.click();
+    if (!isPublicView && !isUploading) fileInputRef.current?.click();
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -258,6 +271,38 @@ export default function ProfileClient() {
   };
 
   useEffect(() => {
+    if (isPublicView && publicUserId) {
+      if (status === 'loading') return;
+
+      const fetchPublicProfile = async () => {
+        try {
+          setLoading(true);
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9999/api'}/users/public-profile/${encodeURIComponent(publicUserId)}`,
+            {
+              headers: session?.user?.accessToken
+                ? { Authorization: `Bearer ${session.user.accessToken}` }
+                : {},
+            },
+          );
+
+          if (!res.ok) {
+            setError('Hồ sơ này không tồn tại hoặc chưa được chia sẻ công khai');
+            return;
+          }
+
+          setCv(await res.json());
+        } catch {
+          setError('Lỗi kết nối server');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchPublicProfile();
+      return;
+    }
+
     if (status === 'loading') return;
     if (status === 'unauthenticated') {
       router.push('/auth');
@@ -288,7 +333,7 @@ export default function ProfileClient() {
     };
 
     fetchDefaultCV();
-  }, [session, status, router]);
+  }, [isPublicView, publicUserId, session, status, router]);
 
   if (status === 'loading' || loading) return <LoadingSkeleton />;
 
@@ -314,79 +359,139 @@ export default function ProfileClient() {
   const displayName = pi?.fullName || userName;
   const headline = pi?.jobTitle ? `${pi.jobTitle}${pi.location ? ` · ${pi.location}` : ''}` : '';
 
+  const handleCopyProfileLink = async () => {
+    if (!cv?.user?.profileIsPublic) {
+      toast.error('Hãy bật công khai hồ sơ trước khi chia sẻ');
+      return;
+    }
+
+    const profileUrl = `${window.location.origin}/profile/${cv.userId}`;
+    await navigator.clipboard.writeText(profileUrl);
+    toast.success('Đã sao chép link hồ sơ');
+  };
+
+  const handleToggleProfileVisibility = async () => {
+    if (!cv?.user || visibilityUpdating) return;
+
+    const nextIsPublic = !cv.user.profileIsPublic;
+
+    try {
+      setVisibilityUpdating(true);
+      await axiosInstance.patch('/users/me/profile-visibility', {
+        isPublic: nextIsPublic,
+      });
+      setCv((current) => current ? {
+        ...current,
+        user: { ...current.user, profileIsPublic: nextIsPublic },
+      } : current);
+      toast.success(nextIsPublic ? 'Hồ sơ đã được công khai' : 'Hồ sơ đã được ẩn');
+    } catch {
+      toast.error('Không thể cập nhật trạng thái hồ sơ');
+    } finally {
+      setVisibilityUpdating(false);
+    }
+  };
+
   return (
     <main className="flex-grow w-full">
-      {/* Cover */}
-      <CoverPhoto />
-
-      <div className="max-w-5xl mx-auto px-6">
-        {/* Avatar row */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-14 pb-6">
-
-          {/* Avatar */}
-          <div className="relative flex-shrink-0 group cursor-pointer" onClick={handleAvatarClick}>
-            <Avatar className={cn("h-28 w-28 sm:h-32 sm:w-32 border-4 border-white shadow-sm rounded-full", isUploading && "opacity-70")}>
+      <header className="border-b border-gray-200 bg-gradient-to-br from-[#f3f3ef] to-white">
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-center sm:gap-8 md:py-12 md:mt-12">
+          <div
+            className={cn('relative flex-shrink-0 group', !isPublicView && 'cursor-pointer')}
+            onClick={handleAvatarClick}
+          >
+            <Avatar className={cn("h-28 w-28 border border-gray-200 shadow-sm rounded-full", isUploading && "opacity-70")}>
               <AvatarImage src={userAvatar} alt={displayName} />
               <AvatarFallback className="text-2xl font-bold bg-[#1e3a3a] text-white">
                 {displayName.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
 
-            <div className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              {isUploading ? (
-                <Loader2 className="h-8 w-8 text-white animate-spin" />
-              ) : (
-                <>
-                  <Camera className="h-6 w-6 text-white mb-1" />
-                  <span className="text-white text-xs font-medium">Thay đổi ảnh</span>
-                </>
-              )}
-            </div>
+            {!isPublicView && (
+              <>
+                <div className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  {isUploading ? (
+                    <Loader2 className="h-8 w-8 text-white animate-spin" />
+                  ) : (
+                    <>
+                      <Camera className="h-6 w-6 text-white mb-1" />
+                      <span className="text-white text-xs font-medium">Thay đổi ảnh</span>
+                    </>
+                  )}
+                </div>
 
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept="image/*"
-              onChange={handleFileChange}
-            />
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </>
+            )}
 
             <div className="absolute bottom-1 right-1 bg-[#1e3a3a] rounded-full p-1 border-2 border-white pointer-events-none">
               <BadgeCheck size={14} className="text-white" strokeWidth={2.5} />
             </div>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2 sm:pb-1">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="rounded-sm h-9 w-9 border-gray-200">
-                  <MoreHorizontal size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>Sao chép link</DropdownMenuItem>
-                <DropdownMenuItem>Báo cáo</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-headline text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl md:text-[2.7rem]">
+              {displayName}
+            </h1>
+            {headline && <p className="mt-1.5 text-sm text-gray-500 sm:text-base">{headline}</p>}
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+              {pi?.linkedinUrl && <ProfileLink href={pi.linkedinUrl} label="LinkedIn" external />}
+              {pi?.githubUrl && <ProfileLink href={pi.githubUrl} label="GitHub" external />}
+              {pi?.website && <ProfileLink href={pi.website} label="Portfolio" external />}
+              {userEmail && <ProfileLink href={`mailto:${userEmail}`} label={userEmail} />}
+              {userPhone && <ProfileLink href={`tel:${userPhone}`} label={userPhone} />}
+            </div>
           </div>
+
+          {!isPublicView && (
+            <div className="self-start sm:ml-auto flex flex-wrap items-center justify-end gap-2">
+              <span className="mr-1 text-xs text-gray-500">
+                {cv?.user?.profileViewCount || 0} lượt xem
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={visibilityUpdating}
+                onClick={handleToggleProfileVisibility}
+                className={cn(
+                  'rounded-sm border-gray-200 gap-2',
+                  cv?.user?.profileIsPublic && 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
+                )}
+              >
+                {visibilityUpdating
+                  ? <Loader2 size={14} className="animate-spin" />
+                  : <Globe size={14} />}
+                {cv?.user?.profileIsPublic ? 'Công khai' : 'Đang ẩn'}
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="rounded-sm h-9 w-9 border-gray-200">
+                    <MoreHorizontal size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onSelect={handleCopyProfileLink}>
+                    Sao chép link hồ sơ
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
+      </header>
 
-        {/* Name + headline */}
-        <div className="mb-2">
-          <h1 className="text-3xl sm:text-4xl font-headline font-bold text-gray-900 tracking-tight">
-            {displayName}
-          </h1>
-          {headline && <p className="text-gray-500 mt-1 text-sm">{headline}</p>}
-        </div>
-
-        <Separator className="my-6" />
-
+      <div className="max-w-6xl mx-auto px-6 pt-10">
         {/* Main grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 pb-16">
+        <div className="grid grid-cols-1 gap-12 pb-16 md:grid-cols-[minmax(0,1fr)_320px]">
 
           {/* Left col */}
-          <div className="md:col-span-2 space-y-12">
+          <div className="space-y-12">
 
             {/* About */}
             <section>
@@ -439,82 +544,6 @@ export default function ProfileClient() {
 
           {/* Right col (sidebar) */}
           <aside className="space-y-6">
-            {/* Contact info */}
-            <div className="bg-white border border-gray-200 p-5 rounded-sm space-y-4">
-              <h2 className="text-sm font-semibold text-gray-900">Thông tin</h2>
-              <div className="space-y-3">
-                {pi?.location && (
-                  <div className="flex items-center gap-2.5 text-sm text-gray-600">
-                    <MapPin size={15} className="text-gray-400 flex-shrink-0" />
-                    <span>{pi.location}</span>
-                  </div>
-                )}
-
-                {pi?.website && (
-                  <div className="flex items-center gap-2.5 text-sm">
-                    <Globe size={15} className="text-gray-400 flex-shrink-0" />
-                    <a
-                      href={pi.website.startsWith('http') ? pi.website : `https://${pi.website}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#1e3a3a] hover:underline flex items-center gap-1"
-                    >
-                      {pi.website.replace(/^https?:\/\//, '')}
-                      <ExternalLink size={11} />
-                    </a>
-                  </div>
-                )}
-
-                {pi?.linkedinUrl && (
-                  <div className="flex items-center gap-2.5 text-sm">
-                    <Globe size={15} className="text-gray-400 flex-shrink-0" />
-                    <a
-                      href={pi.linkedinUrl.startsWith('http') ? pi.linkedinUrl : `https://${pi.linkedinUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#1e3a3a] hover:underline flex items-center gap-1"
-                    >
-                      LinkedIn
-                      <ExternalLink size={11} />
-                    </a>
-                  </div>
-                )}
-
-                {pi?.githubUrl && (
-                  <div className="flex items-center gap-2.5 text-sm">
-                    <Globe size={15} className="text-gray-400 flex-shrink-0" />
-                    <a
-                      href={pi.githubUrl.startsWith('http') ? pi.githubUrl : `https://${pi.githubUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#1e3a3a] hover:underline flex items-center gap-1"
-                    >
-                      GitHub
-                      <ExternalLink size={11} />
-                    </a>
-                  </div>
-                )}
-
-                {userEmail && (
-                  <div className="flex items-center gap-2.5 text-sm">
-                    <Mail size={15} className="text-gray-400 flex-shrink-0" />
-                    <a href={`mailto:${userEmail}`} className="text-[#1e3a3a] hover:underline">
-                      {userEmail}
-                    </a>
-                  </div>
-                )}
-
-                {userPhone && (
-                  <div className="flex items-center gap-2.5 text-sm">
-                    <Phone size={15} className="text-gray-400 flex-shrink-0" />
-                    <a href={`tel:${userPhone}`} className="text-[#1e3a3a] hover:underline">
-                      {userPhone}
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Skills */}
             <div className="bg-white border border-gray-200 p-5 rounded-sm space-y-3">
               <h2 className="text-sm font-semibold text-gray-900">Kỹ năng</h2>

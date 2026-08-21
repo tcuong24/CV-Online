@@ -12,7 +12,7 @@ export default function DropdownUser() {
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={session?.user?.image || "/avatar.png"} />
+            <AvatarImage src={session?.user?.image || undefined} />
             <AvatarFallback>{session?.user?.name?.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
         </button>

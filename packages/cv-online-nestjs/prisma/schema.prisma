@@ -25,6 +25,8 @@ model User {
   fullName              String?   @map("full_name")
   avatarUrl             String?   @map("avatar_url")
   phone                 String?
+  profileIsPublic       Boolean   @default(false) @map("profile_is_public")
+  profileViewCount      Int       @default(0) @map("profile_view_count")
   role                  UserRole  @default(user)
   subscriptionType      String    @default("free") @map("subscription_type")
   subscriptionExpiresAt DateTime? @map("subscription_expires_at")

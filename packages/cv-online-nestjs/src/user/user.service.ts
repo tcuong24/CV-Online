@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -37,6 +37,75 @@ export class UserService {
         avatarUrl: true,
       },
     });
+  }
+
+  async updateProfileVisibility(userId: string, profileIsPublic: boolean) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { profileIsPublic },
+      select: {
+        id: true,
+        profileIsPublic: true,
+        profileViewCount: true,
+      },
+    });
+  }
+
+  async findPublicProfile(userId: string, viewerUserId?: string) {
+    const profileOwner = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        profileIsPublic: true,
+        profileViewCount: true,
+      },
+    });
+
+    if (!profileOwner?.profileIsPublic) {
+      throw new NotFoundException('Public profile not found');
+    }
+
+    const cv = await this.prisma.cV.findFirst({
+      where: { userId, isDefault: true },
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            email: true,
+            phone: true,
+            avatarUrl: true,
+            profileIsPublic: true,
+            profileViewCount: true,
+          },
+        },
+        personalInfo: true,
+        experiences: { orderBy: { displayOrder: 'asc' } },
+        education: { orderBy: { displayOrder: 'asc' } },
+        skills: { orderBy: { displayOrder: 'asc' } },
+        languages: { orderBy: { displayOrder: 'asc' } },
+      },
+    });
+
+    if (!cv) {
+      throw new NotFoundException('Public profile not found');
+    }
+
+    if (!viewerUserId || viewerUserId !== userId) {
+      const updatedOwner = await this.prisma.user.update({
+        where: { id: userId },
+        data: { profileViewCount: { increment: 1 } },
+        select: { profileViewCount: true },
+      });
+
+      return {
+        ...cv,
+        user: {
+          ...cv.user,
+          profileViewCount: updatedOwner.profileViewCount,
+        },
+      };
+    }
+
+    return cv;
   }
 }
 

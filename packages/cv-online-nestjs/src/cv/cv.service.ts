@@ -100,6 +100,8 @@ export class CvService {
           email: true,
           phone: true,
           avatarUrl: true,
+          profileIsPublic: true,
+          profileViewCount: true,
         },
       },
       personalInfo: true,

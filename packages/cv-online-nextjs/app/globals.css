@@ -241,6 +241,44 @@
 }
 
 @layer components {
+  .dashboard-greeting { opacity: 0; animation: dashboard-up .42s ease-out forwards; }
+  .dashboard-headline span { display: block; opacity: 0; transform: translateY(26px); animation: dashboard-up .62s cubic-bezier(.22,1,.36,1) forwards; }
+  .dashboard-headline span:first-child { animation-delay: .1s; }
+  .dashboard-headline span:nth-child(2) { animation-delay: .18s; }
+  .dashboard-actions { opacity: 0; transform: translateY(10px); animation: dashboard-up .45s ease-out .34s forwards; }
+  .dashboard-create:hover, .dashboard-upload:hover { transform: translateY(-2px); }
+  .dashboard-upload { transition: transform .22s ease; }
+  .dashboard-upload svg { transition: transform .25s ease; }
+  .dashboard-upload:hover svg { transform: translateY(-2px); }
+  .dashboard-stat { opacity: 0; transform: translateY(18px); animation: dashboard-up .48s cubic-bezier(.22,1,.36,1) forwards; }
+  .dashboard-stat:nth-child(1) { animation-delay: .44s; }
+  .dashboard-stat:nth-child(2) { animation-delay: .52s; }
+  .dashboard-stat:nth-child(3) { animation-delay: .60s; }
+  .dashboard-recent__title { opacity: 0; animation: dashboard-up .45s ease-out .64s forwards; }
+  .dashboard-cv { opacity: 0; transform: translateY(26px); animation: dashboard-up .52s cubic-bezier(.22,1,.36,1) calc(.68s + var(--cv-index) * 80ms) forwards; }
+  .dashboard-cv > a, .dashboard-cv__meta { display: block; transition: transform .28s ease; }
+  .dashboard-cv:hover > a, .dashboard-cv:hover .dashboard-cv__meta { transform: translateY(-6px); }
+  .dashboard-cv__meta { display: flex; }
+  .dashboard-cv__preview { transition: border-color .28s ease, box-shadow .28s ease; }
+  .dashboard-cv:hover .dashboard-cv__preview { border-color: #9ca3af; box-shadow: 0 16px 32px rgb(0 0 0 / .1); }
+  .dashboard-cv__image { transition: transform .5s cubic-bezier(.22,1,.36,1); }
+  .dashboard-cv:hover .dashboard-cv__image { transform: scale(1.015); }
+  .dashboard-cv__action { opacity: 0; transform: translateY(12px); transition: opacity .28s ease, transform .28s cubic-bezier(.22,1,.36,1); }
+  .dashboard-cv:hover .dashboard-cv__action { opacity: 1; transform: translateY(0); }
+  .dashboard-cv__title::after { display: block; width: 0; height: 1px; margin-top: 4px; content: ""; background: currentColor; transition: width .35s cubic-bezier(.22,1,.36,1); }
+  .dashboard-cv:hover .dashboard-cv__title::after { width: 100%; }
+  .dashboard-pdf-badge { opacity: 0; transform: scale(.82); animation: dashboard-badge .38s cubic-bezier(.2,1.4,.4,1) calc(.83s + var(--cv-index) * 80ms) forwards; }
+}
+
+@keyframes dashboard-up { to { opacity: 1; transform: translateY(0); } }
+@keyframes dashboard-badge { to { opacity: 1; transform: scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-greeting, .dashboard-headline span, .dashboard-actions, .dashboard-stat, .dashboard-recent__title, .dashboard-cv, .dashboard-pdf-badge { opacity: 1; transform: none; animation: none; }
+  .dashboard-cv, .dashboard-cv__image, .dashboard-cv__action, .dashboard-create, .dashboard-upload { transition: none; }
+}
+
+@layer components {
   .template-library-heading { animation: library-heading-in .7s cubic-bezier(.22,1,.36,1) both; }
   .template-library-heading p { animation: library-heading-in .7s cubic-bezier(.22,1,.36,1) .12s both; }
   .template-filter { position: relative; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 999px; background: white; padding: 7px 16px; font-size: .8rem; transition: color .22s ease, background .22s ease, border-color .22s ease, transform .22s ease; animation: library-filter-in .45s cubic-bezier(.22,1,.36,1) both; }
