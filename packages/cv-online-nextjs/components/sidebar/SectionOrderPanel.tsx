@@ -33,11 +33,11 @@ export function SectionOrderPanel() {
   const removeCustomSection = useCvEditorStore(s => s.removeCustomSection);
 
   const isSidebarLayout = layoutType === 'sidebar-left' || layoutType === 'sidebar-right' || layoutType === 'two-column';
-  console.log("abc",isSidebarLayout);
   
   // In-flight drag refs
   const dragItem   = useRef<string | null>(null);
   const dragTarget = useRef<string | null>(null);
+  const dragPlacement = useRef<'before' | 'after'>('before');
   // Track which drop zone is currently highlighted
   const [dropZoneActive, setDropZoneActive] = useState<'hidden' | 'side' | 'main' | null>(null);
 
@@ -100,11 +100,23 @@ export function SectionOrderPanel() {
     setDragOver(key);
   };
 
-  const onDragOver = (e: React.DragEvent) => e.preventDefault();
+  const onCardDragOver = (e: React.DragEvent, key: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+
+    // Each visual CV column has a vertical section list. Crossing between
+    // columns is handled by the destination zone; position inside that zone
+    // is determined by the pointer's top/bottom half over a card.
+    dragPlacement.current = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
+    dragTarget.current = key;
+    setDragOver(key);
+  };
 
   const handleReset = () => {
     dragItem.current   = null;
     dragTarget.current = null;
+    dragPlacement.current = 'before';
     setDropZoneActive(null);
     resetDrag();
   };
@@ -114,6 +126,7 @@ export function SectionOrderPanel() {
   const onDropToGrid = (zone: 'main' | 'side') => {
     const from = dragItem.current;
     const to   = dragTarget.current;
+    const placement = dragPlacement.current;
 
     if (!from) { handleReset(); return; }
 
@@ -131,18 +144,20 @@ export function SectionOrderPanel() {
     if (zone === 'main') {
       // Fix #1: moveSectionToZone FIRST so from is in order before reorderSection
       if (fromInSide) {
-        moveSectionToZone(from, false);
+        const targetIndex = to ? mainVisible.indexOf(to) : mainVisible.length;
+        moveSectionToZone(from, false, Math.max(0, targetIndex + (placement === 'after' ? 1 : 0)));
       }
-      if (to && to !== from) {
-        reorderSection(from, to);
+      if (!fromInSide && to && to !== from) {
+        reorderSection(from, to, placement);
       }
     } else {
       // zone === 'side'
       if (fromInMain) {
-        moveSectionToZone(from, true);
+        const targetIndex = to ? sideVisible.indexOf(to) : sideVisible.length;
+        moveSectionToZone(from, true, Math.max(0, targetIndex + (placement === 'after' ? 1 : 0)));
       }
-      if (to && to !== from && sideKeys.includes(to)) {
-        reorderSideKey(from, to);
+      if (!fromInMain && to && to !== from && sideKeys.includes(to)) {
+        reorderSideKey(from, to, placement);
       }
     }
 
@@ -162,7 +177,7 @@ export function SectionOrderPanel() {
   // ── Render helpers ────────────────────────────────────────────────────────────
   const renderGrid = (keys: string[], zone: 'main' | 'side') => (
     <div
-      className="sc-grid"
+      className="sc-grid sc-grid--single"
       // Fix #3: grid container itself can receive drops from hidden chips
       onDragOver={e => { e.preventDefault(); setDropZoneActive(zone); }}
       onDrop={() => onDropToGrid(zone)}
@@ -181,7 +196,7 @@ export function SectionOrderPanel() {
             onDelete={() => removeCustomSection(key)}
             onDragStart={e => onDragStart(e, key)}
             onDragEnter={e => onDragEnter(e, key)}
-            onDragOver={onDragOver}
+            onDragOver={e => onCardDragOver(e, key)}
             onDrop={() => onDropToGrid(zone)}
             onDragEnd={handleReset}
           />
@@ -190,70 +205,38 @@ export function SectionOrderPanel() {
     </div>
   );
 
+  const renderZone = (zone: 'main' | 'side', title: string, keys: string[]) => (
+    <section className={`sc-layout-column sc-layout-column--${zone}`}>
+      <div className="sc-zone-label">{title}</div>
+      <div
+        className={`sc-zone${dropZoneActive === zone ? ' zone-active' : ''}`}
+        onDragOver={e => { e.preventDefault(); setDropZoneActive(zone); }}
+        onDragLeave={e => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropZoneActive(null);
+        }}
+        onDrop={() => onDropToGrid(zone)}
+      >
+        {keys.length > 0 ? renderGrid(keys, zone) : <div className="sc-zone-empty">Kéo mục vào đây</div>}
+      </div>
+    </section>
+  );
+
   return (
     <div className="sc-panel flex flex-col h-full">
       {isSidebarLayout ? (
-        <>
+        <div className={`sc-layout-grid sc-layout-grid--${layoutType}`}>
           {layoutType === 'sidebar-right' ? (
             <>
-              {/* ── Main zone ── */}
-              <div className="sc-zone-label">Cột trái (main CV)</div>
-              <div
-                className={`sc-zone${dropZoneActive === 'main' ? ' zone-active' : ''}`}
-                onDragOver={e => { e.preventDefault(); setDropZoneActive('main'); }}
-                onDragLeave={() => setDropZoneActive(null)}
-                onDrop={() => onDropToGrid('main')}
-              >
-                {renderGrid(mainVisible, 'main')}
-              </div>
-
-              {/* ── Sidebar zone ── */}
-              <div className="sc-zone-label" style={{ marginTop: 12 }}>Cột phải (sidebar CV)</div>
-              <div
-                className={`sc-zone${dropZoneActive === 'side' ? ' zone-active' : ''}`}
-                onDragOver={e => { e.preventDefault(); setDropZoneActive('side'); }}
-                onDragLeave={() => setDropZoneActive(null)}
-                onDrop={() => onDropToGrid('side')}
-              >
-                {sideVisible.length > 0
-                  ? renderGrid(sideVisible, 'side')
-                  : (
-                    <div className="sc-zone-empty">Kéo mục vào đây</div>
-                  )
-                }
-              </div>
+              {renderZone('main', 'Cột trái (Main CV)', mainVisible)}
+              {renderZone('side', 'Cột phải (Sidebar CV)', sideVisible)}
             </>
           ) : (
             <>
-              {/* ── Sidebar zone ── */}
-              <div className="sc-zone-label">Cột trái (sidebar CV)</div>
-              <div
-                className={`sc-zone${dropZoneActive === 'side' ? ' zone-active' : ''}`}
-                onDragOver={e => { e.preventDefault(); setDropZoneActive('side'); }}
-                onDragLeave={() => setDropZoneActive(null)}
-                onDrop={() => onDropToGrid('side')}
-              >
-                {sideVisible.length > 0
-                  ? renderGrid(sideVisible, 'side')
-                  : (
-                    <div className="sc-zone-empty">Kéo mục vào đây</div>
-                  )
-                }
-              </div>
-
-              {/* ── Main zone ── */}
-              <div className="sc-zone-label" style={{ marginTop: 12 }}>Cột phải (main CV)</div>
-              <div
-                className={`sc-zone${dropZoneActive === 'main' ? ' zone-active' : ''}`}
-                onDragOver={e => { e.preventDefault(); setDropZoneActive('main'); }}
-                onDragLeave={() => setDropZoneActive(null)}
-                onDrop={() => onDropToGrid('main')}
-              >
-                {renderGrid(mainVisible, 'main')}
-              </div>
+              {renderZone('side', 'Cột trái (Sidebar CV)', sideVisible)}
+              {renderZone('main', 'Cột phải (Main CV)', mainVisible)}
             </>
           )}
-        </>
+        </div>
       ) : (
         /* ── Single column: one flat grid ── */
         <div
@@ -722,4 +705,3 @@ export function SectionOrderPanel() {
     </div>
   );
 }
-

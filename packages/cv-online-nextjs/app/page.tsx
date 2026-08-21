@@ -1,6 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/layout/header";
+import { EditorDemo } from "@/components/home/EditorDemo";
+import { FeaturedTemplates } from "@/components/home/FeaturedTemplates";
+import { HomeStorySections } from "@/components/home/HomeStorySections";
 
 interface Template {
   id: string;
@@ -9,12 +11,6 @@ interface Template {
   category: string;
   layoutType: string;
 }
-
-const features = [
-  ["Tạo CV trực quan", "Chỉnh sửa nội dung và theo dõi ngay kết quả trên mẫu CV bạn đã chọn.", "/templates/modern-blue.png"],
-  ["Mẫu CV chuyên nghiệp", "Lựa chọn bố cục phù hợp với ngành nghề, kinh nghiệm và phong cách của bạn.", "/templates/creative-pro.png"],
-  ["Sẵn sàng xuất bản", "Hoàn thiện hồ sơ với bố cục rõ ràng và tải xuống để gửi đến nhà tuyển dụng.", "/templates/ats-optimized.png"],
-] as const;
 
 async function getFeaturedTemplates(): Promise<Template[]> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9999/api";
@@ -40,78 +36,28 @@ export default async function Home() {
     <div className="min-h-screen bg-background font-body text-foreground antialiased">
       <Header />
       <main className="pt-32">
-        <section className="mx-auto max-w-5xl px-6 py-24 text-center md:px-12 md:py-48">
-          <h1 className="mb-8 font-headline text-5xl font-black leading-tight tracking-tighter md:text-8xl">
+        <section className="mx-auto grid max-w-[1440px] items-center gap-16 px-6 pb-20 md:px-12 md:pb-32 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
+          <div className="text-center lg:text-left">
+          <p className="mb-6 font-label text-[0.65rem] font-bold uppercase tracking-[0.28em] text-muted-foreground">CV chuyên nghiệp, theo cách của bạn</p>
+          <h1 className="mb-8 font-headline text-5xl font-black leading-[1.05] tracking-tighter md:text-7xl">
             Sự nghiệp của bạn,<br />được viết bằng sự tinh tế.
           </h1>
-          <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Tạo một bản CV chuyên nghiệp, rõ ràng và phản ánh đúng năng lực của bạn. Bắt đầu nhanh chóng với những mẫu được thiết kế chỉn chu.
+          <p className="mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground lg:max-w-xl">
+            Tạo một bản CV chuyên nghiệp, rõ ràng và phản ánh đúng năng lực của bạn. Chỉnh sửa trực quan, sắp xếp linh hoạt và thấy kết quả ngay tức thì.
           </p>
-          <div className="flex flex-col items-center justify-center gap-8 md:flex-row">
+          <div className="flex flex-col items-center gap-8 sm:flex-row sm:justify-center lg:justify-start">
             <Link href="/templates" className={`w-full px-12 text-center md:w-auto ${buttonClass}`}>Tạo CV của bạn</Link>
             <Link href="/templates" className="border-b border-foreground pb-1 font-label text-[0.75rem] uppercase tracking-widest hover:border-transparent">Xem các mẫu CV</Link>
           </div>
-          <hr className="mt-24 border-foreground/10" />
-        </section>
-
-        <section className="mx-auto max-w-[1440px] px-6 py-24 md:px-12">
-          <div className="mb-16">
-            <span className="mb-4 block h-px w-12 bg-foreground" />
-            <h2 className="font-headline text-3xl font-black italic tracking-tight md:text-5xl">Mẫu CV nổi bật</h2>
           </div>
-          {templates.length ? (
-            <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
-              {templates.map((template) => (
-                <article key={template.id} className="group">
-                  <Link href="/templates">
-                    <div className="relative mb-6 aspect-[3/4] overflow-hidden border border-border bg-card p-1">
-                      <Image alt={`Mẫu CV ${template.name}`} className="object-cover grayscale transition-all group-hover:grayscale-0" src={template.thumbnailUrl || "/templates/minimal-bw-thumb.png"} fill sizes="(min-width: 768px) 33vw, 100vw" />
-                    </div>
-                    <h3 className="mb-2 font-headline text-xl">{template.name}</h3>
-                    <p className="font-label text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">{template.category} • {template.layoutType}</p>
-                  </Link>
-                </article>
-              ))}
-            </div>
-          ) : <div className="py-12 text-center text-muted-foreground">Chưa có mẫu CV nào được công bố.</div>}
+          <EditorDemo />
         </section>
 
-        <section className="bg-muted/30 px-6 py-24 md:px-12">
-          <div className="mx-auto max-w-[1440px] space-y-32">
-            {features.map(([title, description, image], index) => (
-              <article key={title} className="grid grid-cols-1 items-center gap-16 md:grid-cols-2">
-                <div className={`border-l border-foreground pl-8 ${index % 2 ? "md:order-2" : ""}`}>
-                  <h3 className="mb-6 font-headline text-3xl">{title}</h3>
-                  <p className="leading-relaxed text-muted-foreground">{description}</p>
-                </div>
-                <div className={`relative aspect-video overflow-hidden border border-border bg-card ${index % 2 ? "md:order-1" : ""}`}>
-                  <Image src={image} alt={title} className="object-cover object-top grayscale" fill sizes="(min-width: 768px) 50vw, 100vw" />
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+        <div className="mx-auto max-w-[1440px] px-6 md:px-12"><hr className="border-foreground/10" /></div>
 
-        <section className="mx-auto max-w-[1440px] border-b border-foreground/10 px-6 py-32 md:px-12">
-          <div className="grid grid-cols-1 md:grid-cols-3">
-            {[
-              ["01", "Chọn mẫu", "Khám phá thư viện và chọn mẫu phù hợp với mục tiêu nghề nghiệp."],
-              ["02", "Nhập nội dung", "Điền thông tin, kinh nghiệm và kỹ năng trong giao diện trực quan."],
-              ["03", "Hoàn thiện CV", "Kiểm tra bố cục, hoàn thiện hồ sơ và tải CV của bạn."],
-            ].map(([number, title, description], index) => (
-              <article key={number} className={`p-12 ${index < 2 ? "border-b border-foreground/20 md:border-b-0 md:border-r" : ""}`}>
-                <span className="mb-8 block font-headline text-6xl font-black opacity-20">{number}</span>
-                <h3 className="mb-4 font-headline text-2xl">{title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+        <FeaturedTemplates templates={templates} />
 
-        <section className="bg-foreground px-6 py-32 text-center text-background md:px-12">
-          <h2 className="mb-12 font-headline text-4xl font-black tracking-tight md:text-6xl">Sẵn sàng tạo CV của riêng bạn?</h2>
-          <Link href="/templates" className="inline-block border border-background px-16 py-4 font-label text-[0.8rem] uppercase tracking-widest hover:bg-background hover:text-foreground">Bắt đầu tạo CV</Link>
-        </section>
+        <HomeStorySections />
       </main>
 
       <footer className="w-full border-t border-border bg-background">

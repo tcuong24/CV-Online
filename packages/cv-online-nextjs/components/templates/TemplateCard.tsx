@@ -12,6 +12,7 @@ interface TemplateCardProps {
   accentColor?: string;
   isEditable?: boolean;
   handleSelectTemplate?: () => void;
+  animationIndex?: number;
 }
 
 export function TemplateCard({
@@ -22,6 +23,7 @@ export function TemplateCard({
   alt,
   isEditable = false,
   handleSelectTemplate,
+  animationIndex = 0,
 }: TemplateCardProps) {
   const router = useRouter();
 
@@ -33,18 +35,18 @@ export function TemplateCard({
     }
   };
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
+    <article className="template-library-card group relative flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm" style={{ "--template-index": animationIndex, viewTransitionName: `template-${id}` } as React.CSSProperties}>
       <div className="aspect-3/4 overflow-hidden">
         <img
-          className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+          className="h-full w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.02]"
           alt={alt}
           src={image}
         />
       </div>
 
-      <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+      <div className="absolute inset-x-0 bottom-24 flex items-center justify-center gap-2 opacity-0 translate-y-2 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
         <Button variant="secondary" size="default" onClick={handlePreview}>
           Xem trước
         </Button>
@@ -57,6 +59,6 @@ export function TemplateCard({
         <h3 className="font-semibold tracking-tight text-base">{title}</h3>
         <p className="text-sm text-muted-foreground mt-1">{description}</p>
       </div>
-    </div>
+    </article>
   );
 }

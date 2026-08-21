@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
@@ -39,18 +40,36 @@ export function TemplatesGrid() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTag, setActiveTag] = useState<string>("All");
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const filtersRef = useRef<HTMLDivElement>(null);
 
   const allTags = Array.from(
     new Set(
       templates.flatMap((t) => t.tags || [])
     )
   );
+  const preferredTags = ["Chuyên nghiệp", "ATS Friendly", "Tối giản", "Sáng tạo", "Hiện đại", "Lập trình viên"];
+  const primaryTags = preferredTags.filter(tag => allTags.includes(tag));
+  const extraTags = allTags.filter(tag => !primaryTags.includes(tag));
   const filteredTemplates =
     activeTag === "All"
       ? templates
       : templates.filter((t) =>
         t.tags?.includes(activeTag)
       );
+
+  const selectTag = (tag: string) => {
+    const update = () => setActiveTag(tag);
+    const documentWithTransitions = document as Document & {
+      startViewTransition?: (callback: () => void) => void;
+    };
+    if (documentWithTransitions.startViewTransition) {
+      documentWithTransitions.startViewTransition(update);
+    } else {
+      update();
+    }
+    setShowMoreFilters(false);
+  };
   const handleSelectTemplate = (template: Template) => {
     if (status === "loading") return;
 
@@ -169,33 +188,48 @@ export function TemplatesGrid() {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div ref={filtersRef} className="template-filters relative mb-8 flex flex-wrap gap-2">
         <button
-          onClick={() => setActiveTag("All")}
-          className={`px-4 py-1 rounded-full text-sm border ${activeTag === "All"
-            ? "bg-muted"
-            : "bg-white"
-            }`}
+          onClick={() => selectTag("All")}
+          className={`template-filter ${activeTag === "All" ? "is-active" : ""}`}
         >
-          All
+          Tất cả
         </button>
 
-        {allTags.map((tag) => (
+        {primaryTags.map((tag) => (
           <button
             key={tag}
-            onClick={() => setActiveTag(tag)}
-            className={`px-4 py-1 rounded-full text-sm border ${activeTag === tag
-              ? "bg-muted"
-              : "bg-white"
-              }`}
+            onClick={() => selectTag(tag)}
+            className={`template-filter ${activeTag === tag ? "is-active" : ""}`}
           >
             {tag}
           </button>
         ))}
+        {extraTags.length > 0 && (
+          <div className="relative">
+            <button
+              type="button"
+              aria-expanded={showMoreFilters}
+              onClick={() => setShowMoreFilters(value => !value)}
+              className={`template-filter gap-2 ${extraTags.includes(activeTag) ? "is-active" : ""}`}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              {extraTags.includes(activeTag) ? activeTag : "Thêm bộ lọc"}
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showMoreFilters ? "rotate-180" : ""}`} />
+            </button>
+            {showMoreFilters && (
+              <div className="template-filter-menu">
+                {extraTags.map(tag => (
+                  <button key={tag} type="button" onClick={() => selectTag(tag)} className={activeTag === tag ? "is-active" : ""}>{tag}</button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div key={activeTag} className="template-results grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 
-        {filteredTemplates.map((template) => {
+        {filteredTemplates.map((template, index) => {
           const primaryColor =
             ((template.designConfig as Record<string, unknown> | undefined)
               ?.['colors'] as Record<string, string> | undefined)?.['primary'] ?? "#3b82f6";
@@ -212,6 +246,7 @@ export function TemplatesGrid() {
               isPremium={template.isPremium}
               accentColor={primaryColor}
               handleSelectTemplate={() => handleSelectTemplate(template)}
+              animationIndex={index}
             />
           );
         })}

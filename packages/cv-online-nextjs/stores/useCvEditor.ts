@@ -163,8 +163,8 @@ interface CvEditorState {
   setLayoutType: (layout: LayoutType) => void;
   setDragging: (key: string | null) => void;
   setDragOver: (key: string | null) => void;
-  reorderSection: (fromKey: string, toKey: string) => void;
-  reorderSideKey: (fromKey: string, toKey: string) => void;
+  reorderSection: (fromKey: string, toKey: string, placement?: 'before' | 'after') => void;
+  reorderSideKey: (fromKey: string, toKey: string, placement?: 'before' | 'after') => void;
   moveSectionToZone: (key: string, toSidebar: boolean, targetIndex?: number) => void;
   resetDrag: () => void;
   resetCV: () => void;
@@ -1005,27 +1005,29 @@ export const useCvEditorStore = create<CvEditorState>()(
 
         setDragOver: (key) => set({ dragOverKey: key }),
 
-        reorderSection: (fromKey, toKey) =>
+        reorderSection: (fromKey, toKey, placement = 'before') =>
           set(
             produce((s: CvEditorState) => {
               const from = s.order.indexOf(fromKey);
               const to = s.order.indexOf(toKey);
               if (from === -1 || to === -1 || from === to) return;
               s.order.splice(from, 1);
-              s.order.splice(to, 0, fromKey);
+              const target = s.order.indexOf(toKey);
+              s.order.splice(target + (placement === 'after' ? 1 : 0), 0, fromKey);
               s.isDirty = true;
             })
           ),
 
-        reorderSideKey: (fromKey, toKey) =>
+        reorderSideKey: (fromKey, toKey, placement = 'before') =>
           set(
             produce((s: CvEditorState) => {
               const from = s.sideKeys.indexOf(fromKey);
               const to = s.sideKeys.indexOf(toKey);
               if (from === -1 || to === -1 || from === to) return;
               const [moved] = s.sideKeys.splice(from, 1);
-              s.sideKeys.splice(to, 0, moved);
-              // local UI only — không đánh dấu isDirty
+              const target = s.sideKeys.indexOf(toKey);
+              s.sideKeys.splice(target + (placement === 'after' ? 1 : 0), 0, moved);
+              s.isDirty = true;
             })
           ),
 
@@ -1049,7 +1051,7 @@ export const useCvEditorStore = create<CvEditorState>()(
                   }
                 }
               }
-              // local UI only — không đánh dấu isDirty
+              s.isDirty = true;
             })
           ),
 

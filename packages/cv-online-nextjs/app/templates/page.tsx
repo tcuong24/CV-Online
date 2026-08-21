@@ -11,7 +11,7 @@ export default function TemplatesPage() {
         <div className="container max-w-7xl py-10">
           <div className="flex flex-col md:flex-row gap-8">
             <div className="flex-1">
-              <div className="mb-6">
+              <div className="template-library-heading mb-8">
                 <h1 className="text-3xl font-bold tracking-tight md:text-4xl font-headline">
                   Khám phá thư viện mẫu CV
                 </h1>

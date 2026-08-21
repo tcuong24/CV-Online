@@ -152,11 +152,18 @@ ${GFONTS}
 
 /* ── Section Order Panel (2-col grid) ── */
 .sc-panel { display: flex; flex-direction: column; gap: 4px; }
+.sc-layout-grid { display: grid; align-items: stretch; gap: 8px; }
+.sc-layout-grid--sidebar-left { grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr); }
+.sc-layout-grid--sidebar-right { grid-template-columns: minmax(0, 0.58fr) minmax(0, 0.42fr); }
+.sc-layout-grid--two-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sc-layout-column { display: flex; min-width: 0; flex-direction: column; }
+.sc-layout-column .sc-zone { flex: 1; }
 .sc-zone-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--subtle); padding: 6px 2px 2px; }
 .sc-zone { border: 1.5px dashed transparent; border-radius: 10px; padding: 4px; transition: border-color 0.15s, background 0.15s; }
 .sc-zone.zone-active { border-color: var(--accent); background: #f0fdf9; }
 .sc-zone-empty { text-align: center; font-size: 11px; color: var(--subtle); padding: 16px; }
-.sc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sc-grid { display: grid; gap: 6px; }
+.sc-grid--single { grid-template-columns: minmax(0, 1fr); }
 
 /* Card in grid */
 .sc-card { display: flex; align-items: center; gap: 6px; padding: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: grab; user-select: none; transition: box-shadow 0.15s, border-color 0.15s, opacity 0.15s; position: relative; }
