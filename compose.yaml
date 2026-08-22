@@ -55,6 +55,12 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:${BACKEND_PORT:-9999}:9999"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9999/api"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     restart: unless-stopped
 
   frontend:
