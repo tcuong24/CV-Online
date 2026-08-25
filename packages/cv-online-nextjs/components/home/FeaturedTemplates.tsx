@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import api from "@/lib/axios";
 
 interface FeaturedTemplate {
   id: string;
@@ -12,9 +13,33 @@ interface FeaturedTemplate {
   layoutType: string;
 }
 
-export function FeaturedTemplates({ templates }: { templates: FeaturedTemplate[] }) {
+export function FeaturedTemplates() {
   const sectionRef = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
+  const [templates, setTemplates] = useState<FeaturedTemplate[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    api
+      .get<FeaturedTemplate[] | { items: FeaturedTemplate[] }>("/templates")
+      .then(({ data }) => {
+        if (cancelled) return;
+        const items = Array.isArray(data) ? data : data.items;
+        setTemplates(items.slice(0, 3));
+      })
+      .catch((error) => {
+        console.error("Không thể tải các mẫu CV nổi bật:", error);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -39,7 +64,9 @@ export function FeaturedTemplates({ templates }: { templates: FeaturedTemplate[]
         <h2 className="font-headline text-3xl font-black italic tracking-tight md:text-5xl">Mẫu CV nổi bật</h2>
       </div>
 
-      {templates.length ? (
+      {loading ? (
+        <div className="py-12 text-center text-muted-foreground">Đang tải mẫu CV...</div>
+      ) : templates.length ? (
         <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
           {templates.map((template, index) => (
             <article key={template.id} className="featured-card group" style={{ "--card-index": index } as React.CSSProperties}>

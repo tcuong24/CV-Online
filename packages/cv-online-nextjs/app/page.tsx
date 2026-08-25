@@ -4,36 +4,7 @@ import { EditorDemo } from "@/components/home/EditorDemo";
 import { FeaturedTemplates } from "@/components/home/FeaturedTemplates";
 import { HomeStorySections } from "@/components/home/HomeStorySections";
 
-interface Template {
-  id: string;
-  name: string;
-  thumbnailUrl?: string | null;
-  category: string;
-  layoutType: string;
-}
-
-async function getFeaturedTemplates(): Promise<Template[]> {
-  const apiUrl =
-    process.env.NEST_API_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:9999/api";
-  try {
-    const response = await fetch(
-      `${apiUrl}/templates?page=1&limit=3&sortBy=popularityScore&sortOrder=desc`,
-      { next: { revalidate: 60 } },
-    );
-    if (!response.ok)
-      throw new Error(`Templates API returned ${response.status}`);
-    const data = (await response.json()) as { items: Template[] } | Template[];
-    return Array.isArray(data) ? data.slice(0, 3) : data.items;
-  } catch (error) {
-    console.error("Không thể tải các mẫu CV nổi bật:", error);
-    return [];
-  }
-}
-
-export default async function Home() {
-  const templates = await getFeaturedTemplates();
+export default function Home() {
   const buttonClass =
     "border border-foreground px-8 py-3 font-label uppercase tracking-widest text-[0.75rem] transition-colors hover:bg-foreground hover:text-background";
 
@@ -78,7 +49,7 @@ export default async function Home() {
           <hr className="border-foreground/10" />
         </div>
 
-        <FeaturedTemplates templates={templates} />
+        <FeaturedTemplates />
 
         <HomeStorySections />
       </main>
