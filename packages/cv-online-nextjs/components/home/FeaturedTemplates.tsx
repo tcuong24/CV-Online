@@ -21,7 +21,9 @@ export function FeaturedTemplates() {
   useEffect(() => {
     let cancelled = false;
 
-    fetch("/api/templates/featured")
+    fetch(
+      "/api/templates?page=1&limit=3&sortBy=popularityScore&sortOrder=desc",
+    )
       .then(async (response) => {
         if (!response.ok) {
           throw new Error(`Templates API returned ${response.status}`);
