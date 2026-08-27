@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import api from "@/lib/axios";
 
 interface FeaturedTemplate {
   id: string;
@@ -22,9 +21,17 @@ export function FeaturedTemplates() {
   useEffect(() => {
     let cancelled = false;
 
-    api
-      .get<FeaturedTemplate[] | { items: FeaturedTemplate[] }>("/templates")
-      .then(({ data }) => {
+    fetch("/api/templates/featured")
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Templates API returned ${response.status}`);
+        }
+
+        return response.json() as Promise<
+          FeaturedTemplate[] | { items: FeaturedTemplate[] }
+        >;
+      })
+      .then((data) => {
         if (cancelled) return;
         const items = Array.isArray(data) ? data : data.items;
         setTemplates(items.slice(0, 3));
