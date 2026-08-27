@@ -34,6 +34,8 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
 
       - name: Build image
         uses: docker/build-push-action@v6
@@ -42,5 +44,3 @@ jobs:
           file: ${{ matrix.dockerfile }}
           push: false
           tags: cv-online-${{ matrix.service }}:ci
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
