@@ -56,7 +56,7 @@ services:
     ports:
       - "127.0.0.1:${BACKEND_PORT:-9999}:9999"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:9999/api"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:9999/api/templates?page=1&limit=1"]
       interval: 10s
       timeout: 5s
       retries: 12
