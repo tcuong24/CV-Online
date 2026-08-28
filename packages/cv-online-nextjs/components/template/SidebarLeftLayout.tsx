@@ -61,11 +61,6 @@ export function SidebarLeftPage({
   scale: number;
   style: StyleConfig;
 }) {
-  const initials = (data.personal.name || '??')
-    .split(' ')
-    .slice(-2)
-    .map((w: string) => w[0])
-    .join('');
   const avatarMargin =  '0 auto 30px' ;
   const titleAlign = ctx.sectionLayout.global?.headerAlign || 'left';
   const borderStyle = ctx.sectionLayout.global?.headerBorder || 'bottom';
@@ -133,15 +128,18 @@ export function SidebarLeftPage({
                 <div
                   style={{
                     width: '100%', height: '100%', borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.2)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 24, fontWeight: 700,
+                    background: 'linear-gradient(145deg, rgba(255,255,255,0.24), rgba(255,255,255,0.08))',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 7, color: 'rgba(255,255,255,0.88)',
                     border: '3px solid rgba(255,255,255,0.3)',
                     transition: 'transform 0.2s',
                     transform: isAvatarHovered ? 'scale(1.05)' : 'scale(1)',
                   }}
                 >
-                  {initials}
+                  <User size={44} strokeWidth={1.35} />
+                  <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    Thêm ảnh
+                  </span>
                 </div>
               )}
 

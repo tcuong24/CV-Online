@@ -62,6 +62,7 @@ interface StylePanelProps {
   onSave?: (opts?: { captureThumbnail?: boolean }) => Promise<string | null>;
   isSaving?: boolean;
   isDirty?: boolean;
+  requiresLoginToSave?: boolean;
   lastSavedAt?: number | null;
   onBackClick?: () => void;
 }
@@ -76,6 +77,7 @@ export function StylePanel({
   onSave,
   isSaving,
   isDirty,
+  requiresLoginToSave = false,
   lastSavedAt,
   onBackClick,
 }: StylePanelProps) {
@@ -418,15 +420,15 @@ export function StylePanel({
 
         <Button
           onClick={() => onSave?.({ captureThumbnail: true })}
-          disabled={isSaving || !isDirty}
-          className={`h-8 px-4 rounded-md font-bold text-[12px] gap-1.5 transition-all ${!isDirty ? "bg-transparent text-slate-300" : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"}`}
+          disabled={isSaving || (!isDirty && !requiresLoginToSave)}
+          className={`h-8 px-4 rounded-md font-bold text-[12px] gap-1.5 transition-all ${!isDirty && !requiresLoginToSave ? "bg-transparent text-slate-300" : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"}`}
         >
           {isSaving ? (
             <Loader2 size={14} className="animate-spin" />
           ) : (
             <Save size={16} />
           )}
-          {isSaving ? "Lưu..." : !isDirty ? "Đã lưu" : "Lưu CV"}
+          {isSaving ? "Lưu..." : !isDirty && !requiresLoginToSave ? "Đã lưu" : "Lưu CV"}
         </Button>
       </div>
 

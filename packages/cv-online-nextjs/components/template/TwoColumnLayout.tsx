@@ -24,6 +24,7 @@ import {
   StylePicker,
 } from './CVTemplate';
 import { FaFacebook, FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
+import { User } from 'lucide-react';
 
 function AddLinkDropdown({ data, ctx, fs, textColor }: {
   data: CvData; ctx: RenderCtx; fs: number; textColor: { body: string; muted: string; heading: string };
@@ -164,11 +165,6 @@ export function TwoColumnPage({
   const pageBg = style?.colors?.background.page || '#ffffff';
   const sidebarPadding = style?.spacing?.page.sidebarPadding || '28px 18px';
   const mainPadding = style?.spacing?.page.mainPadding || '28px 26px';
-  const initials = (data.personal.name || '??')
-    .split(' ')
-    .slice(-2)
-    .map((w: string) => w[0])
-    .join('');
   const avatarMargin = align === 'center' ? '0 auto 14px' : '0 0 14px';
   const titleAlign = ctx.sectionLayout.global?.headerAlign || 'left';
   const borderStyle = ctx.sectionLayout.global?.headerBorder || 'bottom';
@@ -229,19 +225,23 @@ export function TwoColumnPage({
                   style={{
                     width: '100%',
                     height: '100%',
-                    background: 'rgba(255,255,255,0.2)',
+                    background: 'linear-gradient(145deg, rgba(255,255,255,0.24), rgba(255,255,255,0.08))',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 24,
-                    fontWeight: 700,
+                    gap: 7,
+                    color: 'rgba(255,255,255,0.88)',
                     border: '3px solid rgba(255,255,255,0.3)',
                     alignSelf: 'center',
                     transform: isAvatarHovered ? 'scale(1.05)' : 'scale(1)',
                     transition: 'transform 0.3s ease',
                   }}
                 >
-                  {initials}
+                  <User size={42} strokeWidth={1.35} />
+                  <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    Thêm ảnh
+                  </span>
                 </div>
               )}
               <div

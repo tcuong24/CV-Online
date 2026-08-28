@@ -28,9 +28,10 @@ const AI_PANEL_DEFAULT = 360;
 
 interface CvEditorWorkspaceProps {
   onSave?: (opts?: { captureThumbnail?: boolean }) => Promise<string | null>;
+  requiresLoginToSave?: boolean;
 }
 
-export function CvEditorWorkspace({ onSave }: CvEditorWorkspaceProps) {
+export function CvEditorWorkspace({ onSave, requiresLoginToSave = false }: CvEditorWorkspaceProps) {
   // ── Store state ──────────────────────────────────────────────────────────────
   const data = useCvEditorStore((s) => s.data);
   const order = useCvEditorStore((s) => s.order);
@@ -182,6 +183,7 @@ export function CvEditorWorkspace({ onSave }: CvEditorWorkspaceProps) {
             onSave={handleSave}
             isSaving={isSaving}
             isDirty={isDirty}
+            requiresLoginToSave={requiresLoginToSave}
             lastSavedAt={lastSavedAt}
             onBackClick={() => {
               if (isDirty) {

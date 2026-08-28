@@ -72,11 +72,6 @@ export function TemplatesGrid() {
   };
   const handleSelectTemplate = (template: Template) => {
     if (status === "loading") return;
-
-    if (!session?.user) {
-      router.push("/auth?type=login&callbackUrl=%2Ftemplates&reason=create-cv");
-      return;
-    }
     const { order, sideKeys: _sideKeys } = parseSectionsConfig(template.sectionsConfig);
     const availableSections = (template.sectionsConfig?.available_sections ?? []) as Array<{
       id: string;

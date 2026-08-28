@@ -158,18 +158,41 @@ export function SidebarRightPage({
               onClick={handleAvatarClick}
               title="Nhấp để tải ảnh lên"
             >
-              <Image
-                src={data.personal.avatarUrl || "/images/avatar.png"}
-                alt="Avatar"
-                fill
-                sizes="173px"
-                style={{
-                  objectFit: 'cover',
-                  transform: isAvatarHovered ? 'scale(1.05)' : 'scale(1)',
-                  transition: 'transform 0.3s ease',
-                }}
-                loading='eager'
-              />
+              {data.personal.avatarUrl ? (
+                <Image
+                  src={data.personal.avatarUrl}
+                  alt={data.personal.name || 'Avatar'}
+                  fill
+                  sizes="173px"
+                  style={{
+                    objectFit: 'cover',
+                    transform: isAvatarHovered ? 'scale(1.05)' : 'scale(1)',
+                    transition: 'transform 0.3s ease',
+                  }}
+                  loading="eager"
+                />
+              ) : (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    background: `linear-gradient(145deg, ${theme.primary}18, ${theme.primary}08)`,
+                    color: theme.primary,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    transform: isAvatarHovered ? 'scale(1.05)' : 'scale(1)',
+                    transition: 'transform 0.3s ease',
+                  }}
+                >
+                  <User size={48} strokeWidth={1.3} />
+                  <span style={{ fontSize: fs * 0.65, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    Thêm ảnh
+                  </span>
+                </div>
+              )}
               <div
                 style={{
                   position: 'absolute',
