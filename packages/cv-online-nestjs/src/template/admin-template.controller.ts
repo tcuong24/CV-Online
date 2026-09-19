@@ -28,8 +28,10 @@ export class AdminTemplateController {
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('search') search?: string,
     @Query('category') category?: string,
-    @Query('isPremium', new ParseBoolPipe({ optional: true })) isPremium?: boolean,
-    @Query('isPublished', new ParseBoolPipe({ optional: true })) isPublished?: boolean,
+    @Query('isPremium', new ParseBoolPipe({ optional: true }))
+    isPremium?: boolean,
+    @Query('isPublished', new ParseBoolPipe({ optional: true }))
+    isPublished?: boolean,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {

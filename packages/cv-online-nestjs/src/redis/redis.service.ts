@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { createClient, RedisClientType } from 'redis';
 
 @Injectable()
@@ -8,13 +13,13 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     const redisUrl = process.env.REDIS_URL;
-    
+
     if (redisUrl) {
       this.logger.log('🌐 Connecting to Remote Redis...');
       const isTls = redisUrl.startsWith('rediss://');
-      this.client = createClient({ 
+      this.client = createClient({
         url: redisUrl,
-        socket: isTls ? { tls: true, rejectUnauthorized: false } : undefined
+        socket: isTls ? { tls: true, rejectUnauthorized: false } : undefined,
       });
     } else {
       this.logger.log('💻 Connecting to Local Redis...');
@@ -23,13 +28,19 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       });
     }
 
-    this.client.on('error', (err) => this.logger.error(`❌ Redis Client Error: ${err.message}`));
-    this.client.on('connect', () => this.logger.log('✅ Redis connected successfully!'));
+    this.client.on('error', (err: Error) =>
+      this.logger.error(`❌ Redis Client Error: ${err.message}`),
+    );
+    this.client.on('connect', () =>
+      this.logger.log('✅ Redis connected successfully!'),
+    );
 
     try {
       await this.client.connect();
     } catch (error) {
-      this.logger.error(`❌ Failed to connect to Redis during startup: ${error.message}`);
+      this.logger.error(
+        `❌ Failed to connect to Redis during startup: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 

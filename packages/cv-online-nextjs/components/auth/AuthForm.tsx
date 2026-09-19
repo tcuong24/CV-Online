@@ -46,17 +46,9 @@ function GoogleIcon() {
   );
 }
 
-function AppleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-    </svg>
-  );
-}
-
 // ── Shared input styles ───────────────────────────────────────────────────────
 const inputBase =
-  'w-full px-3.5 py-2.5 bg-[#f7f8fc] border-[1.5px] border-[#e3e8f0] rounded-[10px] text-sm text-gray-900 outline-none transition-all duration-150 placeholder:text-gray-400 focus:border-[#3b5bdb] focus:bg-white focus:shadow-[0_0_0_3.5px_rgba(59,91,219,0.11)]';
+  'w-full border border-[#d9d8d2] bg-[#fbfaf7] px-4 py-3 text-sm text-[#171b1a] outline-none transition-all duration-150 placeholder:text-[#9a9b96] focus:border-[#1e3a3a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(30,58,58,0.09)]';
 
 const inputError =
   'border-red-400 focus:border-red-400 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.12)]';
@@ -202,7 +194,7 @@ export function AuthForm() {
       <AlertDialog open={showLoginRequired} onOpenChange={setShowLoginRequired}>
         <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
-            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#3b5bdb]">
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#edf2ee] text-[#1e3a3a]">
               <AlertCircle size={24} />
             </div>
             <AlertDialogTitle className="text-center">
@@ -217,7 +209,7 @@ export function AuthForm() {
           <AlertDialogFooter className="sm:justify-center">
             <AlertDialogAction
               autoFocus
-              className="bg-[#3b5bdb] hover:bg-[#2f4ac7]"
+              className="bg-[#1e3a3a] hover:bg-[#142a2a]"
             >
               Đã hiểu
             </AlertDialogAction>
@@ -225,47 +217,46 @@ export function AuthForm() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div
-      className="min-h-screen grid grid-cols-1 lg:grid-cols-2 text-gray-900 antialiased"
-      style={{
-        backgroundColor: '#e8eef8',
-        backgroundImage: `
-          radial-gradient(ellipse 65% 75% at 105% 5%, #818cf8 0%, transparent 50%),
-          radial-gradient(ellipse 75% 65% at 100% 15%, #a5b4fc 0%, transparent 60%),
-          radial-gradient(ellipse 50% 40% at 0% 100%, #dbeafe 0%, transparent 55%)
-        `,
-      }}
-    >
+      <div className="min-h-screen grid grid-cols-1 bg-[#f6f4ee] text-[#171b1a] antialiased lg:grid-cols-[0.9fr_1.1fr]">
 
       {/* ── Left panel ────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-center px-7 py-12 lg:px-18 lg:py-16">
-        <div className="max-w-[420px]">
-          <h1 className="text-3xl lg:text-[40px] font-bold leading-tight tracking-tight text-gray-900 mb-4">
-            Nhanh chóng, hiệu quả<br className="hidden lg:block" /> và chuyên nghiệp
+      <div className="relative hidden overflow-hidden border-r border-[#d9d8d2] bg-[#1e3a3a] px-12 py-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <Link href="/" className="font-headline text-3xl font-black tracking-tighter">CVision</Link>
+        <div className="relative z-10 max-w-[500px] py-16">
+          <p className="mb-6 font-label text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">Hồ sơ nghề nghiệp của bạn</p>
+          <h1 className="font-headline text-5xl font-semibold leading-[1.03] tracking-[-0.035em] xl:text-6xl">
+            Một CV tốt mở đầu cho một cơ hội lớn.
           </h1>
-          <p className="text-base text-gray-500 leading-relaxed">
-            Tạo CV ấn tượng trong vài phút với hàng trăm mẫu đẹp.<br className="hidden lg:block" />
-            Hàng nghìn chuyên gia đã tin dùng để mở lối thành công.
+          <p className="mt-7 max-w-md text-[15px] leading-7 text-white/70">
+            Chọn một mẫu phù hợp, kể câu chuyện nghề nghiệp của bạn và sẵn sàng cho bước tiếp theo.
           </p>
+        </div>
+        <div className="grid grid-cols-3 gap-6 border-t border-white/20 pt-6 text-xs text-white/55">
+          <span>Thiết kế chuyên nghiệp</span><span>Dễ dàng chỉnh sửa</span><span>Sẵn sàng ứng tuyển</span>
         </div>
       </div>
 
       {/* ── Right panel — Card ────────────────────────────────────────────── */}
-      <div className="flex items-center justify-start px-4 py-10 lg:pr-8">
-        <div className="w-full max-w-[500px] bg-white/85 backdrop-blur-xl rounded-[20px] shadow-[0_24px_64px_rgba(59,91,219,0.10),0_2px_8px_rgba(0,0,0,0.06)] border border-white/70 px-8 py-9">
+      <div className="flex items-center justify-center px-5 py-10 sm:px-10 lg:px-16">
+        <div className="w-full max-w-[500px] border border-[#d9d8d2] bg-white px-6 py-8 shadow-[0_24px_70px_rgba(30,58,58,0.08)] sm:px-10 sm:py-10">
+          <Link href="/" className="mb-8 block font-headline text-2xl font-black tracking-tighter lg:hidden">CVision</Link>
+          <p className="mb-2 font-label text-[10px] font-semibold uppercase tracking-[0.22em] text-[#1e3a3a]/60">Chào mừng đến CVision</p>
+          <h2 className="mb-7 font-headline text-3xl font-semibold tracking-tight">
+            {mode === 'login' ? 'Tiếp tục hành trình của bạn' : 'Bắt đầu hồ sơ của bạn'}
+          </h2>
 
           {/* Tabs */}
-          <div className="flex bg-[#f0f2f8] rounded-[10px] p-1 mb-6 gap-1">
+          <div className="mb-7 flex gap-1 border-b border-[#d9d8d2]">
             {(['login', 'register'] as const).map(m => (
               <button
                 key={m}
                 type="button"
                 onClick={() => switchMode(m)}
                 className={clsx(
-                  'flex-1 py-2 rounded-[7px] text-sm font-semibold transition-all duration-200 cursor-pointer border-0',
+                  'flex-1 border-0 border-b-2 bg-transparent py-3 text-sm font-semibold transition-all duration-200 cursor-pointer',
                   mode === m
-                    ? 'bg-white text-[#3b5bdb] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
-                    : 'bg-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-[#1e3a3a] text-[#1e3a3a]'
+                    : 'border-transparent text-gray-400 hover:text-gray-700'
                 )}
               >
                 {m === 'login' ? 'Đăng nhập' : 'Đăng ký'}
@@ -353,7 +344,7 @@ export function AuthForm() {
             {/* Forgot password — login only */}
             {mode === 'login' && (
               <div className="flex justify-end -mt-2 mb-4">
-                <Link href="/forgot-password" className="text-xs text-[#3b5bdb] font-medium hover:underline">
+                <Link href="/forgot-password" className="text-xs text-[#1e3a3a] font-semibold hover:underline">
                   Quên mật khẩu?
                 </Link>
               </div>
@@ -389,11 +380,11 @@ export function AuthForm() {
                     type="checkbox"
                     checked={form.acceptTerms}
                     onChange={patch('acceptTerms')}
-                    className="w-3.5 h-3.5 rounded accent-[#3b5bdb] cursor-pointer flex-shrink-0"
+                    className="h-3.5 w-3.5 flex-shrink-0 cursor-pointer accent-[#1e3a3a]"
                   />
                   <span className="text-[12.5px] text-gray-500">
                     Tôi đồng ý với{' '}
-                    <a href="/terms" className="text-[#3b5bdb] font-medium hover:underline">
+                    <a href="/terms" className="font-medium text-[#1e3a3a] hover:underline">
                       Điều khoản sử dụng
                     </a>
                   </span>
@@ -416,7 +407,7 @@ export function AuthForm() {
               <button
                 type="button"
                 onClick={handleGoogle}
-                className="flex items-center justify-center gap-2 py-2.5 px-3 bg-white border-[1.5px] border-[#e3e8f0] rounded-[9px] text-[13px] font-medium text-gray-900 cursor-pointer transition-all duration-150 hover:border-[#c5cee0] hover:shadow-[0_2px_8px_rgba(0,0,0,0.07)] whitespace-nowrap"
+                className="flex items-center justify-center gap-2 border border-[#d9d8d2] bg-white px-3 py-3 text-[13px] font-semibold text-gray-900 cursor-pointer transition-all duration-150 hover:border-[#1e3a3a] hover:bg-[#f8f7f2] whitespace-nowrap"
               >
                 <GoogleIcon /> Google
               </button>
@@ -427,7 +418,7 @@ export function AuthForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-[#3b5bdb] text-white text-[15px] font-semibold rounded-[10px] shadow-[0_4px_14px_rgba(59,91,219,0.28)] transition-all duration-200 cursor-pointer hover:bg-[#2f4ac7] hover:shadow-[0_6px_20px_rgba(59,91,219,0.35)] active:scale-[0.985] disabled:opacity-65 disabled:cursor-not-allowed border-0"
+              className="w-full flex items-center justify-center gap-2 border border-[#1e3a3a] bg-[#1e3a3a] py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] text-white transition-all duration-200 cursor-pointer hover:bg-[#142a2a] active:scale-[0.99] disabled:opacity-65 disabled:cursor-not-allowed"
             >
               {loading
                 ? <span className="w-4 h-4 border-[2.5px] border-white/40 border-t-white rounded-full animate-spin" />
@@ -443,7 +434,7 @@ export function AuthForm() {
               <>Chưa có tài khoản?{' '}
                 <button
                   onClick={() => switchMode('register')}
-                  className="text-[#3b5bdb] font-semibold hover:underline cursor-pointer bg-transparent border-0 p-0"
+                  className="cursor-pointer border-0 bg-transparent p-0 font-semibold text-[#1e3a3a] hover:underline"
                 >
                   Đăng ký
                 </button>
@@ -452,7 +443,7 @@ export function AuthForm() {
               <>Đã có tài khoản?{' '}
                 <button
                   onClick={() => switchMode('login')}
-                  className="text-[#3b5bdb] font-semibold hover:underline cursor-pointer bg-transparent border-0 p-0"
+                  className="cursor-pointer border-0 bg-transparent p-0 font-semibold text-[#1e3a3a] hover:underline"
                 >
                   Đăng nhập
                 </button>

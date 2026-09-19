@@ -45,15 +45,17 @@ export class OtpService {
     }
   }
 
-  async sendOtp(email: string): Promise<{ success: boolean; message: string; expiresIn: number }> {
+  async sendOtp(
+    email: string,
+  ): Promise<{ success: boolean; message: string; expiresIn: number }> {
     await this.checkRateLimit(email);
 
     const otp = this.generateOTP();
     const otpKey = this.OTP_PREFIX + email;
-    
+
     // Save to Redis
     await this.redis.set(otpKey, otp, this.OTP_EXPIRY);
-    
+
     // Increment rate limit count
     await this.incrementRateLimit(email);
 
@@ -89,7 +91,9 @@ export class OtpService {
     const attempts = await this.redis.get(attemptsKey);
 
     if (attempts && parseInt(attempts, 10) >= this.MAX_ATTEMPTS) {
-      throw new BadRequestException('Nhập sai OTP quá 3 lần. Vui lòng gửi lại yêu cầu!');
+      throw new BadRequestException(
+        'Nhập sai OTP quá 3 lần. Vui lòng gửi lại yêu cầu!',
+      );
     }
 
     const otpKey = this.OTP_PREFIX + email;
@@ -106,7 +110,9 @@ export class OtpService {
         await this.redis.set(attemptsKey, '1', this.OTP_EXPIRY);
       }
       const count = await this.redis.get(attemptsKey);
-      throw new BadRequestException(`Mã OTP không chính xác (${count}/${this.MAX_ATTEMPTS})`);
+      throw new BadRequestException(
+        `Mã OTP không chính xác (${count}/${this.MAX_ATTEMPTS})`,
+      );
     }
 
     // Success: clean up
@@ -119,7 +125,9 @@ export class OtpService {
     const attempts = await this.redis.get(attemptsKey);
 
     if (attempts && parseInt(attempts, 10) >= this.MAX_ATTEMPTS) {
-      throw new BadRequestException('Nhập sai OTP quá 3 lần. Vui lòng gửi lại yêu cầu!');
+      throw new BadRequestException(
+        'Nhập sai OTP quá 3 lần. Vui lòng gửi lại yêu cầu!',
+      );
     }
 
     const otpKey = this.OTP_PREFIX + email;
@@ -136,7 +144,9 @@ export class OtpService {
         await this.redis.set(attemptsKey, '1', this.OTP_EXPIRY);
       }
       const count = await this.redis.get(attemptsKey);
-      throw new BadRequestException(`Mã OTP không chính xác (${count}/${this.MAX_ATTEMPTS})`);
+      throw new BadRequestException(
+        `Mã OTP không chính xác (${count}/${this.MAX_ATTEMPTS})`,
+      );
     }
 
     return true;

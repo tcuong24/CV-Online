@@ -11,6 +11,7 @@ import { useCvEditorStore } from '@/stores/useCvEditor';
 import { Slider } from '@/components/ui/slider';
 import { TemplatePickerPanel } from '@/components/sidebar/TemplatePickerPanel';
 import { CvAiChatbox } from '@/components/editor/CvAiChatbox';
+import { RotateCw, Smartphone } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -94,6 +95,14 @@ export function CvEditorWorkspace({ onSave, requiresLoginToSave = false }: CvEdi
   const [aiPanelWidth, setAiPanelWidth] = useState(AI_PANEL_DEFAULT);
   const dragging = useRef(false);
 
+  // Give the CV canvas more room when the editor opens on a tablet or phone.
+  useEffect(() => {
+    if (window.matchMedia('(max-width: 1024px)').matches) {
+      setSidebarOpen(false);
+      setAiPanelOpen(false);
+    }
+  }, []);
+
   const handleSave = onSave || syncToDb;
 
   // ── Drag-to-resize ────────────────────────────────────────────────────────────
@@ -130,6 +139,14 @@ export function CvEditorWorkspace({ onSave, requiresLoginToSave = false }: CvEdi
   return (
     <>
       <style>{globalCss}</style>
+      <div className="mobile-orientation-guide" role="status" aria-live="polite">
+        <div className="mobile-orientation-visual" aria-hidden="true">
+          <Smartphone size={48} strokeWidth={1.6} />
+          <RotateCw className="mobile-orientation-arrow" size={28} strokeWidth={1.8} />
+        </div>
+        <strong>Xoay ngang điện thoại</strong>
+        <span>Trình chỉnh sửa CV cần thêm không gian để hiển thị đầy đủ các công cụ.</span>
+      </div>
       <div className="app">
         {/* ────────── Sidebar ────────── */}
         <div
@@ -314,6 +331,69 @@ export function CvEditorWorkspace({ onSave, requiresLoginToSave = false }: CvEdi
       {/* Hover CSS for drag grip pill */}
       <style>{`
         div:has(> .resize-grip):hover .resize-grip { opacity: 1 !important; }
+
+        .mobile-orientation-guide {
+          display: none;
+        }
+
+        @media (max-width: 900px) and (orientation: portrait) {
+          .mobile-orientation-guide {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 32px;
+            background: linear-gradient(145deg, #f8fafc, #eef2ff);
+            color: #0f172a;
+            text-align: center;
+          }
+
+          .mobile-orientation-guide strong {
+            font-size: 20px;
+          }
+
+          .mobile-orientation-guide span {
+            max-width: 320px;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+          }
+
+          .mobile-orientation-visual {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 92px;
+            height: 92px;
+            margin-bottom: 4px;
+            border: 1px solid #c7d2fe;
+            border-radius: 24px;
+            background: #fff;
+            color: #4f46e5;
+            box-shadow: 0 16px 40px rgba(79, 70, 229, 0.14);
+          }
+
+          .mobile-orientation-arrow {
+            position: absolute;
+            right: -12px;
+            bottom: -8px;
+            padding: 5px;
+            border-radius: 999px;
+            background: #4f46e5;
+            color: #fff;
+            animation: orientation-nudge 1.8s ease-in-out infinite;
+          }
+        }
+
+        @keyframes orientation-nudge {
+          0%, 100% { transform: rotate(-15deg); }
+          50% { transform: rotate(25deg); }
+        }
       `}</style>
 
       <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>

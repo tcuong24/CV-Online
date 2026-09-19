@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { BrevoClient } from '@getbrevo/brevo';
 
 @Injectable()
@@ -12,7 +16,11 @@ export class EmailService {
     });
   }
 
-  async sendEmail(to: string, subject: string, htmlContent: string): Promise<any> {
+  async sendEmail(
+    to: string,
+    subject: string,
+    htmlContent: string,
+  ): Promise<any> {
     try {
       const result = await this.brevo.transactionalEmails.sendTransacEmail({
         sender: { name: 'CVision Support', email: 'cuong13112004@gmail.com' },

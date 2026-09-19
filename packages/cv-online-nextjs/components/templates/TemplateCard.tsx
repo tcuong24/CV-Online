@@ -44,9 +44,9 @@ export function TemplateCard({
         />
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+      <div className="template-card-overlay absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
-      <div className="absolute inset-x-0 bottom-24 flex items-center justify-center gap-2 opacity-0 translate-y-2 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+      <div className="template-card-actions pointer-events-none absolute inset-x-0 bottom-24 flex translate-y-2 items-center justify-center gap-2 opacity-0 transition-all duration-300 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
         <Button variant="secondary" size="default" onClick={handlePreview}>
           Xem trước
         </Button>

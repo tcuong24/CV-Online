@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException, HttpException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  HttpException,
+} from '@nestjs/common';
 import { GoogleGenAI } from '@google/genai';
 import * as mammoth from 'mammoth';
 const pdfParse = require('pdf-parse');
@@ -11,7 +16,9 @@ export class CvParserService {
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      this.logger.error('GEMINI_API_KEY is not defined in environment variables');
+      this.logger.error(
+        'GEMINI_API_KEY is not defined in environment variables',
+      );
     }
     // New SDK uses GoogleGenAI class with apiKey in config
     this.client = new GoogleGenAI({
@@ -27,7 +34,8 @@ export class CvParserService {
     if (mimetype === 'application/pdf') {
       text = await this.extractTextFromPdf(buffer);
     } else if (
-      mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      mimetype ===
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
       mimetype === 'application/msword'
     ) {
       text = await this.extractTextFromDocx(buffer);
@@ -142,7 +150,10 @@ export class CvParserService {
     }
   }
 
-  private async parseImageWithAI(buffer: Buffer, mimetype: string): Promise<any> {
+  private async parseImageWithAI(
+    buffer: Buffer,
+    mimetype: string,
+  ): Promise<any> {
     const prompt = `
       You are a world-class CV parsing assistant. Below is an image of a resume/CV. 
       Analyze the image and extract all relevant information.

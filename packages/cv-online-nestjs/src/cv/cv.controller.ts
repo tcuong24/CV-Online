@@ -35,7 +35,7 @@ export class CvController {
     private readonly cvService: CvService,
     private readonly cvParserService: CvParserService,
     private readonly cloudinaryService: CloudinaryService,
-  ) { }
+  ) {}
 
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
@@ -77,7 +77,12 @@ export class CvController {
 
     // Create CV record
     const cvTitle = title || file.originalname.replace('.pdf', '');
-    return this.cvService.createUploadedCv(userId, cvTitle, fileUrl, thumbnailUrl);
+    return this.cvService.createUploadedCv(
+      userId,
+      cvTitle,
+      fileUrl,
+      thumbnailUrl,
+    );
   }
 
   @Post()
@@ -94,32 +99,33 @@ export class CvController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('default')          // ← static, phải trước :id
+  @Get('default') // ← static, phải trước :id
   async findDefault(@Request() req: { user: { id: string } }) {
     const cv = await this.cvService.findDefaultByUserId(req.user.id);
-    return cv ?? {
-      user: null,
-      personalInfo: null,
-      experiences: [],
-      skills: [],
-      languages: [],
-      education: [],
-    };
+    return (
+      cv ?? {
+        user: null,
+        personalInfo: null,
+        experiences: [],
+        skills: [],
+        languages: [],
+        education: [],
+      }
+    );
   }
 
   // ── Prefix routes trước :id ────────────────────────────────
-  @Get('public/:token')    // ← phải trước :id
+  @Get('public/:token') // ← phải trước :id
   async findByPublicToken(@Param('token') token: string) {
     return this.cvService.findByPublicToken(token);
   }
 
-  @Get(':id')              // ← sau tất cả static routes
+  @Get(':id') // ← sau tất cả static routes
   async findOne(@Param('id') id: string, @Request() req) {
     const userId = req.user?.id || 'user-001';
     const userRole = req.user?.role;
     return this.cvService.findOne(id, userId, userRole);
   }
-
 
   @Put(':id')
   async update(

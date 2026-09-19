@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-} from '@nestjs/common';
+import { Controller, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { CvSectionsService } from './cv-sections.service';
 import {
   CreateExperienceDto,
@@ -241,18 +234,12 @@ export class CvSectionsController {
   // =============================================================================
 
   @Post('custom-sections')
-  async createCustomSection(
-    @Param('cvId') cvId: string,
-    @Body() data: any,
-  ) {
+  async createCustomSection(@Param('cvId') cvId: string, @Body() data: any) {
     return this.cvSectionsService.createCustomSection(cvId, data);
   }
 
   @Put('custom-sections/:id')
-  async updateCustomSection(
-    @Param('id') id: string,
-    @Body() data: any,
-  ) {
+  async updateCustomSection(@Param('id') id: string, @Body() data: any) {
     return this.cvSectionsService.updateCustomSection(id, data);
   }
 

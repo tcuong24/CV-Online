@@ -257,15 +257,32 @@ export class RenderingService {
   private generateContent(cv: any, template: any, designConfig: any): string {
     const layoutType = template.layoutType;
     const sectionsConfig = template.sectionsConfig;
-    const sectionsOrder = cv.sectionsOrder || sectionsConfig.default_order || [];
+    const sectionsOrder =
+      cv.sectionsOrder || sectionsConfig.default_order || [];
     const sectionsVisibility = cv.sectionsVisibility || {};
 
     if (layoutType === 'sidebar-left' || layoutType === 'sidebar-right') {
-      const sidebarSections = sectionsConfig.sidebar_sections || ['personalInfo', 'skills', 'languages'];
-      const mainSections = sectionsConfig.main_sections || ['experiences', 'education', 'projects'];
+      const sidebarSections = sectionsConfig.sidebar_sections || [
+        'personalInfo',
+        'skills',
+        'languages',
+      ];
+      const mainSections = sectionsConfig.main_sections || [
+        'experiences',
+        'education',
+        'projects',
+      ];
 
-      const sidebarHTML = this.generateSidebarContent(cv, sidebarSections, sectionsVisibility);
-      const mainHTML = this.generateMainContent(cv, mainSections, sectionsVisibility);
+      const sidebarHTML = this.generateSidebarContent(
+        cv,
+        sidebarSections,
+        sectionsVisibility,
+      );
+      const mainHTML = this.generateMainContent(
+        cv,
+        mainSections,
+        sectionsVisibility,
+      );
 
       if (layoutType === 'sidebar-left') {
         return `
@@ -280,11 +297,19 @@ export class RenderingService {
       }
     } else {
       // Single column layout
-      return this.generateSingleColumnContent(cv, sectionsOrder, sectionsVisibility);
+      return this.generateSingleColumnContent(
+        cv,
+        sectionsOrder,
+        sectionsVisibility,
+      );
     }
   }
 
-  private generateSidebarContent(cv: any, sections: string[], visibility: any): string {
+  private generateSidebarContent(
+    cv: any,
+    sections: string[],
+    visibility: any,
+  ): string {
     let html = '';
 
     // Personal Info Header
@@ -308,30 +333,46 @@ export class RenderingService {
     }
 
     // Skills
-    if (sections.includes('skills') && visibility.skills !== false && cv.skills?.length > 0) {
+    if (
+      sections.includes('skills') &&
+      visibility.skills !== false &&
+      cv.skills?.length > 0
+    ) {
       html += `
         <div class="section">
           <h2>Skills</h2>
           <div class="skills-grid">
-            ${cv.skills.map((skill: any) => `
+            ${cv.skills
+              .map(
+                (skill: any) => `
               <div class="skill-item">${skill.skillName}</div>
-            `).join('')}
+            `,
+              )
+              .join('')}
           </div>
         </div>
       `;
     }
 
     // Languages
-    if (sections.includes('languages') && visibility.languages !== false && cv.languages?.length > 0) {
+    if (
+      sections.includes('languages') &&
+      visibility.languages !== false &&
+      cv.languages?.length > 0
+    ) {
       html += `
         <div class="section">
           <h2>Languages</h2>
-          ${cv.languages.map((lang: any) => `
+          ${cv.languages
+            .map(
+              (lang: any) => `
             <div style="margin-bottom: 10px;">
               <strong>${lang.languageName}</strong>
               ${lang.proficiencyLevel ? `<span> - ${lang.proficiencyLevel}</span>` : ''}
             </div>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </div>
       `;
     }
@@ -339,7 +380,11 @@ export class RenderingService {
     return html;
   }
 
-  private generateMainContent(cv: any, sections: string[], visibility: any): string {
+  private generateMainContent(
+    cv: any,
+    sections: string[],
+    visibility: any,
+  ): string {
     let html = '';
 
     // Summary
@@ -353,11 +398,17 @@ export class RenderingService {
     }
 
     // Experiences
-    if (sections.includes('experiences') && visibility.experiences !== false && cv.experiences?.length > 0) {
+    if (
+      sections.includes('experiences') &&
+      visibility.experiences !== false &&
+      cv.experiences?.length > 0
+    ) {
       html += `
         <div class="section">
           <h2>Experience</h2>
-          ${cv.experiences.map((exp: any) => `
+          ${cv.experiences
+            .map(
+              (exp: any) => `
             <div class="experience-item">
               <div class="item-header">
                 <h3>${exp.position} at ${exp.companyName}</h3>
@@ -365,23 +416,35 @@ export class RenderingService {
               </div>
               ${exp.location ? `<p style="color: #666; margin-bottom: 5px;">${exp.location}</p>` : ''}
               ${exp.description ? `<p>${exp.description}</p>` : ''}
-              ${exp.achievements?.length > 0 ? `
+              ${
+                exp.achievements?.length > 0
+                  ? `
                 <ul>
                   ${exp.achievements.map((a: string) => `<li>${a}</li>`).join('')}
                 </ul>
-              ` : ''}
+              `
+                  : ''
+              }
             </div>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </div>
       `;
     }
 
     // Education
-    if (sections.includes('education') && visibility.education !== false && cv.education?.length > 0) {
+    if (
+      sections.includes('education') &&
+      visibility.education !== false &&
+      cv.education?.length > 0
+    ) {
       html += `
         <div class="section">
           <h2>Education</h2>
-          ${cv.education.map((edu: any) => `
+          ${cv.education
+            .map(
+              (edu: any) => `
             <div class="education-item">
               <div class="item-header">
                 <h3>${edu.degree}${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''}</h3>
@@ -390,23 +453,33 @@ export class RenderingService {
               <p>${edu.institutionName}</p>
               ${edu.gpa ? `<p>GPA: ${edu.gpa}</p>` : ''}
             </div>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </div>
       `;
     }
 
     // Projects
-    if (sections.includes('projects') && visibility.projects !== false && cv.projects?.length > 0) {
+    if (
+      sections.includes('projects') &&
+      visibility.projects !== false &&
+      cv.projects?.length > 0
+    ) {
       html += `
         <div class="section">
           <h2>Projects</h2>
-          ${cv.projects.map((proj: any) => `
+          ${cv.projects
+            .map(
+              (proj: any) => `
             <div class="project-item">
               <h3>${proj.projectName}</h3>
               ${proj.description ? `<p>${proj.description}</p>` : ''}
               ${proj.technologies?.length > 0 ? `<p><strong>Technologies:</strong> ${proj.technologies.join(', ')}</p>` : ''}
             </div>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </div>
       `;
     }
@@ -414,7 +487,11 @@ export class RenderingService {
     return html;
   }
 
-  private generateSingleColumnContent(cv: any, sections: string[], visibility: any): string {
+  private generateSingleColumnContent(
+    cv: any,
+    sections: string[],
+    visibility: any,
+  ): string {
     // Similar to main content but includes all sections
     return this.generateMainContent(cv, sections, visibility);
   }

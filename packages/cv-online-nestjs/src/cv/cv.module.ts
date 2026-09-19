@@ -12,8 +12,13 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
   imports: [PrismaModule, CloudinaryModule],
-  controllers: [CvController, PublicCvController, CvSectionsController, CvAiController],
+  controllers: [
+    CvController,
+    PublicCvController,
+    CvSectionsController,
+    CvAiController,
+  ],
   providers: [CvService, CvSectionsService, CvParserService, CvAiService],
   exports: [CvService, CvSectionsService, CvParserService, CvAiService],
 })
-export class CvModule { }
+export class CvModule {}

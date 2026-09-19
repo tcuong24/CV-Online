@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsBoolean, IsObject, IsArray, IsEnum, IsNumber, IsDate } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsObject,
+  IsArray,
+  IsEnum,
+  IsNumber,
+  IsDate,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 // =============================================================================

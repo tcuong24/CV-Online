@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateCVDto,
@@ -51,7 +55,12 @@ export class CvService {
   /**
    * Create new Uploaded CV (PDF)
    */
-  async createUploadedCv(userId: string, title: string, attachedFileUrl: string, thumbnailUrl?: string) {
+  async createUploadedCv(
+    userId: string,
+    title: string,
+    attachedFileUrl: string,
+    thumbnailUrl?: string,
+  ) {
     const existingCount = await this.prisma.cV.count({ where: { userId } });
 
     const cv = await this.prisma.cV.create({
@@ -192,7 +201,12 @@ export class CvService {
     }
 
     // Check ownership if userId is provided and the user is not an admin
-    if (userId && cv.userId !== userId && !cv.isPublic && userRole !== 'admin') {
+    if (
+      userId &&
+      cv.userId !== userId &&
+      !cv.isPublic &&
+      userRole !== 'admin'
+    ) {
       throw new ForbiddenException('You do not have access to this CV');
     }
 
@@ -278,8 +292,6 @@ export class CvService {
    */
   async update(id: string, userId: string, updateCVDto: UpdateCVDto) {
     // Check ownership
-    const cv = await this.findOne(id, userId);
-
     return this.prisma.cV.update({
       where: { id },
       data: updateCVDto,
@@ -368,25 +380,24 @@ export class CvService {
     return { success: true };
   }
   async publish(id: string, userId: string) {
-  await this.findOne(id, userId);
+    await this.findOne(id, userId);
 
-  const cv = await this.prisma.cV.findUniqueOrThrow({
-    where: { id },
-  });
+    const cv = await this.prisma.cV.findUniqueOrThrow({
+      where: { id },
+    });
 
-  const publicUrlToken =
-    cv.publicUrlToken ?? this.generatePublicToken();
+    const publicUrlToken = cv.publicUrlToken ?? this.generatePublicToken();
 
-  return this.prisma.cV.update({
-    where: { id },
-    data: {
-      isPublic: true,
-      status: 'published',
-      publishedAt: new Date(),
-      publicUrlToken,
-    },
-  });
-}
+    return this.prisma.cV.update({
+      where: { id },
+      data: {
+        isPublic: true,
+        status: 'published',
+        publishedAt: new Date(),
+        publicUrlToken,
+      },
+    });
+  }
 
   /**
    * Unpublish CV

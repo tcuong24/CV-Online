@@ -29,7 +29,10 @@ export class ExportController {
     const html = await this.exportService.exportToHTML(id);
 
     res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Content-Disposition', `attachment; filename="cv-${id}.html"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="cv-${id}.html"`,
+    );
     res.send(html);
   }
 

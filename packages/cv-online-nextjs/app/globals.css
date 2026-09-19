@@ -343,3 +343,15 @@
   .home-feature__line, .home-cta__backdrop { transform: none; transition: none; }
   .home-feature__mask { clip-path: none; transition: none; }
 }
+/* Touch devices do not have hover: keep template actions directly accessible. */
+@media (hover: none), (pointer: coarse) {
+  .template-card-overlay {
+    opacity: 1;
+  }
+
+  .template-card-actions {
+    pointer-events: auto;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

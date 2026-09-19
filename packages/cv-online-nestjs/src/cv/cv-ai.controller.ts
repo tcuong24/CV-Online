@@ -9,16 +9,27 @@ export class CvAiController {
   @UseGuards(JwtAuthGuard)
   @Post('chat')
   async chat(
-    @Body() body: {
+    @Body()
+    body: {
       history: any[];
       currentCv: any;
       message: string;
       activeSection?: string;
-      clarificationContext?: { pendingIntent: string; answeredQuestions: { id: string; answer: string }[] };
+      clarificationContext?: {
+        pendingIntent: string;
+        answeredQuestions: { id: string; answer: string }[];
+      };
     },
   ) {
-    const { history, currentCv, message, activeSection, clarificationContext } = body;
-    const response = await this.cvAiService.chat(history, currentCv, message, activeSection, clarificationContext);
+    const { history, currentCv, message, activeSection, clarificationContext } =
+      body;
+    const response = await this.cvAiService.chat(
+      history,
+      currentCv,
+      message,
+      activeSection,
+      clarificationContext,
+    );
     return { response };
   }
 }

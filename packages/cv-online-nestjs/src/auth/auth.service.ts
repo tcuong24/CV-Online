@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -13,7 +18,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
-  ) { }
+  ) {}
 
   async register(dto: RegisterDto) {
     // Kiểm tra email đã tồn tại chưa
@@ -44,7 +49,11 @@ export class AuthService {
     });
 
     // Tạo JWT token
-    const token = this.jwtService.sign({ sub: user.id, email: user.email, role: (user as any).role ?? 'user' });
+    const token = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+      role: (user as any).role ?? 'user',
+    });
 
     return { user, access_token: token };
   }
@@ -71,7 +80,11 @@ export class AuthService {
     });
 
     // Tạo JWT token
-    const token = this.jwtService.sign({ sub: user.id, email: user.email, role: user.role });
+    const token = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
 
     return {
       user: {
@@ -87,14 +100,14 @@ export class AuthService {
   }
   async loginWithGoogle(idToken: string) {
     const { OAuth2Client } = require('google-auth-library');
-    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
     const ticket = await client.verifyIdToken({
       idToken,
       audience: process.env.GOOGLE_CLIENT_ID,
-    })
+    });
     const payload = ticket.getPayload();
     if (!payload.email) {
-      throw new UnauthorizedException('Không thể xác thực tài khoản Google')
+      throw new UnauthorizedException('Không thể xác thực tài khoản Google');
     }
     const user = await this.prisma.user.upsert({
       where: { email: payload.email },
@@ -106,14 +119,14 @@ export class AuthService {
         email: payload.email,
         fullName: payload.picture ?? null,
         avatarUrl: payload.picture ?? null,
-        passwordHash: "",
-      }
-    })
+        passwordHash: '',
+      },
+    });
     const token = this.jwtService.sign({
       sub: user.id,
       email: user.email,
-      role: user.role
-    })
+      role: user.role,
+    });
     return {
       user: {
         id: user.id,
@@ -124,7 +137,7 @@ export class AuthService {
         subscriptionType: user.subscriptionType,
       },
       access_token: token,
-    }
+    };
   }
   async getMe(userId: string) {
     return this.prisma.user.findUnique({
@@ -163,7 +176,8 @@ export class AuthService {
 
     return {
       success: true,
-      message: 'Đặt lại mật khẩu thành công! Hãy đăng nhập lại bằng mật khẩu mới.',
+      message:
+        'Đặt lại mật khẩu thành công! Hãy đăng nhập lại bằng mật khẩu mới.',
     };
   }
 

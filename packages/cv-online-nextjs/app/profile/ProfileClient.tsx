@@ -2,18 +2,14 @@
 
 import Link from 'next/link';
 import {
-  MapPin,
   Globe,
-  Mail,
   BadgeCheck,
   MoreHorizontal,
-  MessageCircle,
   Briefcase,
   ExternalLink,
   ChevronDown,
   GraduationCap,
   Languages,
-  Phone,
   Camera,
   Loader2,
 } from 'lucide-react';
@@ -21,7 +17,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -29,7 +24,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import axiosInstance from '@/lib/axios';
 import { toast } from 'sonner';
@@ -120,9 +114,9 @@ function formatPeriod(startDate?: string, endDate?: string, isCurrent?: boolean)
 // ── Sub-components ────────────────────────────────────────────────────────────
 function ExperienceCard({ exp }: { exp: CVExperience }) {
   return (
-    <div className="border border-gray-200 bg-white p-5 rounded-sm flex flex-col gap-3 hover:border-gray-400 transition-colors">
+    <div className="flex flex-col gap-4 border border-[#d9d8d2] bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-[#1e3a3a] hover:shadow-[0_12px_30px_rgba(30,58,58,0.08)]">
       <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-sm flex items-center justify-center flex-shrink-0 bg-gray-100 text-gray-600">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center bg-[#edf2ee] text-[#1e3a3a]">
           <Briefcase size={16} />
         </div>
         <div className="min-w-0">
@@ -139,9 +133,9 @@ function ExperienceCard({ exp }: { exp: CVExperience }) {
 
 function EducationCard({ edu }: { edu: CVEducation }) {
   return (
-    <div className="border border-gray-200 bg-white p-5 rounded-sm flex flex-col gap-3 hover:border-gray-400 transition-colors">
+    <div className="flex flex-col gap-4 border border-[#d9d8d2] bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-[#1e3a3a] hover:shadow-[0_12px_30px_rgba(30,58,58,0.08)]">
       <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-sm flex items-center justify-center flex-shrink-0 bg-gray-100 text-gray-600">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center bg-[#edf2ee] text-[#1e3a3a]">
           <GraduationCap size={16} />
         </div>
         <div className="min-w-0">
@@ -174,8 +168,8 @@ function ProfileLink({ href, label, external = false }: { href: string; label: s
 
 function LoadingSkeleton() {
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-[#faf9f6] animate-pulse">
-      <div className="border-b border-gray-200 bg-[#f4f4f0]">
+    <div className="min-h-[calc(100vh-56px)] animate-pulse bg-[#f6f4ee]">
+      <div className="border-b border-[#d9d8d2] bg-[#edf2ee]">
         <div className="max-w-6xl mx-auto px-6 py-12 flex items-center gap-8">
           <div className="h-28 w-28 rounded-full bg-gray-200" />
           <div className="space-y-3"><div className="h-8 w-48 bg-gray-200 rounded" /><div className="h-4 w-64 bg-gray-200 rounded" /></div>
@@ -393,14 +387,16 @@ export default function ProfileClient({ publicUserId }: { publicUserId?: string 
   };
 
   return (
-    <main className="flex-grow w-full">
-      <header className="border-b border-gray-200 bg-gradient-to-br from-[#f3f3ef] to-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-center sm:gap-8 md:py-12 md:mt-12">
+    <main className="min-h-screen w-full flex-grow bg-[#f6f4ee] text-[#171b1a]">
+      <header className="relative overflow-hidden border-b border-[#d9d8d2] bg-[#edf2ee]">
+        <div className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full border border-[#1e3a3a]/10" />
+        <div className="pointer-events-none absolute -right-6 -top-8 h-52 w-52 rounded-full border border-[#1e3a3a]/10" />
+        <div className="relative mx-auto flex max-w-6xl flex-col gap-7 px-6 py-12 sm:flex-row sm:items-center sm:gap-9 md:mt-12 md:py-16">
           <div
             className={cn('relative flex-shrink-0 group', !isPublicView && 'cursor-pointer')}
             onClick={handleAvatarClick}
           >
-            <Avatar className={cn("h-28 w-28 border border-gray-200 shadow-sm rounded-full", isUploading && "opacity-70")}>
+            <Avatar className={cn("h-28 w-28 rounded-full border-4 border-white shadow-[0_16px_36px_rgba(30,58,58,0.16)]", isUploading && "opacity-70")}>
               <AvatarImage src={userAvatar} alt={displayName} />
               <AvatarFallback className="text-2xl font-bold bg-[#1e3a3a] text-white">
                 {displayName.split(' ').map(n => n[0]).join('')}
@@ -436,7 +432,8 @@ export default function ProfileClient({ publicUserId }: { publicUserId?: string 
           </div>
 
           <div className="min-w-0 flex-1">
-            <h1 className="font-headline text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl md:text-[2.7rem]">
+            <p className="mb-2 font-label text-[10px] font-semibold uppercase tracking-[0.22em] text-[#1e3a3a]/55">Hồ sơ nghề nghiệp</p>
+            <h1 className="font-headline text-4xl font-semibold tracking-[-0.03em] text-[#171b1a] md:text-5xl">
               {displayName}
             </h1>
             {headline && <p className="mt-1.5 text-sm text-gray-500 sm:text-base">{headline}</p>}
@@ -460,7 +457,7 @@ export default function ProfileClient({ publicUserId }: { publicUserId?: string 
                 disabled={visibilityUpdating}
                 onClick={handleToggleProfileVisibility}
                 className={cn(
-                  'rounded-sm border-gray-200 gap-2',
+                  'gap-2 rounded-none border-[#c9cbc5] bg-white/60',
                   cv?.user?.profileIsPublic && 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
                 )}
               >
@@ -471,7 +468,7 @@ export default function ProfileClient({ publicUserId }: { publicUserId?: string 
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="rounded-sm h-9 w-9 border-gray-200">
+                  <Button variant="outline" size="icon" className="h-9 w-9 rounded-none border-[#c9cbc5] bg-white/60">
                     <MoreHorizontal size={16} />
                   </Button>
                 </DropdownMenuTrigger>
@@ -486,16 +483,17 @@ export default function ProfileClient({ publicUserId }: { publicUserId?: string 
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-6 pt-10">
+      <div className="mx-auto max-w-6xl px-6 pt-12">
         {/* Main grid */}
-        <div className="grid grid-cols-1 gap-12 pb-16 md:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid grid-cols-1 gap-12 pb-20 md:grid-cols-[minmax(0,1fr)_320px]">
 
           {/* Left col */}
-          <div className="space-y-12">
+          <div className="space-y-14">
 
             {/* About */}
             <section>
-              <h2 className="text-base font-semibold text-gray-900 mb-3">Giới thiệu</h2>
+              <p className="mb-2 font-label text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1e3a3a]/55">01 · Câu chuyện</p>
+              <h2 className="mb-4 font-headline text-2xl font-semibold text-gray-900">Giới thiệu</h2>
               {pi?.summary ? (
                 <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
                   <p>{expanded ? pi.summary : pi.summary.slice(0, 300)}</p>
@@ -519,7 +517,8 @@ export default function ProfileClient({ publicUserId }: { publicUserId?: string 
 
             {/* Experience */}
             <section>
-              <h2 className="text-base font-semibold text-gray-900 mb-4">Kinh nghiệm</h2>
+              <p className="mb-2 font-label text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1e3a3a]/55">02 · Hành trình</p>
+              <h2 className="mb-5 font-headline text-2xl font-semibold text-gray-900">Kinh nghiệm</h2>
               {cv?.experiences && cv.experiences.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {cv.experiences.map(exp => <ExperienceCard key={exp.id} exp={exp} />)}
@@ -531,7 +530,8 @@ export default function ProfileClient({ publicUserId }: { publicUserId?: string 
 
             {/* Education */}
             <section>
-              <h2 className="text-base font-semibold text-gray-900 mb-4">Học vấn</h2>
+              <p className="mb-2 font-label text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1e3a3a]/55">03 · Nền tảng</p>
+              <h2 className="mb-5 font-headline text-2xl font-semibold text-gray-900">Học vấn</h2>
               {cv?.education && cv.education.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {cv.education.map(edu => <EducationCard key={edu.id} edu={edu} />)}
@@ -545,14 +545,15 @@ export default function ProfileClient({ publicUserId }: { publicUserId?: string 
           {/* Right col (sidebar) */}
           <aside className="space-y-6">
             {/* Skills */}
-            <div className="bg-white border border-gray-200 p-5 rounded-sm space-y-3">
-              <h2 className="text-sm font-semibold text-gray-900">Kỹ năng</h2>
+            <div className="space-y-4 border border-[#d9d8d2] bg-white p-6 shadow-[0_12px_30px_rgba(30,58,58,0.04)]">
+              <p className="font-label text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1e3a3a]/55">Chuyên môn</p>
+              <h2 className="font-headline text-xl font-semibold text-gray-900">Kỹ năng</h2>
               {cv?.skills && cv.skills.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {cv.skills.map(skill => (
                     <span
                       key={skill.id}
-                      className="border border-gray-200 text-gray-700 text-xs font-medium px-3 py-1 rounded-sm hover:border-gray-400 transition-colors bg-white"
+                      className="border border-[#d9d8d2] bg-[#f8f7f2] px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-[#1e3a3a]"
                     >
                       {skill.skillName}
                     </span>
@@ -564,8 +565,8 @@ export default function ProfileClient({ publicUserId }: { publicUserId?: string 
             </div>
 
             {/* Languages */}
-            <div className="bg-white border border-gray-200 p-5 rounded-sm space-y-3">
-              <h2 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+            <div className="space-y-4 border border-[#d9d8d2] bg-white p-6 shadow-[0_12px_30px_rgba(30,58,58,0.04)]">
+              <h2 className="flex items-center gap-2 font-headline text-xl font-semibold text-gray-900">
                 <Languages size={15} />
                 Ngôn ngữ
               </h2>

@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../auth/admin.guard';
 import { PrismaService } from '../prisma/prisma.service';
@@ -12,13 +22,16 @@ export class AdminController {
   /** GET /admin/stats — tổng quan hệ thống */
   @Get('stats')
   async getStats() {
-    const [totalUsers, totalCvs, adminCount, freeUsers, proUsers] = await Promise.all([
-      this.prisma.user.count(),
-      this.prisma.cV.count(),
-      this.prisma.user.count({ where: { role: 'admin' } }),
-      this.prisma.user.count({ where: { subscriptionType: 'free' } }),
-      this.prisma.user.count({ where: { subscriptionType: { not: 'free' } } }),
-    ]);
+    const [totalUsers, totalCvs, adminCount, freeUsers, proUsers] =
+      await Promise.all([
+        this.prisma.user.count(),
+        this.prisma.cV.count(),
+        this.prisma.user.count({ where: { role: 'admin' } }),
+        this.prisma.user.count({ where: { subscriptionType: 'free' } }),
+        this.prisma.user.count({
+          where: { subscriptionType: { not: 'free' } },
+        }),
+      ]);
     return { totalUsers, totalCvs, adminCount, freeUsers, proUsers };
   }
 
@@ -53,13 +66,19 @@ export class AdminController {
   /** POST /admin/users — tạo người dùng mới */
   @Post('users')
   async createUser(
-    @Body() body: { email: string; password?: string; fullName?: string; role?: 'user' | 'admin' },
+    @Body()
+    body: {
+      email: string;
+      password?: string;
+      fullName?: string;
+      role?: 'user' | 'admin';
+    },
   ) {
     let passwordHash = '';
     if (body.password) {
       passwordHash = await bcrypt.hash(body.password, 10);
     }
-    
+
     return this.prisma.user.create({
       data: {
         email: body.email,
@@ -87,7 +106,7 @@ export class AdminController {
           },
           orderBy: { updatedAt: 'desc' },
         },
-      }
+      },
     });
   }
 

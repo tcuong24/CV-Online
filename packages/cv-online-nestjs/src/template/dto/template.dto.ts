@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsBoolean, IsObject, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsObject,
+  IsArray,
+} from 'class-validator';
 
 export class CreateTemplateDto {
   @IsString()
