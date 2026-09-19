@@ -179,7 +179,7 @@ export default function DashboardClient() {
   );
 
   return (
-    <main className="flex-grow w-full max-w-7xl mx-auto px-6 pt-32 pb-12">
+    <main className="grow w-full max-w-7xl mx-auto px-6 pt-32 pb-12">
       {/* Welcome Section */}
       <section className="dashboard-hero mb-12" data-purpose="hero-section">
         <p className="dashboard-greeting text-lg font-normal mb-1">
@@ -410,7 +410,7 @@ export default function DashboardClient() {
                 </Link>
                 <div className="dashboard-cv__meta flex items-center justify-between">
                   <div>
-                    <h3 className="dashboard-cv__title text-sm font-semibold text-foreground truncate max-w-[200px]">
+                    <h3 className="dashboard-cv__title text-sm font-semibold text-foreground truncate max-w-50">
                       <EditableText
                         value={cv.title || "CV chưa đặt tên"}
                         onChange={(value) => handleChangeName(cv.id, value)}
@@ -426,7 +426,7 @@ export default function DashboardClient() {
                       {cv.isPublic && (
                         <span
                           title="Đang chia sẻ công khai"
-                          className="text-emerald-600 flex-shrink-0 animate-pulse"
+                          className="text-emerald-600 shrink-0 animate-pulse"
                         >
                           <svg
                             className="w-3.5 h-3.5 inline-block"
@@ -624,7 +624,7 @@ export default function DashboardClient() {
                     }
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1D283D]"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1D283D]"></div>
                 </label>
               </div>
 
