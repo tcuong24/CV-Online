@@ -15,8 +15,154 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # 1. Lint & Type-check
+  lint-and-typecheck:
+    name: Lint & Type-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma:generate
+
+      - name: Type-check Next.js
+        run: pnpm --filter nextjs-frontend exec tsc --noEmit
+
+      - name: Lint
+        run: pnpm lint
+
+  # 2. Unit & Integration Tests (Jest)
+  unit-tests:
+    name: Unit Tests (Jest)
+    needs: lint-and-typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma:generate
+
+      - name: Run Jest tests & export coverage
+        run: pnpm --filter cv-online-nestjs run test:cov
+
+      - name: Upload Jest Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jest-coverage
+          path: packages/cv-online-nestjs/coverage/lcov.info
+
+  # 3. E2E Tests (Playwright)
+  e2e-tests:
+    name: E2E Tests (Playwright)
+    needs: lint-and-typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm --filter nextjs-frontend exec playwright install --with-deps chromium
+
+      - name: Run Playwright E2E Tests
+        run: pnpm --filter nextjs-frontend exec playwright test
+
+      - name: Upload Playwright JUnit Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-junit
+          path: packages/cv-online-nextjs/playwright-results/junit.xml
+
+      - name: Upload Playwright HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: packages/cv-online-nextjs/playwright-report/
+
+  # 4. SonarQube & Quality Gate
+  sonar-quality-gate:
+    name: SonarQube & Quality Gate
+    needs: [unit-tests, e2e-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Jest Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: jest-coverage
+          path: packages/cv-online-nestjs/coverage/
+
+      - name: Download Playwright JUnit
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-junit
+          path: packages/cv-online-nextjs/playwright-results/
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: SonarQube Quality Gate Check
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # 5. Build Docker images (chỉ build khi Quality Gate và Tests pass)
   build:
     name: Build ${{ matrix.service }}
+    needs: sonar-quality-gate
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:

@@ -48,6 +48,15 @@ Thumbs.db
 # Testing
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
+playwright-results/
+blob-report/
+*.zip
+
+# SonarQube / SonarCloud
+.scannerwork/
+.sonar/
 
 # Temporary files
 .temp/

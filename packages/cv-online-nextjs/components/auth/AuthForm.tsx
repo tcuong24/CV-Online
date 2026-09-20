@@ -34,6 +34,7 @@ interface FormErrors {
   general?:        string; // lỗi từ server hiển thị trên form
 }
 
+
 // ── Icons ─────────────────────────────────────────────────────────────────────
 function GoogleIcon() {
   return (
@@ -48,7 +49,7 @@ function GoogleIcon() {
 
 // ── Shared input styles ───────────────────────────────────────────────────────
 const inputBase =
-  'w-full border border-[#d9d8d2] bg-[#fbfaf7] px-4 py-3 text-sm text-[#171b1a] outline-none transition-all duration-150 placeholder:text-[#9a9b96] focus:border-[#1e3a3a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(30,58,58,0.09)]';
+  'w-full border border-black/15 bg-[#faf9f6] px-4 py-3 text-sm text-gray-900 outline-none transition-all duration-150 placeholder:text-gray-400 focus:border-black focus:bg-white focus:shadow-[0_0_0_3px_rgba(0,0,0,0.06)] rounded-lg';
 
 const inputError =
   'border-red-400 focus:border-red-400 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.12)]';
@@ -192,15 +193,15 @@ export function AuthForm() {
   return (
     <>
       <AlertDialog open={showLoginRequired} onOpenChange={setShowLoginRequired}>
-        <AlertDialogContent className="max-w-sm">
+        <AlertDialogContent className="max-w-sm rounded-2xl border-black/10">
           <AlertDialogHeader>
-            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#edf2ee] text-[#1e3a3a]">
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-black">
               <AlertCircle size={24} />
             </div>
-            <AlertDialogTitle className="text-center">
+            <AlertDialogTitle className="text-center font-headline text-xl font-bold">
               Bạn cần đăng nhập
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-center">
+            <AlertDialogDescription className="text-center text-sm text-muted-foreground">
               {loginReason === 'create-cv'
                 ? 'Vui lòng đăng nhập trước để tạo và lưu CV của bạn.'
                 : 'Vui lòng đăng nhập trước để truy cập trang Dashboard.'}
@@ -209,7 +210,7 @@ export function AuthForm() {
           <AlertDialogFooter className="sm:justify-center">
             <AlertDialogAction
               autoFocus
-              className="bg-[#1e3a3a] hover:bg-[#142a2a]"
+              className="bg-black hover:bg-neutral-800 text-white font-label text-xs uppercase tracking-widest px-8 rounded-lg"
             >
               Đã hiểu
             </AlertDialogAction>
@@ -217,46 +218,46 @@ export function AuthForm() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="min-h-screen grid grid-cols-1 bg-[#f6f4ee] text-[#171b1a] antialiased lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="min-h-screen grid grid-cols-1 bg-[#faf9f6] text-[#171b1a] antialiased lg:grid-cols-2 xl:grid-cols-[1.1fr_1fr] 2xl:grid-cols-[1.15fr_0.85fr]">
 
-      {/* ── Left panel ────────────────────────────────────────────────────── */}
-      <div className="relative hidden overflow-hidden border-r border-[#d9d8d2] bg-[#1e3a3a] px-12 py-12 text-white lg:flex lg:flex-col lg:justify-between">
-        <Link href="/" className="font-headline text-3xl font-black tracking-tighter">CVision</Link>
-        <div className="relative z-10 max-w-[500px] py-16">
-          <p className="mb-6 font-label text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">Hồ sơ nghề nghiệp của bạn</p>
-          <h1 className="font-headline text-5xl font-semibold leading-[1.03] tracking-[-0.035em] xl:text-6xl">
-            Một CV tốt mở đầu cho một cơ hội lớn.
+      {/* ── Left panel (Đen sang trọng, co giãn theo màn to) ────────────────── */}
+      <div className="relative hidden overflow-hidden border-r border-black/10 bg-[#09090b] px-12 py-12 text-white lg:flex lg:flex-col lg:justify-between lg:px-16 xl:px-24 2xl:px-32 lg:py-16 2xl:py-24">
+        <Link href="/" className="font-headline text-3xl font-black tracking-tighter text-white hover:opacity-80 transition-opacity">CVision</Link>
+        <div className="relative z-10 max-w-xl xl:max-w-2xl 2xl:max-w-3xl py-12">
+          <p className="mb-6 font-label text-[11px] font-bold uppercase tracking-[0.28em] text-white/50">Hồ sơ nghề nghiệp của bạn</p>
+          <h1 className="font-headline text-5xl font-black leading-[1.05] tracking-tight text-white xl:text-6xl 2xl:text-7xl">
+            Làm CV đẹp, nhanh và rõ ràng.
           </h1>
-          <p className="mt-7 max-w-md text-[15px] leading-7 text-white/70">
-            Chọn một mẫu phù hợp, kể câu chuyện nghề nghiệp của bạn và sẵn sàng cho bước tiếp theo.
+          <p className="mt-8 max-w-lg xl:max-w-xl text-[15px] xl:text-[17px] leading-relaxed text-white/70">
+            Chọn một mẫu phù hợp, bỏ qua các bước căn chỉnh phức tạp, tạo một bản CV nhanh gọn chỉ trong vài phút.
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-6 border-t border-white/20 pt-6 text-xs text-white/55">
-          <span>Thiết kế chuyên nghiệp</span><span>Dễ dàng chỉnh sửa</span><span>Sẵn sàng ứng tuyển</span>
+        <div className="grid grid-cols-3 gap-6 border-t border-white/15 pt-8 text-xs xl:text-sm text-white/50 font-medium">
+          <span>Thiết kế chuyên nghiệp</span><span>Dễ dàng chỉnh sửa</span><span>Tích hợp gợi ý</span>
         </div>
       </div>
 
-      {/* ── Right panel — Card ────────────────────────────────────────────── */}
-      <div className="flex items-center justify-center px-5 py-10 sm:px-10 lg:px-16">
-        <div className="w-full max-w-[500px] border border-[#d9d8d2] bg-white px-6 py-8 shadow-[0_24px_70px_rgba(30,58,58,0.08)] sm:px-10 sm:py-10">
+      {/* ── Right panel — Card (Trắng tinh tế, cân đối trên màn lớn) ────────── */}
+      <div className="flex items-center justify-center px-5 py-10 sm:px-10 lg:px-12 xl:px-16 2xl:px-24">
+        <div className="w-full max-w-[460px] lg:max-w-[480px] xl:max-w-[520px] 2xl:max-w-[560px] border border-black/10 bg-white px-7 py-9 shadow-[0_25px_70px_rgba(0,0,0,0.06)] sm:px-10 sm:py-11 xl:px-12 xl:py-12 rounded-2xl transition-all">
           <Link href="/" className="mb-8 block font-headline text-2xl font-black tracking-tighter lg:hidden">CVision</Link>
-          <p className="mb-2 font-label text-[10px] font-semibold uppercase tracking-[0.22em] text-[#1e3a3a]/60">Chào mừng đến CVision</p>
-          <h2 className="mb-7 font-headline text-3xl font-semibold tracking-tight">
+          <p className="mb-2 font-label text-[10px] xl:text-[11px] font-bold uppercase tracking-[0.24em] text-muted-foreground">Chào mừng đến CVision</p>
+          <h2 className="mb-7 font-headline text-3xl xl:text-4xl font-black tracking-tight text-gray-900">
             {mode === 'login' ? 'Tiếp tục hành trình của bạn' : 'Bắt đầu hồ sơ của bạn'}
           </h2>
 
           {/* Tabs */}
-          <div className="mb-7 flex gap-1 border-b border-[#d9d8d2]">
+          <div className="mb-7 flex gap-2 border-b border-black/10">
             {(['login', 'register'] as const).map(m => (
               <button
                 key={m}
                 type="button"
                 onClick={() => switchMode(m)}
                 className={clsx(
-                  'flex-1 border-0 border-b-2 bg-transparent py-3 text-sm font-semibold transition-all duration-200 cursor-pointer',
+                  'flex-1 border-0 border-b-2 bg-transparent py-3 text-sm font-bold transition-all duration-200 cursor-pointer',
                   mode === m
-                    ? 'border-[#1e3a3a] text-[#1e3a3a]'
-                    : 'border-transparent text-gray-400 hover:text-gray-700'
+                    ? 'border-black text-black'
+                    : 'border-transparent text-gray-400 hover:text-black'
                 )}
               >
                 {m === 'login' ? 'Đăng nhập' : 'Đăng ký'}
@@ -266,7 +267,7 @@ export function AuthForm() {
 
           {/* General error banner — lỗi từ server */}
           {errors.general && (
-            <div className="mb-4 px-3.5 py-2.5 bg-red-50 border border-red-200 rounded-[9px] text-[13px] text-red-600">
+            <div className="mb-4 px-3.5 py-2.5 bg-red-50 border border-red-200 rounded-lg text-[13px] text-red-600">
               {errors.general}
             </div>
           )}
@@ -328,7 +329,7 @@ export function AuthForm() {
                   type="button"
                   onClick={() => setShowPw(v => !v)}
                   aria-label="Hiện/ẩn mật khẩu"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer bg-transparent border-0 p-0.5 flex items-center"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors cursor-pointer bg-transparent border-0 p-0.5 flex items-center"
                 >
                   {showPw ? <EyeOff size={16} strokeWidth={1.8} /> : <Eye size={16} strokeWidth={1.8} />}
                 </button>
@@ -344,7 +345,7 @@ export function AuthForm() {
             {/* Forgot password — login only */}
             {mode === 'login' && (
               <div className="flex justify-end -mt-2 mb-4">
-                <Link href="/forgot-password" className="text-xs text-[#1e3a3a] font-semibold hover:underline">
+                <Link href="/forgot-password" className="text-xs text-black font-semibold hover:underline">
                   Quên mật khẩu?
                 </Link>
               </div>
@@ -380,11 +381,11 @@ export function AuthForm() {
                     type="checkbox"
                     checked={form.acceptTerms}
                     onChange={patch('acceptTerms')}
-                    className="h-3.5 w-3.5 flex-shrink-0 cursor-pointer accent-[#1e3a3a]"
+                    className="h-3.5 w-3.5 flex-shrink-0 cursor-pointer accent-black"
                   />
                   <span className="text-[12.5px] text-gray-500">
                     Tôi đồng ý với{' '}
-                    <a href="/terms" className="font-medium text-[#1e3a3a] hover:underline">
+                    <a href="/terms" className="font-medium text-black hover:underline">
                       Điều khoản sử dụng
                     </a>
                   </span>
@@ -396,29 +397,28 @@ export function AuthForm() {
             )}
 
             {/* Divider */}
-            <div className="flex items-center gap-2.5 my-4">
-              <div className="flex-1 h-px bg-[#e3e8f0]" />
+            <div className="flex items-center gap-2.5 my-5">
+              <div className="flex-1 h-px bg-black/10" />
               <span className="text-xs text-gray-400 font-medium whitespace-nowrap">Hoặc tiếp tục với</span>
-              <div className="flex-1 h-px bg-[#e3e8f0]" />
+              <div className="flex-1 h-px bg-black/10" />
             </div>
 
             {/* Social buttons */}
-            <div className="grid  gap-2 mb-4">
+            <div className="grid gap-2 mb-5">
               <button
                 type="button"
                 onClick={handleGoogle}
-                className="flex items-center justify-center gap-2 border border-[#d9d8d2] bg-white px-3 py-3 text-[13px] font-semibold text-gray-900 cursor-pointer transition-all duration-150 hover:border-[#1e3a3a] hover:bg-[#f8f7f2] whitespace-nowrap"
+                className="flex items-center justify-center gap-2 border border-black/10 bg-white px-3 py-3 text-[13px] font-semibold text-gray-900 rounded-lg cursor-pointer transition-all duration-150 hover:border-black hover:bg-neutral-50 whitespace-nowrap"
               >
                 <GoogleIcon /> Google
               </button>
-            
             </div>
 
             {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 border border-[#1e3a3a] bg-[#1e3a3a] py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] text-white transition-all duration-200 cursor-pointer hover:bg-[#142a2a] active:scale-[0.99] disabled:opacity-65 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 border border-black bg-black py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] text-white rounded-lg transition-all duration-200 cursor-pointer hover:bg-neutral-800 active:scale-[0.99] disabled:opacity-65 disabled:cursor-not-allowed"
             >
               {loading
                 ? <span className="w-4 h-4 border-[2.5px] border-white/40 border-t-white rounded-full animate-spin" />
@@ -434,7 +434,7 @@ export function AuthForm() {
               <>Chưa có tài khoản?{' '}
                 <button
                   onClick={() => switchMode('register')}
-                  className="cursor-pointer border-0 bg-transparent p-0 font-semibold text-[#1e3a3a] hover:underline"
+                  className="cursor-pointer border-0 bg-transparent p-0 font-semibold text-black hover:underline"
                 >
                   Đăng ký
                 </button>
@@ -443,7 +443,7 @@ export function AuthForm() {
               <>Đã có tài khoản?{' '}
                 <button
                   onClick={() => switchMode('login')}
-                  className="cursor-pointer border-0 bg-transparent p-0 font-semibold text-[#1e3a3a] hover:underline"
+                  className="cursor-pointer border-0 bg-transparent p-0 font-semibold text-black hover:underline"
                 >
                   Đăng nhập
                 </button>
