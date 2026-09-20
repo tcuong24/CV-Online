@@ -96,7 +96,7 @@ export class RenderingService {
     };
 
     // Build HTML
-    let html = `
+    const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
