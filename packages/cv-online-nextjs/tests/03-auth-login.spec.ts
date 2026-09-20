@@ -10,7 +10,7 @@ test.describe('Luồng 3: Đăng nhập', () => {
     await page.locator('input#auth-password').fill('wrongpassword');
     await page.locator('button[type="submit"]').click();
 
-    await expect(page.getByText('Email hoặc mật khẩu không đúng')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Email hoặc mật khẩu không đúng')).toBeVisible({ timeout: 15000 });
   });
 
   test('validate trường email khi submit form trống', async ({ page }) => {

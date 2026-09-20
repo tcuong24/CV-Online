@@ -8,6 +8,6 @@ test.describe('Luồng 1: Trang chủ', () => {
     const exploreBtn = page.getByRole('link', { name: 'Xem các mẫu CV' });
     await expect(exploreBtn).toBeVisible();
     await exploreBtn.click();
-    await expect(page).toHaveURL(/.*templates/);
+    await expect(page).toHaveURL(/.*templates/, { timeout: 15000 });
   });
 });

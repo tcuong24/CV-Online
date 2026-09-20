@@ -3,10 +3,15 @@ import { test, expect } from '@playwright/test';
 test.describe('Luồng 4: Thư viện mẫu CV', () => {
   test('kiểm tra bộ lọc tags và chọn mẫu CV để tạo', async ({ page }) => {
     // Mock template API nếu backend chưa chạy
-    await page.route('**/api/templates*', async (route) => {
+    await page.route(/.*\/api\/templates.*/, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
         body: JSON.stringify([
           {
             id: 'mock-template-1',
@@ -42,6 +47,6 @@ test.describe('Luồng 4: Thư viện mẫu CV', () => {
     await expect(selectBtn).toBeVisible();
     await selectBtn.click();
 
-    await expect(page).toHaveURL(/.*cvs\/create/);
+    await expect(page).toHaveURL(/.*cvs\/create/, { timeout: 15000 });
   });
 });

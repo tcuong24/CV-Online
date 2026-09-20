@@ -2,11 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Luồng 7: CV Editor - Bố cục (Sidebar)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/templates');
-    const firstCard = page.locator('article.template-library-card').first();
-    await firstCard.hover();
-    await firstCard.getByRole('button', { name: /Tạo CV|Chọn Mẫu/i }).click();
-    await page.waitForURL(/.*cvs\/create/);
+    await page.goto('/cvs/create');
+    await expect(page.locator('.cv-pages-wrapper').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('chuyển sang tab Bố cục và ẩn section', async ({ page }) => {

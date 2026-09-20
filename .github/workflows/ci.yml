@@ -86,6 +86,7 @@ jobs:
     name: E2E Tests (Playwright)
     needs: lint-and-typecheck
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
