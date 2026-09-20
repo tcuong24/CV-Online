@@ -2,6 +2,32 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Luồng 4: Thư viện mẫu CV', () => {
   test('kiểm tra bộ lọc tags và chọn mẫu CV để tạo', async ({ page }) => {
+    // Mock template API nếu backend chưa chạy
+    await page.route('**/api/templates*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            id: 'mock-template-1',
+            name: 'Mẫu Tiêu Chuẩn',
+            description: 'Mẫu CV chuyên nghiệp chuẩn ATS',
+            thumbnailUrl: '/templates/standard.png',
+            category: 'standard',
+            isPremium: false,
+            isPublished: true,
+            layoutType: 'standard',
+            popularityScore: 100,
+            usageCount: 50,
+            version: '1.0',
+            designConfig: { theme: { primaryColor: '#000000' } },
+            sectionsConfig: {},
+            tags: ['Tất cả', 'Chuyên nghiệp', 'ATS Friendly'],
+          },
+        ]),
+      });
+    });
+
     await page.goto('/templates');
     await expect(page.locator('h1')).toContainText('Khám phá thư viện mẫu CV');
 

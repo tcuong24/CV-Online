@@ -2,8 +2,34 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Luồng E2E: Khám phá Template & Chỉnh sửa CV Realtime', () => {
   test('chọn template, chỉnh sửa thông tin và kiểm tra preview cập nhật tức thì', async ({ page }) => {
+    // Mock template API nếu backend chưa chạy
+    await page.route('**/api/templates*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            id: 'mock-template-1',
+            name: 'Mẫu Tiêu Chuẩn',
+            description: 'Mẫu CV chuyên nghiệp chuẩn ATS',
+            thumbnailUrl: '/templates/standard.png',
+            category: 'standard',
+            isPremium: false,
+            isPublished: true,
+            layoutType: 'standard',
+            popularityScore: 100,
+            usageCount: 50,
+            version: '1.0',
+            designConfig: { theme: { primaryColor: '#000000' } },
+            sectionsConfig: {},
+            tags: ['Tất cả', 'Chuyên nghiệp', 'ATS Friendly'],
+          },
+        ]),
+      });
+    });
+
     // 1. Đi tới trang thư viện mẫu CV
-    await page.goto('http://localhost:3000/templates');
+    await page.goto('/templates');
 
     // 2. Kiểm tra tiêu đề trang đã render
     await expect(page.locator('h1')).toContainText('Khám phá thư viện mẫu CV');

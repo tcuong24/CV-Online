@@ -108,6 +108,9 @@ jobs:
         run: pnpm --filter nextjs-frontend exec playwright install --with-deps chromium
 
       - name: Run Playwright E2E Tests
+        env:
+          NEXTAUTH_URL: 'http://localhost:3000'
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'zEvNqqStMz+CIM22MhVc14R0fWA9zLp5o9v7ltPx4cM=' }}
         run: pnpm --filter nextjs-frontend exec playwright test
 
       - name: Upload Playwright JUnit Artifact
